@@ -1,0 +1,16 @@
+# AnoniPRO — dependencias del backend
+# Todo se ejecuta 100% en local; ninguna librería realiza llamadas externas en tiempo de ejecución.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9          # subida de archivos
+presidio-analyzer>=2.2.355       # orquestador de detección de PII (capas 1-2)
+spacy>=3.7                       # NER en español (capa 2)
+PyMuPDF>=1.24                    # extracción y redacción destructiva de PDF
+python-docx>=1.1                 # lectura/escritura de .docx
+pytesseract>=0.3.10              # OCR de escaneados/imágenes (Fase 2) — requiere el binario tesseract
+Pillow>=10.0                     # manejo de imágenes (JPG/PNG/TIFF) para el OCR
+psutil>=5.9                      # diagnóstico de hardware (RAM/CPU) para recomendar la capa 3
+# La capa 3 (LLM) usa la API OpenAI de Ollama/LM Studio vía urllib estándar: sin dependencias extra.
+itsdangerous>=2.1                # firma de la cookie de sesión (contraseña opcional)
+# El modelo NER se instala aparte (ver README):
+#   python -m spacy download es_core_news_lg

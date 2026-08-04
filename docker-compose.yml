@@ -1,0 +1,32 @@
+# AnoniPRO — despliegue en Synology DS923+ (Container Manager) o cualquier Docker.
+#
+# En Synology:
+#   1. Copia toda la carpeta del proyecto a una carpeta compartida (p. ej. /volume1/docker/anonipro).
+#   2. Container Manager → Proyecto → Crear → elige esta carpeta y este docker-compose.yml.
+#   3. Accede desde cualquier navegador de la red local a  http://IP-DEL-NAS:8080
+#
+# Ver el README para el paso a paso con capturas.
+
+services:
+  anonipro:
+    build: .
+    image: anonipro:latest
+    container_name: anonipro
+    restart: unless-stopped
+    ports:
+      - "8080:8080"          # http://IP-DEL-NAS:8080
+    environment:
+      # Contraseña de acceso a la web. Déjala vacía para no pedir contraseña.
+      # El NAS puede ser accesible por más gente: se recomienda ponerla.
+      ANONIPRO_PASSWORD: ""
+      # Minutos que un documento permanece en memoria antes de borrarse solo.
+      ANONIPRO_TTL_MINUTOS: "30"
+      # Tamaño máximo de archivo aceptado (MB).
+      ANONIPRO_MAX_MB: "50"
+      HOME: "/tmp"           # caché de librerías en RAM, no en disco
+    # Los documentos se procesan SOLO en memoria; no se monta ningún volumen
+    # de datos porque no se escribe nada en disco. El sistema de archivos del
+    # contenedor es de solo lectura; lo único escribible es /tmp, en RAM.
+    read_only: true
+    tmpfs:
+      - /tmp

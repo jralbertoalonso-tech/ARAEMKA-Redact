@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnoniPRO — Anonimización de documentos clínicos</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+</head>
+<body>
+
+<!-- ══════════ Pantalla de contraseña (solo si está configurada) ══════════ -->
+<div id="pantalla-login" class="oculto">
+  <div class="tarjeta-login">
+    <h1>🩺 AnoniPRO</h1>
+    <p>Introduce la contraseña de acceso.</p>
+    <form id="form-login">
+      <input type="password" id="campo-password" placeholder="Contraseña" autocomplete="current-password">
+      <button type="submit" class="boton-primario">Entrar</button>
+    </form>
+    <p id="error-login" class="texto-error oculto">Contraseña incorrecta.</p>
+  </div>
+</div>
+
+<!-- ══════════ Aplicación principal ══════════ -->
+<div id="aplicacion" class="oculto">
+
+  <header>
+    <div class="titulo">
+      <h1>🩺 AnoniPRO</h1>
+      <span class="subtitulo">Anonimización local de documentos clínicos — ningún dato sale de tu red</span>
+    </div>
+    <div class="acciones-cabecera">
+      <span id="estado-modelo" class="chip" title="Modelo de detección de nombres">…</span>
+      <span id="estado-ocr" class="chip" title="Estado del OCR">…</span>
+      <button id="boton-tema" class="boton-icono" title="Cambiar entre modo claro y oscuro">🌗</button>
+    </div>
+  </header>
+
+  <div class="distribucion">
+
+    <!-- ── Panel lateral: interruptores y perfiles ── -->
+    <aside id="panel-lateral">
+      <section class="bloque-panel">
+        <label class="etiqueta-panel" for="selector-perfil">Perfil</label>
+        <div class="fila">
+          <select id="selector-perfil"></select>
+          <button id="boton-guardar-perfil" class="boton-secundario" title="Guardar la configuración actual como perfil">💾</button>
+        </div>
+      </section>
+
+      <section class="bloque-panel">
+        <span class="etiqueta-panel">Qué se detecta y redacta</span>
+        <div id="lista-categorias"><!-- interruptores generados por app.js --></div>
+      </section>
+
+      <section class="bloque-panel">
+        <span class="etiqueta-panel">Redactar siempre estos términos</span>
+        <p class="texto-suave ayuda-lista">Escribe aquí lo que quieras quitar y no se detecte solo (un apodo, una finca, un código…). Una casilla por término.</p>
+        <div id="lista-negra" class="editor-terminos"><!-- casillas generadas por app.js --></div>
+        <button id="boton-mas-negra" class="boton-enlace">＋ Añadir otra casilla</button>
+
+        <span class="etiqueta-panel" style="margin-top:16px">No redactar nunca estos términos</span>
+        <p class="texto-suave ayuda-lista">Palabras que quieres respetar aunque se parezcan a datos personales (p. ej. un fármaco). Si la palabra sale «pegada» dentro de una detección mayor, se recorta de ella.</p>
+        <div id="lista-blanca" class="editor-terminos"></div>
+        <button id="boton-mas-blanca" class="boton-enlace">＋ Añadir otra casilla</button>
+      </section>
+
+      <section class="bloque-panel">
+        <span class="etiqueta-panel">Fechas y edad</span>
+        <label class="etiqueta-opcion" for="opcion-fechas">Fechas de asistencia</label>
+        <select id="opcion-fechas" title="«Desplazar» mueve todas las fechas el mismo número aleatorio de días: se conserva la cronología clínica sin revelar las fechas reales.">
+          <option value="redactar">Tachar (redactar)</option>
+          <option value="desplazar">Desplazar (conserva la cronología)</option>
+        </select>
+        <label class="etiqueta-opcion" for="opcion-edad">Edad exacta</label>
+        <select id="opcion-edad" title="«Rango etario» sustituye la edad exacta por su banda: «47 años» pasa a «45-49 años». La fecha de nacimiento se tacha siempre.">
+          <option value="redactar">Tachar (redactar)</option>
+          <option value="rango">Sustituir por rango etario (45-49 años)</option>
+        </select>
+      </section>
+
+      <section class="bloque-panel">
+        <span class="etiqueta-panel">Detección avanzada (IA local)</span>
+        <p class="texto-suave ayuda-lista">Opcional. Usa un modelo de IA que corre en tu red para cazar datos que las reglas no ven. Funciona todo sin esto.</p>
+        <div class="fila-botones-panel">
+          <button id="boton-diagnostico" class="boton-secundario">🖥️ Comprobar mi equipo</button>
+          <button id="boton-ajustes-ia" class="boton-secundario">⚙️ Ajustes de IA</button>
+        </div>
+        <div id="estado-capa3" class="estado-capa3">IA local: desactivada</div>
+      </section>
+
+      <button id="boton-reanalizar" class="boton-secundario ancho-total oculto">🔄 Volver a analizar con estos ajustes</button>
+    </aside>
+
+    <!-- ── Zona central: subir documento / vista previa ── -->
+    <main id="zona-central">
+
+      <div id="zona-soltar">
+        <div class="contenido-soltar">
+          <div class="icono-soltar">📄</div>
+          <p><strong>Arrastra aquí un documento</strong> o</p>
+          <button id="boton-elegir" class="boton-primario">Elegir archivo…</button>
+          <input type="file" id="entrada-archivo" accept=".pdf,.docx,.jpg,.jpeg,.png,.tif,.tiff,.bmp,.webp" multiple hidden>
+          <p class="texto-suave">PDF (con texto o escaneado), Word (.docx) o imagen (JPG, PNG, TIFF)<br>
+          Los escaneados e imágenes se leen con OCR en este mismo equipo.<br>
+          El documento se procesa solo aquí y se borra de la memoria a los <span id="ttl-minutos">30</span> minutos.</p>
+        </div>
+      </div>
+
+      <div id="indicador-progreso" class="oculto">
+        <div class="ruedecilla"></div>
+        <p id="texto-progreso">Analizando el documento…</p>
+      </div>
+
+      <div id="area-documento" class="oculto">
+        <div class="barra-documento">
+          <span id="nombre-documento" class="nombre-doc"></span>
+          <div class="acciones-doc">
+            <button id="boton-zona-manual" class="boton-secundario" title="Dibujar un rectángulo sobre el documento para redactarlo (solo PDF)">✏️ Marcar zona a mano</button>
+            <button id="boton-aplicar" class="boton-primario">⬛ Aplicar redacción…</button>
+            <button id="boton-cerrar-doc" class="boton-secundario" title="Borrar este documento de la memoria">✖ Terminar</button>
+          </div>
+        </div>
+        <div id="banner-ocr" class="banner-ocr oculto"></div>
+        <div id="contenedor-paginas"><!-- páginas PDF o bloques docx --></div>
+      </div>
+
+    </main>
+
+    <!-- ── Panel derecho: lista de detecciones ── -->
+    <aside id="panel-detecciones" class="oculto">
+      <div class="cabecera-detecciones">
+        <span class="etiqueta-panel">Datos detectados (<span id="contador-detecciones">0</span>)</span>
+        <div class="fila">
+          <button id="boton-marcar-todo" class="boton-enlace">todas</button>
+          <button id="boton-desmarcar-todo" class="boton-enlace">ninguna</button>
+        </div>
+      </div>
+      <p class="texto-suave nota-verificacion">Revisa la lista: desmarca lo que NO quieras redactar. Nada se aplica sin tu confirmación.</p>
+      <div class="anadir-texto">
+        <input type="text" id="campo-texto-manual" placeholder="Añadir texto no detectado…">
+        <button id="boton-anadir-texto" class="boton-secundario">＋</button>
+      </div>
+      <div id="lista-detecciones"></div>
+    </aside>
+  </div>
+
+  <!-- ── Diálogo de confirmación y resultado ── -->
+  <dialog id="dialogo-resultado">
+    <div id="contenido-confirmacion">
+      <h2>Aplicar redacción definitiva</h2>
+      <p>Se van a redactar <strong id="resumen-redacciones"></strong> de forma <strong>irreversible</strong> en una copia del documento (el original que subiste no se modifica).</p>
+      <p class="texto-suave">El texto se elimina del archivo: no podrá recuperarse copiando, pegando ni quitando los rectángulos.</p>
+      <p id="nota-opciones" class="texto-suave oculto"></p>
+      <div class="fila-botones">
+        <button id="boton-cancelar-redaccion" class="boton-secundario">Cancelar</button>
+        <button id="boton-confirmar-redaccion" class="boton-primario">Sí, redactar</button>
+      </div>
+    </div>
+    <div id="contenido-resultado" class="oculto">
+      <h2>✅ Documento anonimizado</h2>
+      <div id="avisos-verificacion"></div>
+      <div id="residuales-verificacion"></div>
+      <div class="fila-botones">
+        <button id="boton-cerrar-dialogo" class="boton-secundario">Cerrar</button>
+        <a id="enlace-auditoria" class="boton-secundario boton-enlace-descarga" download title="Informe de qué se redactó y con qué configuración, sin los datos originales">📋 Informe de auditoría</a>
+        <a id="enlace-descarga" class="boton-primario boton-enlace-descarga" download>⬇ Descargar documento anonimizado</a>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ── Diálogo: diagnóstico del equipo y recomendación ── -->
+  <dialog id="dialogo-diagnostico">
+    <h2>🖥️ Tu equipo y la IA local</h2>
+    <div id="cuerpo-diagnostico"><p class="texto-suave">Comprobando…</p></div>
+    <div class="fila-botones">
+      <button id="boton-cerrar-diagnostico" class="boton-secundario">Cerrar</button>
+    </div>
+  </dialog>
+
+  <!-- ── Diálogo: ajustes de la capa 3 (IA local) ── -->
+  <dialog id="dialogo-ajustes-ia">
+    <h2>⚙️ Ajustes de la IA local (capa 3)</h2>
+    <p class="texto-suave">
+      Es <strong>opcional</strong>. Conecta un modelo de IA que corra en tu red (Ollama o LM Studio)
+      para detectar datos que las reglas no ven. El texto se envía solo a ese equipo de tu red;
+      nada sale a internet.
+    </p>
+
+    <label class="etiqueta-panel" for="select-endpoint">Servidor detectado</label>
+    <div class="fila">
+      <select id="select-endpoint"></select>
+      <button id="boton-buscar-endpoints" class="boton-secundario" title="Volver a buscar servidores en la red">🔄</button>
+    </div>
+
+    <label class="etiqueta-panel" for="input-endpoint" style="margin-top:12px">…o escribe la dirección</label>
+    <input type="text" id="input-endpoint" placeholder="http://192.168.1.50:11434">
+    <p class="texto-suave">Ollama usa el puerto 11434; LM Studio, el 1234.</p>
+
+    <label class="etiqueta-panel" for="input-modelo" style="margin-top:12px">Modelo</label>
+    <div class="fila">
+      <input type="text" id="input-modelo" list="lista-modelos" placeholder="p. ej. qwen3:8b">
+      <datalist id="lista-modelos"></datalist>
+      <button id="boton-probar-ia" class="boton-secundario">Probar</button>
+    </div>
+    <div id="resultado-prueba-ia" class="resultado-prueba oculto"></div>
+
+    <label class="interruptor" style="margin-top:14px">
+      <input type="checkbox" id="check-activar-ia">
+      <span><strong>Activar la capa 3</strong> al analizar (puede tardar más en documentos largos)</span>
+    </label>
+
+    <div class="fila-botones">
+      <button id="boton-cerrar-ajustes-ia" class="boton-secundario">Cerrar</button>
+      <button id="boton-guardar-ia" class="boton-primario">Guardar</button>
+    </div>
+  </dialog>
+
+  <footer>
+    <span id="version-app"></span> · Procesamiento 100&nbsp;% local · Sin conexión a internet · Los documentos nunca se guardan en disco<br>
+    <span class="autor">Autor: Dr. José Ramón Alberto Alonso</span>
+  </footer>
+</div>
+
+<script src="vendor/pdfjs/pdf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

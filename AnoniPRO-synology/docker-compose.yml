@@ -1,0 +1,27 @@
+# AnoniPRO — despliegue en Synology DS923+ usando la imagen YA CONSTRUIDA
+# (anonipro-imagen.tar.gz). No necesita internet ni compilar nada en el NAS.
+# Ver INSTRUCCIONES.md, están pensadas para seguirlas paso a paso.
+
+services:
+  anonipro:
+    image: anonipro:latest        # la imagen importada desde anonipro-imagen.tar.gz
+    container_name: anonipro
+    restart: unless-stopped
+    ports:
+      - "8080:8080"               # se accede en http://IP-DEL-NAS:8080
+    environment:
+      # ── Contraseña de acceso a la web ─────────────────────────────────
+      # RECOMENDADA: el NAS puede ser accesible por más personas.
+      # Escríbela entre las comillas. Vacía = sin contraseña.
+      ANONIPRO_PASSWORD: ""
+      # Minutos que un documento permanece en memoria antes de borrarse solo.
+      ANONIPRO_TTL_MINUTOS: "30"
+      # Tamaño máximo de archivo aceptado (MB).
+      ANONIPRO_MAX_MB: "50"
+      HOME: "/tmp"
+    # Máxima privacidad: sistema de archivos de solo lectura; lo único
+    # escribible es /tmp, que vive en RAM. No se monta ningún volumen:
+    # los documentos nunca tocan el disco del NAS.
+    read_only: true
+    tmpfs:
+      - /tmp

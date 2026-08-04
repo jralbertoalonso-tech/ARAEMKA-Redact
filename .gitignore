@@ -1,0 +1,22 @@
+# Entornos y cachés
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+
+# Empaquetados y artefactos de construcción (regenerables)
+dist/
+build/
+*.spec
+*.zip
+AnoniPRO-synology/anonipro-imagen.tar.gz
+
+# Documentos de prueba (se regeneran con herramientas/generar_documentos_prueba.py)
+documentos_prueba/
+
+# Materiales de registro (se regeneran; además la memoria lleva datos personales)
+registro/
+
+# Scratchpad
+scratchpad/
