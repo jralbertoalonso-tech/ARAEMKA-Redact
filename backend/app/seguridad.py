@@ -73,7 +73,9 @@ async def middleware_password(request: Request, call_next):
     if AJUSTES.requiere_password and ruta.startswith("/api"):
         request.state.autenticado = _sesion_valida(request)
         if ruta not in ("/api/login", "/api/estado") and not request.state.autenticado:
-            return JSONResponse({"detail": "Se necesita la contraseña de acceso."}, status_code=401)
+            from .textos import idioma_de, t
+            return JSONResponse({"detail": t("necesita_password", idioma_de(request))},
+                                status_code=401)
     else:
         request.state.autenticado = True
     return await call_next(request)

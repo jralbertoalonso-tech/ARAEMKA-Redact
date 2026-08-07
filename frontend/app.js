@@ -24,53 +24,139 @@ const estado = {
 
 const $ = (id) => document.getElementById(id);
 
+// ───────────────────────── idioma ─────────────────────────
+// Una sola aplicación bilingüe (ver idiomas.js). Arranca en el idioma del
+// navegador y se puede cambiar con el botón ES/EN; la elección se recuerda.
+function idiomaInicial() {
+  const guardado = localStorage.getItem("anonipro_idioma");
+  if (guardado === "es" || guardado === "en") return guardado;
+  return (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+}
+
+let IDIOMA = idiomaInicial();
+
+// Todas las peticiones llevan el idioma elegido, para que los mensajes de
+// error del servidor lleguen en el mismo idioma que la interfaz.
+const fetchOriginal = window.fetch.bind(window);
+window.fetch = (recurso, opciones = {}) => {
+  const cabeceras = new Headers(opciones.headers || {});
+  cabeceras.set("X-Idioma", IDIOMA);
+  return fetchOriginal(recurso, { ...opciones, headers: cabeceras });
+};
+
+/** Devuelve el texto traducido, sustituyendo {parametros} si los hay. */
+function t(clave, params) {
+  let s = (TEXTOS[IDIOMA] && TEXTOS[IDIOMA][clave]) || TEXTOS.es[clave] || clave;
+  if (params) for (const [k, v] of Object.entries(params)) s = s.replaceAll(`{${k}}`, v);
+  return s;
+}
+
+/** Nombre visible de una categoría en el idioma actual. */
+function nombreCategoria(c) {
+  return (IDIOMA === "en" && c.nombre_en) ? c.nombre_en : c.nombre;
+}
+
+function descripcionCategoria(c) {
+  return (IDIOMA === "en" && c.descripcion_en) ? c.descripcion_en : c.descripcion;
+}
+
+function nombreGrupo(c) {
+  return (IDIOMA === "en" && c.grupo_nombre_en) ? c.grupo_nombre_en : c.grupo_nombre;
+}
+
+/** Aplica el idioma a todos los textos marcados con data-i18n en el HTML. */
+function aplicarIdiomaEstatico() {
+  document.documentElement.lang = IDIOMA;
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    el.textContent = t(el.dataset.i18n);
+  }
+  for (const el of document.querySelectorAll("[data-i18n-html]")) {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  }
+  for (const el of document.querySelectorAll("[data-i18n-titulo]")) {
+    el.title = t(el.dataset.i18nTitulo);
+  }
+  for (const el of document.querySelectorAll("[data-i18n-ph]")) {
+    el.placeholder = t(el.dataset.i18nPh);
+  }
+  $("boton-idioma").textContent = IDIOMA === "es" ? "EN" : "ES";
+}
+
+/** Cambia de idioma y repinta todo lo que se genera desde JavaScript. */
+function cambiarIdioma() {
+  IDIOMA = IDIOMA === "es" ? "en" : "es";
+  localStorage.setItem("anonipro_idioma", IDIOMA);
+  aplicarIdiomaEstatico();
+  if ($("nota-ttl").dataset.min) {
+    $("nota-ttl").textContent = t("subir.ttl", { min: $("nota-ttl").dataset.min });
+  }
+  const perfilActual = $("selector-perfil").value;
+  pintarInterruptores();
+  pintarSelectorPerfiles(perfilActual);
+  sincronizarPerfilConInterruptores();
+  actualizarCasillasIdioma();
+  if (estado.doc) {
+    if (estado.doc.tipo === "docx") pintarDocx(); else pintarResaltadosPdf();
+    pintarListaDetecciones();
+    mostrarAvisosDocumento();
+  }
+  fetch("/api/capa3/estado").then((r) => r.json())
+    .then((e) => actualizarEstadoCapa3(e.config)).catch(() => {});
+}
+
 // Datos de identidad y contacto: el mínimo común a casi todos los perfiles.
 const BASE_IDENTIDAD = ["persona", "dni_nie", "pasaporte", "fecha_nacimiento",
   "direccion", "telefono", "email", "localidad", "personalizada"];
 
 // Perfiles predefinidos: qué categorías se activan en cada tipo de trabajo.
-// (null = todas). El usuario puede crear los suyos y se guardan en el navegador.
+// La clave es un identificador estable (no cambia con el idioma); el nombre
+// visible sale de PERFILES_TRADUCIDOS. null = todas las categorías.
 const PERFILES_BASE = {
-  "Todo activado": null,
+  todo: null,
 
-  "Documento clínico": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "iban", "tarjeta"],
+  clinico: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "iban", "tarjeta"],
 
-  "Publicación científica": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro",
+  publicacion: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro",
     "servicio_unidad", "sanitario", "colegiado", "organizacion", "logo", "fecha",
     "iban", "tarjeta"],
 
-  "Docencia": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro", "sanitario",
+  docencia: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro", "sanitario",
     "colegiado", "organizacion", "logo", "fecha", "iban", "tarjeta"],
 
-  "Jurídico (contratos y escritos)": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+  juridico: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
     "expediente", "catastro", "matricula", "organizacion", "logo", "fecha"],
 
-  "Empresa y RR. HH.": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nuss",
+  empresa: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nuss",
     "expediente", "matricula", "organizacion", "logo"],
 
-  "Facturas y contabilidad": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+  facturas: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
     "expediente", "organizacion", "logo"],
 
-  "Documento personal": [...BASE_IDENTIDAD, "iban", "tarjeta", "nuss",
+  personal: [...BASE_IDENTIDAD, "iban", "tarjeta", "nuss",
     "matricula", "catastro", "expediente"],
 };
+
+/** Nombre visible de un perfil: traducido si es de los predefinidos. */
+function nombrePerfil(clave) {
+  const trad = PERFILES_TRADUCIDOS[IDIOMA] || PERFILES_TRADUCIDOS.es;
+  return trad[clave] || clave;   // los perfiles del usuario van tal cual
+}
 
 // ───────────────────────── arranque ─────────────────────────
 async function iniciar() {
   aplicarTemaGuardado();
+  aplicarIdiomaEstatico();
+  $("boton-idioma").addEventListener("click", cambiarIdioma);
 
   const info = await (await fetch("/api/estado")).json();
   $("version-app").textContent = "AnoniPRO " + info.version;
-  $("ttl-minutos").textContent = info.ttl_minutos;
-  $("estado-modelo").textContent = "Detector: " + info.modelo_ner;
+  $("nota-ttl").dataset.min = info.ttl_minutos;
+  $("nota-ttl").textContent = t("subir.ttl", { min: info.ttl_minutos });
+  $("estado-modelo").textContent = "NER: " + info.modelo_ner;
   const chipOcr = $("estado-ocr");
-  if (info.ocr_disponible) {
-    chipOcr.textContent = "OCR: " + (info.ocr_espanol ? "español ✓" : "sin español");
-    chipOcr.title = "Reconocimiento de escaneados e imágenes disponible";
-  } else {
-    chipOcr.textContent = "OCR: no instalado";
-    chipOcr.title = "No se podrán procesar escaneados ni imágenes en este equipo";
-  }
+  chipOcr.textContent = info.ocr_disponible
+    ? "OCR: " + (info.ocr_espanol ? "es ✓" : "—")
+    : "OCR: ✗";
 
   if (info.requiere_password && !info.autenticado) {
     $("pantalla-login").classList.remove("oculto");
@@ -126,15 +212,15 @@ function pintarInterruptores() {
     if (!cats.length) continue;
     const div = document.createElement("div");
     div.className = "grupo-categorias";
-    div.innerHTML = `<div class="titulo-grupo">${escapaHtml(cats[0].grupo_nombre || grupo)}</div>`;
+    div.innerHTML = `<div class="titulo-grupo">${escapaHtml(nombreGrupo(cats[0]) || grupo)}</div>`;
     for (const c of cats) {
       const fila = document.createElement("label");
       fila.className = "interruptor";
-      fila.title = c.descripcion;
+      fila.title = descripcionCategoria(c);
       fila.innerHTML = `
         <input type="checkbox" data-categoria="${c.id}" ${estado.activas.has(c.id) ? "checked" : ""}>
         <span class="punto-color" style="background:${c.color}"></span>
-        <span>${c.nombre}</span>`;
+        <span>${escapaHtml(nombreCategoria(c))}</span>`;
       fila.querySelector("input").addEventListener("change", (ev) => {
         ev.target.checked ? estado.activas.add(c.id) : estado.activas.delete(c.id);
         sincronizarPerfilConInterruptores();
@@ -157,16 +243,17 @@ function perfilesGuardados() {
   catch { return {}; }
 }
 
-function pintarSelectorPerfiles() {
+function pintarSelectorPerfiles(seleccionado) {
   const sel = $("selector-perfil");
   sel.innerHTML = "";
   const todos = { ...PERFILES_BASE, ...perfilesGuardados() };
-  for (const nombre of Object.keys(todos)) {
+  for (const clave of Object.keys(todos)) {
     const op = document.createElement("option");
-    op.value = nombre;
-    op.textContent = nombre;
+    op.value = clave;                    // la clave no cambia con el idioma
+    op.textContent = nombrePerfil(clave);
     sel.appendChild(op);
   }
+  if (seleccionado && todos[seleccionado] !== undefined) sel.value = seleccionado;
 }
 
 function aplicarPerfil(nombre) {
@@ -178,7 +265,7 @@ function aplicarPerfil(nombre) {
   marcarAjustesSucios();
 }
 
-const OPCION_PROPIA = "— ajustes propios —";
+const OPCION_PROPIA = "__propia__";   // clave interna; el texto sale de idiomas.js
 
 /** Interruptores activos de un perfil (null = todas las categorías). */
 function categoriasDelPerfil(nombre) {
@@ -204,15 +291,18 @@ function sincronizarPerfilConInterruptores() {
   } else {
     if (!propia) {
       const op = document.createElement("option");
-      op.value = op.textContent = OPCION_PROPIA;
+      op.value = OPCION_PROPIA;
+      op.textContent = t("panel.perfil_propio");
       sel.appendChild(op);
+    } else {
+      propia.textContent = t("panel.perfil_propio");
     }
     sel.value = OPCION_PROPIA;
   }
 }
 
 function guardarPerfilActual() {
-  const nombre = prompt("Nombre del perfil (la configuración actual de interruptores):");
+  const nombre = prompt(t("panel.perfil_nombre"));
   if (!nombre) return;
   const guardados = perfilesGuardados();
   guardados[nombre] = [...estado.activas];
@@ -231,13 +321,13 @@ function anadirCasilla(idContenedor, valor = "") {
   const input = document.createElement("input");
   input.type = "text";
   input.className = "casilla-termino";
-  input.placeholder = "Escribe un término…";
+  input.placeholder = t("panel.termino_ph");
   input.value = valor;
   input.addEventListener("input", marcarAjustesSucios);
   const quitar = document.createElement("button");
   quitar.className = "boton-quitar-termino";
   quitar.textContent = "✕";
-  quitar.title = "Quitar esta casilla";
+  quitar.title = t("panel.quitar_casilla");
   quitar.addEventListener("click", () => {
     fila.remove();
     if (!cont.querySelector(".fila-termino")) anadirCasilla(idContenedor); // deja siempre una
@@ -262,12 +352,41 @@ function terminosDe(idContenedor) {
 
 // ───────────────────────── subida y análisis ─────────────────────────
 
+/** Banner azul sobre el documento: OCR aplicado y/o IA local sin responder.
+ *  Está en su propia función para poder repintarlo al cambiar de idioma. */
+function mostrarAvisosDocumento() {
+  const banner = $("banner-ocr");
+  const avisos = [];
+  if (estado.doc?.por_ocr) {
+    avisos.push(t("aviso.ocr", { detalle: estado.doc.aviso_ocr || "" }));
+  }
+  if (estado.doc?.capa3_no_disponible) {
+    avisos.push(t("aviso.capa3_caida"));
+  }
+  if (avisos.length) {
+    banner.innerHTML = avisos.join("<br><br>");
+    banner.classList.remove("oculto");
+  } else {
+    banner.classList.add("oculto");
+  }
+}
+
+/** Repinta los textos de ayuda de las casillas de términos al cambiar de idioma. */
+function actualizarCasillasIdioma() {
+  for (const inp of document.querySelectorAll(".casilla-termino")) {
+    inp.placeholder = t("panel.termino_ph");
+  }
+  for (const b of document.querySelectorAll(".boton-quitar-termino")) {
+    b.title = t("panel.quitar_casilla");
+  }
+}
+
 async function subirArchivo(archivo) {
   const esImagenOEscaneo = /\.(pdf|jpe?g|png|tiff?|bmp|webp)$/i.test(archivo.name);
   mostrarProgreso(
-    `Analizando «${archivo.name}»…` +
-    (estado.cola.length ? ` (${estado.cola.length} en cola)` : "") +
-    (esImagenOEscaneo ? "\nSi está escaneado, el OCR puede tardar en documentos largos." : ""));
+    t("subir.analizando", { nombre: archivo.name }) +
+    (estado.cola.length ? t("subir.en_cola", { n: estado.cola.length }) : "") +
+    (esImagenOEscaneo ? t("subir.ocr_lento") : ""));
   const datos = new FormData();
   datos.append("archivo", archivo);
   datos.append("categorias", JSON.stringify([...estado.activas]));
@@ -276,9 +395,9 @@ async function subirArchivo(archivo) {
 
   const r = await fetch("/api/documentos", { method: "POST", body: datos });
   if (!r.ok) {
-    const err = await r.json().catch(() => ({ detail: "Error desconocido." }));
+    const err = await r.json().catch(() => ({ detail: "" }));
     ocultarProgreso();
-    alert("No se pudo procesar el documento:\n\n" + err.detail);
+    alert(t("subir.error") + err.detail);
     procesarSiguienteDeCola();
     return;
   }
@@ -287,28 +406,9 @@ async function subirArchivo(archivo) {
   estado.zonasManuales = [];
   estado.textosManuales = [];
   $("nombre-documento").textContent = estado.doc.nombre +
-    (estado.cola.length ? `  ·  quedan ${estado.cola.length} en cola` : "");
+    (estado.cola.length ? t("subir.quedan", { n: estado.cola.length }) : "");
   $("boton-zona-manual").classList.toggle("oculto", estado.doc.tipo !== "pdf");
-
-  // Banner OCR: avisar de que el texto se leyó por reconocimiento óptico
-  const banner = $("banner-ocr");
-  let avisos = [];
-  if (estado.doc.por_ocr) {
-    avisos.push("🔎 <strong>Documento leído con OCR.</strong> " +
-      (estado.doc.aviso_ocr || "") +
-      " Revisa con atención: el OCR puede equivocarse o no leer algún dato " +
-      "(sobre todo correos y símbolos). Puedes marcar zonas a mano si hace falta.");
-  }
-  if (estado.doc.capa3_no_disponible) {
-    avisos.push("⚠️ <strong>La IA local (capa 3) está activada pero no respondió.</strong> " +
-      "Se ha analizado solo con las capas 1-2. Revisa el servidor en «⚙️ Ajustes de IA».");
-  }
-  if (avisos.length) {
-    banner.innerHTML = avisos.join("<br><br>");
-    banner.classList.remove("oculto");
-  } else {
-    banner.classList.add("oculto");
-  }
+  mostrarAvisosDocumento();
 
   ocultarProgreso();
   $("area-documento").classList.remove("oculto");
@@ -327,7 +427,7 @@ function cargarDetecciones(lista) {
 
 async function reanalizar() {
   if (!estado.doc) return;
-  mostrarProgreso("Volviendo a analizar…");
+  mostrarProgreso(t("subir.reanalizando"));
   const r = await fetch(`/api/documentos/${estado.doc.id}/analizar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -340,7 +440,7 @@ async function reanalizar() {
   ocultarProgreso();
   $("area-documento").classList.remove("oculto");
   if (!r.ok) {
-    if (r.status === 404) { alert("El documento caducó en memoria. Vuelve a subirlo."); cerrarDocumento(false); }
+    if (r.status === 404) { alert(t("subir.caducado")); cerrarDocumento(false); }
     return;
   }
   const datos = await r.json();
@@ -419,7 +519,7 @@ function pintarResaltadosPdf() {
       caja.style.width = (x1 - x0) * escala + "px";
       caja.style.height = (y1 - y0) * escala + "px";
       caja.style.background = colorDeCategoria(d.categoria);
-      caja.title = `${d.texto} (clic para incluir/excluir)`;
+      caja.title = `${d.texto} (${t("det.incluir_excluir")})`;
       caja.addEventListener("click", (ev) => {
         ev.stopPropagation();
         // En modo dibujo, un clic simple sigue alternando la detección;
@@ -486,7 +586,7 @@ function anadirZonaManual(zona, capa, escala) {
   caja.style.top = zona.y0 * escala + "px";
   caja.style.width = (zona.x1 - zona.x0) * escala + "px";
   caja.style.height = (zona.y1 - zona.y0) * escala + "px";
-  caja.title = "Zona manual (clic para quitarla)";
+  caja.title = t("det.zona_quitar");
   caja.addEventListener("click", (ev) => {
     ev.stopPropagation();
     if (estado.clicTrasArrastre) return;  // no quitar la zona recién dibujada
@@ -527,7 +627,7 @@ function pintarDocx() {
       marca.dataset.deteccion = d.id;
       marca.textContent = b.texto.slice(d.inicio, d.fin);
       marca.style.background = colorDeCategoria(d.categoria) + "66";
-      marca.title = "Clic para incluir/excluir";
+      marca.title = t("det.incluir_excluir");
       marca.addEventListener("click", () => {
         alternarDeteccion(d.id);
         localizarFilaPanel(d.id);
@@ -571,16 +671,16 @@ function pintarListaDetecciones() {
 
   // extras manuales primero
   if (estado.textosManuales.length || estado.zonasManuales.length) {
-    const t = document.createElement("div");
-    t.className = "grupo-detecciones-titulo";
-    t.textContent = "Añadidos a mano";
-    cont.appendChild(t);
+    const titulo = document.createElement("div");
+    titulo.className = "grupo-detecciones-titulo";
+    titulo.textContent = t("det.anadidos");
+    cont.appendChild(titulo);
     estado.textosManuales.forEach((texto, i) => {
       const fila = document.createElement("div");
       fila.className = "fila-deteccion";
       fila.innerHTML = `<input type="checkbox" checked disabled>
         <div class="cuerpo-deteccion"><div class="texto-deteccion">${escapaHtml(texto)}</div>
-        <div class="metadatos-deteccion"><span class="etiqueta-capa">texto manual</span></div></div>
+        <div class="metadatos-deteccion"><span class="etiqueta-capa">${t("det.texto_manual")}</span></div></div>
         <button class="boton-enlace" title="Quitar">✖</button>`;
       fila.querySelector("button").addEventListener("click", () => {
         estado.textosManuales.splice(i, 1);
@@ -592,9 +692,9 @@ function pintarListaDetecciones() {
       const fila = document.createElement("div");
       fila.className = "fila-deteccion";
       fila.innerHTML = `<input type="checkbox" checked disabled>
-        <div class="cuerpo-deteccion"><div class="texto-deteccion">${estado.zonasManuales.length} zona(s) dibujada(s)</div>
-        <div class="metadatos-deteccion"><span class="etiqueta-capa">zona manual</span></div>
-        <div class="contexto-deteccion">Clic sobre la zona negra del documento para quitarla.</div></div>`;
+        <div class="cuerpo-deteccion"><div class="texto-deteccion">${t("det.zonas", { n: estado.zonasManuales.length })}</div>
+        <div class="metadatos-deteccion"><span class="etiqueta-capa">${t("det.zona_manual")}</span></div>
+        <div class="contexto-deteccion">${t("det.zonas_ayuda")}</div></div>`;
       cont.appendChild(fila);
     }
   }
@@ -607,10 +707,10 @@ function pintarListaDetecciones() {
   for (const d of ordenadas) {
     if (estado.doc.tipo === "pdf" && d.pagina !== grupoActual) {
       grupoActual = d.pagina;
-      const t = document.createElement("div");
-      t.className = "grupo-detecciones-titulo";
-      t.textContent = `Página ${d.pagina + 1}`;
-      cont.appendChild(t);
+      const titulo = document.createElement("div");
+      titulo.className = "grupo-detecciones-titulo";
+      titulo.textContent = t("det.pagina", { n: d.pagina + 1 });
+      cont.appendChild(titulo);
     }
     const cat = estado.categorias.find((c) => c.id === d.categoria);
     const fila = document.createElement("div");
@@ -621,8 +721,8 @@ function pintarListaDetecciones() {
       <div class="cuerpo-deteccion">
         <div class="texto-deteccion">${escapaHtml(d.texto)}</div>
         <div class="metadatos-deteccion">
-          <span class="etiqueta-categoria" style="background:${cat ? cat.color : "#888"}">${cat ? cat.nombre : d.categoria}</span>
-          <span class="etiqueta-capa" title="Capa 1: reglas · Capa 2: modelo de lenguaje">capa ${d.capa}</span>
+          <span class="etiqueta-categoria" style="background:${cat ? cat.color : "#888"}">${cat ? escapaHtml(nombreCategoria(cat)) : d.categoria}</span>
+          <span class="etiqueta-capa" title="${t("det.capa_ayuda")}">${t("det.capa", { n: d.capa })}</span>
           <span class="etiqueta-confianza">${Math.round(d.confianza * 100)} %</span>
         </div>
         <div class="contexto-deteccion">${escapaHtml(d.contexto)}</div>
@@ -638,7 +738,7 @@ function pintarListaDetecciones() {
   if (!ordenadas.length) {
     const p = document.createElement("p");
     p.className = "texto-suave";
-    p.textContent = "No se ha detectado ningún dato personal con los interruptores actuales.";
+    p.textContent = t("det.vacio");
     cont.appendChild(p);
   }
   actualizarContador();
@@ -680,16 +780,16 @@ function escapaHtml(s) {
 function abrirConfirmacion() {
   const n = [...estado.detecciones.values()].filter((d) => d.aprobada).length
     + estado.zonasManuales.length + estado.textosManuales.length;
-  if (!n) { alert("No hay nada marcado para redactar."); return; }
-  $("resumen-redacciones").textContent =
-    `${n} elemento${n === 1 ? "" : "s"}`;
+  if (!n) { alert(t("red.nada")); return; }
+  const elementos = t(n === 1 ? "red.elementos" : "red.elementos_plural", { n });
+  $("aviso-redaccion").innerHTML = t("red.aviso", { n: elementos });
   // Nota sobre las opciones de fechas/edad elegidas
   const notas = [];
   if ($("opcion-fechas").value === "desplazar") {
-    notas.push("Las fechas de asistencia se sustituirán por fechas desplazadas un número aleatorio de días (la cronología se conserva).");
+    notas.push(t("red.nota_fechas"));
   }
   if ($("opcion-edad").value === "rango") {
-    notas.push("La edad exacta se sustituirá por su rango etario; la fecha de nacimiento se tacha siempre.");
+    notas.push(t("red.nota_edad"));
   }
   $("nota-opciones").textContent = notas.join(" ");
   $("nota-opciones").classList.toggle("oculto", !notas.length);
@@ -716,8 +816,8 @@ async function confirmarRedaccion() {
   });
   $("boton-confirmar-redaccion").disabled = false;
   if (!r.ok) {
-    const err = await r.json().catch(() => ({ detail: "Error desconocido." }));
-    alert("No se pudo redactar:\n\n" + err.detail);
+    const err = await r.json().catch(() => ({ detail: "" }));
+    alert(t("red.error") + err.detail);
     $("dialogo-resultado").close();
     return;
   }
@@ -733,8 +833,7 @@ async function confirmarRedaccion() {
     }
   } else {
     const p = document.createElement("p");
-    p.textContent = `Se han redactado ${datos.num_redacciones} elementos. ` +
-      "La comprobación posterior no encontró restos del texto redactado en el archivo final.";
+    p.textContent = t("res.ok", { n: datos.num_redacciones });
     avisos.appendChild(p);
   }
 
@@ -744,18 +843,18 @@ async function confirmarRedaccion() {
   if ((datos.residuales || []).length) {
     const caja = document.createElement("div");
     caja.className = "caja-residuales";
-    caja.innerHTML = "<strong>🔍 La segunda pasada encontró posibles datos sin redactar:</strong>";
+    caja.innerHTML = `<strong>${t("res.residuales")}</strong>`;
     const ul = document.createElement("ul");
     for (const r of datos.residuales) {
       const cat = estado.categorias.find((c) => c.id === r.categoria);
       const li = document.createElement("li");
-      li.innerHTML = `${escapaHtml(r.texto)} <span class="etiqueta-capa">${escapaHtml(cat ? cat.nombre : r.categoria)}</span> `;
+      li.innerHTML = `${escapaHtml(r.texto)} <span class="etiqueta-capa">${escapaHtml(cat ? nombreCategoria(cat) : r.categoria)}</span> `;
       const boton = document.createElement("button");
       boton.className = "boton-enlace";
-      boton.textContent = "redactar también";
+      boton.textContent = t("res.redactar_tambien");
       boton.addEventListener("click", () => {
         if (!estado.textosManuales.includes(r.texto)) estado.textosManuales.push(r.texto);
-        boton.textContent = "añadido ✓";
+        boton.textContent = t("res.anadido");
         boton.disabled = true;
         pintarListaDetecciones();
       });
@@ -765,7 +864,7 @@ async function confirmarRedaccion() {
     caja.appendChild(ul);
     const nota = document.createElement("p");
     nota.className = "texto-suave";
-    nota.textContent = "Si añades alguno, cierra este diálogo y vuelve a pulsar «Aplicar redacción» para generar el documento de nuevo.";
+    nota.textContent = t("res.residuales_nota");
     caja.appendChild(nota);
     residuales.appendChild(caja);
   }
@@ -879,7 +978,7 @@ function conectarEventos() {
   $("boton-confirmar-redaccion").addEventListener("click", confirmarRedaccion);
   $("boton-cerrar-dialogo").addEventListener("click", () => $("dialogo-resultado").close());
   $("boton-cerrar-doc").addEventListener("click", () => {
-    if (confirm("Se borrará este documento de la memoria del servidor. ¿Continuar?")) {
+    if (confirm(t("doc.terminar_confirmar"))) {
       cerrarDocumento();
     }
   });
@@ -900,23 +999,25 @@ function conectarEventos() {
 // ───────────────────────── capa 3: diagnóstico ─────────────────────────
 async function abrirDiagnostico() {
   $("dialogo-diagnostico").showModal();
-  $("cuerpo-diagnostico").innerHTML = '<p class="texto-suave">Comprobando tu equipo…</p>';
+  $("cuerpo-diagnostico").innerHTML = `<p class="texto-suave">${t("diag.comprobando")}</p>`;
   try {
     const d = await (await fetch("/api/diagnostico")).json();
     $("cuerpo-diagnostico").innerHTML = pintarDiagnostico(d.hardware, d.recomendacion);
     document.querySelectorAll("#cuerpo-diagnostico .boton-copiar").forEach((b) =>
       b.addEventListener("click", () => copiarComandos(b.dataset.comandos)));
   } catch (e) {
-    $("cuerpo-diagnostico").innerHTML = '<p class="texto-error">No se pudo comprobar el equipo.</p>';
+    $("cuerpo-diagnostico").innerHTML = `<p class="texto-error">${t("diag.error")}</p>`;
   }
 }
 
 function pintarDiagnostico(hw, rec) {
   const filas = [
-    ["Sistema", `${hw.sistema} ${hw.version_so}`],
-    ["Procesador", `${hw.cpu} · ${hw.nucleos_logicos || "?"} núcleos`],
-    ["Memoria (RAM)", hw.ram_total_gb ? `${hw.ram_total_gb} GB (libres ahora: ${hw.ram_disponible_gb ?? "?"} GB)` : "desconocida"],
-    ["Aceleración", hw.aceleracion],
+    [t("diag.sistema"), `${hw.sistema} ${hw.version_so}`],
+    [t("diag.procesador"), `${hw.cpu} · ${hw.nucleos_logicos || "?"} ${t("diag.nucleos")}`],
+    [t("diag.memoria"), hw.ram_total_gb
+      ? `${hw.ram_total_gb} GB (${t("diag.libres")}: ${hw.ram_disponible_gb ?? "?"} GB)`
+      : t("diag.desconocida")],
+    [t("diag.aceleracion"), hw.aceleracion],
   ];
   let html = '<table class="tabla-diag">' +
     filas.map(([k, v]) => `<tr><td>${k}</td><td>${escapaHtml(v)}</td></tr>`).join("") +
@@ -928,10 +1029,10 @@ function pintarDiagnostico(hw, rec) {
     html += `<div class="bloque-pasos">
       <div class="titulo-pasos">${escapaHtml(paso.titulo)} <span class="etiqueta-capa">${escapaHtml(paso.sistema)}</span></div>
       <pre class="comandos">${escapaHtml(cmds)}</pre>
-      <button class="boton-enlace boton-copiar" data-comandos="${escapaHtml(cmds)}">📋 Copiar comandos</button>
+      <button class="boton-enlace boton-copiar" data-comandos="${escapaHtml(cmds)}">${t("diag.copiar")}</button>
     </div>`;
   }
-  html += '<p class="texto-suave">Tras instalarlo, abre <strong>⚙️ Ajustes de IA</strong>, elige el servidor y pulsa <strong>Probar</strong>.</p>';
+  html += `<p class="texto-suave">${t("diag.siguiente")}</p>`;
   return html;
 }
 
@@ -939,7 +1040,7 @@ function copiarComandos(texto) {
   const t = document.createElement("textarea");
   t.innerHTML = texto;
   navigator.clipboard?.writeText(t.value).then(
-    () => alert("Comandos copiados al portapapeles."),
+    () => alert(t("diag.copiado")),
     () => {});
 }
 
@@ -958,18 +1059,18 @@ async function abrirAjustesIA() {
 
 async function cargarEndpoints(rebuscar, modeloPreferido) {
   const sel = $("select-endpoint");
-  sel.innerHTML = '<option value="">Buscando…</option>';
+  sel.innerHTML = `<option value="">${t("ia.buscando")}</option>`;
   const extra = $("input-endpoint").value.trim();
   const est = await (await fetch("/api/capa3/estado?extra=" + encodeURIComponent(extra))).json();
   endpointsDetectados = est.endpoints;
   sel.innerHTML = "";
   if (!endpointsDetectados.length) {
-    sel.innerHTML = '<option value="">— no se encontró ningún servidor —</option>';
+    sel.innerHTML = `<option value="">${t("ia.sin_servidor")}</option>`;
   } else {
     for (const e of endpointsDetectados) {
       const op = document.createElement("option");
       op.value = e.endpoint;
-      op.textContent = `${e.tipo} · ${e.endpoint} (${e.modelos.length} modelos)`;
+      op.textContent = `${e.tipo} · ${e.endpoint} (${t("ia.modelos", { n: e.modelos.length })})`;
       sel.appendChild(op);
     }
     if (!$("input-endpoint").value) $("input-endpoint").value = endpointsDetectados[0].endpoint;
@@ -993,7 +1094,7 @@ async function probarIA() {
   const caja = $("resultado-prueba-ia");
   caja.classList.remove("oculto");
   caja.className = "resultado-prueba";
-  caja.textContent = "Probando…";
+  caja.textContent = t("ia.probando");
   try {
     const r = await (await fetch("/api/capa3/probar", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -1001,14 +1102,14 @@ async function probarIA() {
     })).json();
     if (r.ok) {
       caja.classList.add("ok");
-      caja.textContent = `✅ Funciona (${r.latencia_ms} ms). El modelo respondió: «${r.respuesta}»`;
+      caja.textContent = t("ia.prueba_ok", { ms: r.latencia_ms, respuesta: r.respuesta });
     } else {
       caja.classList.add("mal");
       caja.textContent = "❌ " + r.error;
     }
   } catch (e) {
     caja.classList.add("mal");
-    caja.textContent = "❌ No se pudo probar la conexión.";
+    caja.textContent = t("ia.prueba_error");
   }
 }
 
@@ -1029,10 +1130,10 @@ async function guardarIA() {
 function actualizarEstadoCapa3(cfg) {
   const el = $("estado-capa3");
   if (cfg && cfg.activa && cfg.endpoint && cfg.modelo) {
-    el.textContent = `IA local: activada (${cfg.modelo})`;
+    el.textContent = t("ia.estado_on", { modelo: cfg.modelo });
     el.classList.add("activa");
   } else {
-    el.textContent = "IA local: desactivada";
+    el.textContent = t("ia.estado_off");
     el.classList.remove("activa");
   }
 }
@@ -1060,7 +1161,7 @@ async function recogerDeEntrada(entrada, archivos) {
 function recibirArchivos(archivos) {
   const validos = archivos.filter((a) => /\.(pdf|docx|jpe?g|png|tiff?|bmp|webp)$/i.test(a.name));
   if (!validos.length) {
-    alert("Formato no compatible. Usa PDF, Word (.docx) o una imagen (JPG, PNG, TIFF).");
+    alert(t("subir.formato_no"));
     return;
   }
   estado.cola.push(...validos.slice(1));

@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.7.1 (universal: perfiles para clínica, jurídico, empresa y facturas)"
+VERSION = "0.8.0 (universal y bilingüe español/inglés)"

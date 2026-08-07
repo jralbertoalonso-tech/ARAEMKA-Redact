@@ -32,6 +32,7 @@ from .documentos import fechas, ocr
 from .documentos.docx_doc import CARACTER_REDACCION, DocumentoDocx
 from .documentos.pdf_doc import DocumentoPdf, pdf_desde_imagen
 from .seguridad import comprobar_password, crear_cookie_sesion, registrar_intento_login
+from .textos import idioma_de, t
 
 router = APIRouter(prefix="/api")
 
@@ -62,16 +63,10 @@ def _endpoint_en_red_privada(url: str) -> bool:
     return ip.is_private or ip.is_loopback or ip.is_link_local
 
 
-def _asegurar_ocr_disponible():
+def _asegurar_ocr_disponible(idioma: str = "es"):
     """Corta con un mensaje claro si se necesita OCR y Tesseract no está."""
     if not ocr.diagnostico()["disponible"]:
-        raise HTTPException(
-            422,
-            "Este documento necesita OCR (está escaneado o es una imagen) y "
-            "Tesseract no está instalado en este equipo. En la versión del NAS "
-            "ya viene incluido; en macOS instálalo con «brew install tesseract "
-            "tesseract-lang».",
-        )
+        raise HTTPException(422, t("ocr_no_instalado", idioma))
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -105,9 +100,9 @@ def login(datos: DatosLogin, request: Request, response: Response):
     espera = registrar_intento_login(ip, exito=False)  # marca el intento
     if espera > 0:
         raise HTTPException(
-            429, f"Demasiados intentos fallidos. Espera {espera} segundos e inténtalo de nuevo.")
+            429, t("login_bloqueado", idioma_de(request), espera=espera))
     if not comprobar_password(datos.password):
-        raise HTTPException(401, "Contraseña incorrecta.")
+        raise HTTPException(401, t("password_incorrecta", idioma_de(request)))
     registrar_intento_login(ip, exito=True)  # limpia el contador al acertar
     crear_cookie_sesion(response)
     return {"ok": True}
@@ -148,13 +143,11 @@ class ConfigCapa3Body(BaseModel):
 
 
 @router.post("/capa3/configurar")
-def capa3_configurar(body: ConfigCapa3Body):
+def capa3_configurar(body: ConfigCapa3Body, request: Request):
     # El endpoint de la capa 3 recibe el texto clínico sin anonimizar: solo se
     # permite apuntar a la red local, nunca a un servidor de internet.
     if body.endpoint and not _endpoint_en_red_privada(body.endpoint):
-        raise HTTPException(
-            400, "La dirección de la IA debe estar en tu red local (localhost o una IP privada). "
-                 "No se permiten servidores de internet: el texto clínico no debe salir de tu red.")
+        raise HTTPException(400, t("ia_fuera_de_red", idioma_de(request)))
     capa3.CONFIG.actualizar(
         activa=body.activa, endpoint=body.endpoint, modelo=body.modelo, timeout=body.timeout
     )
@@ -167,10 +160,10 @@ class ProbarCapa3Body(BaseModel):
 
 
 @router.post("/capa3/probar")
-def capa3_probar(body: ProbarCapa3Body):
+def capa3_probar(body: ProbarCapa3Body, request: Request):
     """Prueba real: envía una petición mínima y comprueba que el modelo responde."""
     if not _endpoint_en_red_privada(body.endpoint):
-        return {"ok": False, "error": "La dirección debe estar en tu red local (IP privada o localhost)."}
+        return {"ok": False, "error": t("ia_fuera_de_red_corto", idioma_de(request))}
     return capa3.probar(body.endpoint, body.modelo)
 
 
@@ -253,6 +246,7 @@ def _analizar_sesion(
 
 @router.post("/documentos")
 def subir_documento(
+    request: Request,
     archivo: UploadFile = File(...),
     categorias: str = Form("[]"),          # JSON: ["persona", "dni_nie", …]
     lista_personalizada: str = Form("[]"),  # JSON: términos a redactar siempre
@@ -261,16 +255,17 @@ def subir_documento(
     # Endpoint SÍNCRONO (def): FastAPI lo ejecuta en el threadpool, de modo que
     # el trabajo pesado (OCR, NER, LLM) NO bloquea el event loop y otros usuarios
     # del NAS siguen siendo atendidos mientras se procesa un documento grande.
+    idioma = idioma_de(request)
     contenido = archivo.file.read(AJUSTES.max_mb * 1024 * 1024 + 1)
     if len(contenido) > AJUSTES.max_mb * 1024 * 1024:
-        raise HTTPException(413, f"El archivo supera el máximo de {AJUSTES.max_mb} MB.")
+        raise HTTPException(413, t("archivo_grande", idioma, max_mb=AJUSTES.max_mb))
 
     try:
         ids_cat_pre = json.loads(categorias)
         lista_pers = json.loads(lista_personalizada)
         lista_bl = json.loads(lista_blanca)
     except (ValueError, TypeError):
-        raise HTTPException(422, "Parámetros de configuración con formato incorrecto.")
+        raise HTTPException(422, t("parametros_malos", idioma))
 
     nombre = archivo.filename or "documento"
     extension = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
@@ -280,48 +275,39 @@ def subir_documento(
         try:
             doc = DocumentoPdf(contenido)
         except Exception as e:
-            raise HTTPException(422, f"No se pudo leer el PDF: {e}")
+            raise HTTPException(422, t("pdf_ilegible", idioma, error=e))
         # PDF escaneado (sin capa de texto): aplicar OCR local en vez de rechazar
         if not doc.tiene_texto:
             paginas_ocr = doc.paginas_sin_texto()
-            _asegurar_ocr_disponible()
+            _asegurar_ocr_disponible(idioma)
             n = doc.aplicar_ocr(paginas_ocr)
-            aviso_ocr = f"PDF escaneado: se ha reconocido el texto por OCR en {n} página(s)."
+            aviso_ocr = t("ocr_escaneado", idioma, n=n)
         else:
             # PDF mixto: OCR solo las páginas concretas que no tengan texto
             paginas_ocr = doc.paginas_sin_texto()
             if paginas_ocr and ocr.diagnostico()["disponible"]:
                 doc.aplicar_ocr(paginas_ocr)
-                aviso_ocr = f"Algunas páginas ({len(paginas_ocr)}) se han reconocido por OCR."
+                aviso_ocr = t("ocr_paginas", idioma, n=len(paginas_ocr))
         sesion = SesionDocumento(nombre, "pdf", doc)
     elif extension in ("jpg", "jpeg", "png", "tif", "tiff", "bmp", "webp"):
-        _asegurar_ocr_disponible()
+        _asegurar_ocr_disponible(idioma)
         try:
             doc = DocumentoPdf(pdf_desde_imagen(contenido))
         except Exception as e:
-            raise HTTPException(422, f"No se pudo leer la imagen: {e}")
+            raise HTTPException(422, t("imagen_ilegible", idioma, error=e))
         doc.aplicar_ocr()
-        aviso_ocr = "Imagen procesada con OCR. El documento anonimizado se entrega en PDF."
+        aviso_ocr = t("ocr_imagen", idioma)
         sesion = SesionDocumento(nombre, "pdf", doc)
     elif extension == "docx":
         try:
             doc = DocumentoDocx(contenido)
         except Exception as e:
-            raise HTTPException(422, f"No se pudo leer el documento Word: {e}")
+            raise HTTPException(422, t("word_ilegible", idioma, error=e))
         sesion = SesionDocumento(nombre, "docx", doc)
     elif extension == "doc":
-        raise HTTPException(
-            422,
-            "Los .doc antiguos (Word 97-2003) no son compatibles. "
-            "Ábrelo en Word y guárdalo como .docx, o espera a la versión para "
-            "el NAS, que los convertirá automáticamente.",
-        )
+        raise HTTPException(422, t("doc_antiguo", idioma))
     else:
-        raise HTTPException(
-            422,
-            f"Formato no compatible: .{extension}. "
-            "Usa PDF, Word (.docx) o una imagen (JPG, PNG, TIFF).",
-        )
+        raise HTTPException(422, t("formato_no_compatible", idioma, extension=extension))
 
     ids_cat = ids_cat_pre or None
     detecciones = _analizar_sesion(
@@ -359,10 +345,10 @@ class PeticionAnalisis(BaseModel):
 
 
 @router.post("/documentos/{id_doc}/analizar")
-def reanalizar(id_doc: str, peticion: PeticionAnalisis):
+def reanalizar(id_doc: str, peticion: PeticionAnalisis, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion:
-        raise HTTPException(404, "El documento ya no está en memoria (caducó o se eliminó). Vuelve a subirlo.")
+        raise HTTPException(404, t("doc_caducado", idioma_de(request)))
     detecciones = _analizar_sesion(
         sesion, peticion.categorias, peticion.lista_personalizada, peticion.lista_blanca
     )
@@ -370,11 +356,11 @@ def reanalizar(id_doc: str, peticion: PeticionAnalisis):
 
 
 @router.get("/documentos/{id_doc}/original")
-def descargar_original(id_doc: str):
+def descargar_original(id_doc: str, request: Request):
     """Bytes del documento original, solo para la vista previa del navegador."""
     sesion = ALMACEN.obtener(id_doc)
     if not sesion:
-        raise HTTPException(404, "El documento ya no está en memoria.")
+        raise HTTPException(404, t("doc_caducado", idioma_de(request)))
     tipo_mime = "application/pdf" if sesion.tipo == "pdf" else \
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     return Response(content=sesion.doc.contenido, media_type=tipo_mime)
@@ -441,10 +427,10 @@ def _texto_reemplazo(d: dict, opciones: OpcionesRedaccion, delta: int) -> str | 
 
 
 @router.post("/documentos/{id_doc}/redactar")
-def redactar(id_doc: str, peticion: PeticionRedaccion):
+def redactar(id_doc: str, peticion: PeticionRedaccion, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion:
-        raise HTTPException(404, "El documento ya no está en memoria.")
+        raise HTTPException(404, t("doc_caducado", idioma_de(request)))
 
     aprobadas = [sesion.detecciones[i] for i in peticion.aprobadas if i in sesion.detecciones]
     textos_redactados = [d["texto"] for d in aprobadas] + peticion.textos_manuales
@@ -473,7 +459,7 @@ def redactar(id_doc: str, peticion: PeticionRedaccion):
                     for r in sesion.doc.rects_para_span(pagina.numero, ini, fin):
                         zonas.append((pagina.numero, r))
         if not zonas and not reemplazos:
-            raise HTTPException(400, "No hay nada marcado para redactar.")
+            raise HTTPException(400, t("nada_que_redactar", idioma_de(request)))
         resultado = sesion.doc.redactar(zonas, reemplazos)
     else:
         spans_por_bloque: dict[int, list[tuple]] = {}
@@ -500,8 +486,9 @@ def redactar(id_doc: str, peticion: PeticionRedaccion):
     )
 
     sesion.resultado = resultado
+    idioma = idioma_de(request)
     sesion.avisos_verificacion = [
-        f"«{t}» podría seguir apareciendo en el documento final." for t in restos
+        t("resto_posible", idioma, texto=resto) for resto in restos
     ]
 
     num_redacciones = len(aprobadas) + len(peticion.zonas_manuales) + len(peticion.textos_manuales)
@@ -651,11 +638,11 @@ def _cuenta_por_categoria(residuales: list[dict]) -> dict[str, int]:
 
 
 @router.get("/documentos/{id_doc}/auditoria")
-def descargar_auditoria(id_doc: str):
+def descargar_auditoria(id_doc: str, request: Request):
     """Informe de auditoría en JSON (sin datos originales), para guardar localmente."""
     sesion = ALMACEN.obtener(id_doc)
     if not sesion or sesion.auditoria is None:
-        raise HTTPException(404, "No hay auditoría disponible. Aplica primero la redacción.")
+        raise HTTPException(404, t("sin_auditoria", idioma_de(request)))
     base = sesion.nombre.rsplit(".", 1)[0]
     contenido = json.dumps(sesion.auditoria, ensure_ascii=False, indent=2)
     return Response(
@@ -666,10 +653,10 @@ def descargar_auditoria(id_doc: str):
 
 
 @router.get("/documentos/{id_doc}/resultado")
-def descargar_resultado(id_doc: str):
+def descargar_resultado(id_doc: str, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion or sesion.resultado is None:
-        raise HTTPException(404, "No hay resultado disponible. Aplica primero la redacción.")
+        raise HTTPException(404, t("sin_resultado", idioma_de(request)))
     base = sesion.nombre.rsplit(".", 1)[0]
     extension = "pdf" if sesion.tipo == "pdf" else "docx"
     tipo_mime = "application/pdf" if sesion.tipo == "pdf" else \

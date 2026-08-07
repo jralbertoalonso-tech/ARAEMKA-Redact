@@ -16,7 +16,13 @@ RR. HH., facturas y papeles personales**: eliges el perfil y la aplicación
 detecta los datos sensibles propios de ese ámbito. Interfaz en español, clara y
 sin jerga técnica.
 
-> **Estado actual: versión universal (0.7).** Detecta y elimina datos personales
+> **Idiomas:** la aplicación es **bilingüe español / inglés**. Arranca en el
+> idioma del navegador y se cambia con el botón **ES/EN** de la cabecera (la
+> elección se recuerda). La *detección* sigue afinada para documentos en
+> español; los datos de formato internacional (IBAN, tarjetas, correos) también
+> se detectan en documentos en inglés.
+
+> **Estado actual: versión universal y bilingüe (0.8).** Detecta y elimina datos personales
 > en documentos de cualquier ámbito, con **8 perfiles** listos (clínico, jurídico,
 > empresa y RR. HH., facturas, personal, publicación científica, docencia y «todo
 > activado») y **26 categorías** de datos. Incluye OCR de escaneados, tres capas
