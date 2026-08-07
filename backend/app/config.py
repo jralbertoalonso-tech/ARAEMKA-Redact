@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.7.0 (universal: perfiles para clínica, jurídico, empresa y facturas)"
+VERSION = "0.7.1 (universal: perfiles para clínica, jurídico, empresa y facturas)"

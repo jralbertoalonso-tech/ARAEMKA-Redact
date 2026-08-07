@@ -118,6 +118,14 @@ def test_no_confunde_numeros_normales_con_tarjetas():
 # Catálogo y perfiles
 # ══════════════════════════════════════════════════════════════════════
 
+def test_todas_las_categorias_activas_por_defecto():
+    """Al arrancar, «Todo activado» debe significar TODO: si alguna categoría
+    llegara desactivada, el desplegable diría una cosa y el panel otra."""
+    apagadas = [c["id"] for c in cat.como_dict() if not c["activa_por_defecto"]]
+    assert apagadas == [], f"llegan desactivadas por defecto: {apagadas}"
+    assert len(cat.IDS_POR_DEFECTO) == len(cat.CATEGORIAS)
+
+
 def test_catalogo_expone_grupos_ordenados():
     datos = cat.como_dict()
     ids = {c["id"] for c in datos}

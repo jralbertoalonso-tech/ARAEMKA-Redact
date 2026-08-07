@@ -103,6 +103,8 @@ async function arrancarAplicacion() {
     .forEach((c) => estado.activas.add(c.id));
   pintarInterruptores();
   pintarSelectorPerfiles();
+  // El desplegable debe reflejar el estado real de los interruptores al arrancar
+  sincronizarPerfilConInterruptores();
   inicializarEditoresTerminos();
   conectarEventos();
   // Refleja en el panel si la capa 3 quedó activada de una sesión anterior
@@ -135,6 +137,7 @@ function pintarInterruptores() {
         <span>${c.nombre}</span>`;
       fila.querySelector("input").addEventListener("change", (ev) => {
         ev.target.checked ? estado.activas.add(c.id) : estado.activas.delete(c.id);
+        sincronizarPerfilConInterruptores();
         marcarAjustesSucios();
       });
       div.appendChild(fila);
@@ -169,9 +172,43 @@ function pintarSelectorPerfiles() {
 function aplicarPerfil(nombre) {
   const todos = { ...PERFILES_BASE, ...perfilesGuardados() };
   const ids = todos[nombre];
+  if (ids === undefined) return;              // «ajustes propios»: no cambia nada
   estado.activas = new Set(ids === null ? estado.categorias.map((c) => c.id) : ids);
   pintarInterruptores();
   marcarAjustesSucios();
+}
+
+const OPCION_PROPIA = "— ajustes propios —";
+
+/** Interruptores activos de un perfil (null = todas las categorías). */
+function categoriasDelPerfil(nombre) {
+  const todos = { ...PERFILES_BASE, ...perfilesGuardados() };
+  const ids = todos[nombre];
+  if (ids === undefined) return null;
+  return new Set(ids === null ? estado.categorias.map((c) => c.id) : ids);
+}
+
+/** Mantiene el desplegable diciendo la verdad: si tocas los interruptores a mano
+ *  y ya no coinciden con ningún perfil, se muestra «ajustes propios». */
+function sincronizarPerfilConInterruptores() {
+  const sel = $("selector-perfil");
+  const iguales = (a, b) => a && b && a.size === b.size && [...a].every((x) => b.has(x));
+
+  const nombres = Object.keys({ ...PERFILES_BASE, ...perfilesGuardados() });
+  const coincide = nombres.find((n) => iguales(categoriasDelPerfil(n), estado.activas));
+
+  const propia = [...sel.options].find((o) => o.value === OPCION_PROPIA);
+  if (coincide) {
+    if (propia) propia.remove();
+    sel.value = coincide;
+  } else {
+    if (!propia) {
+      const op = document.createElement("option");
+      op.value = op.textContent = OPCION_PROPIA;
+      sel.appendChild(op);
+    }
+    sel.value = OPCION_PROPIA;
+  }
 }
 
 function guardarPerfilActual() {

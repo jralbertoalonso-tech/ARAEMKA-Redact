@@ -42,8 +42,9 @@ CATEGORIAS: list[Categoria] = [
     Categoria("fecha_nacimiento", "Fecha de nacimiento y edad", "identidad", "#8e4ec6",
               "Fechas junto a «nacimiento/nacido» y edades exactas («47 años»)."),
     Categoria("sexo", "Sexo", "identidad", "#6e56cf",
-              "Menciones explícitas de sexo (varón/mujer/hombre).",
-              activa_por_defecto=False),
+              "Menciones explícitas de sexo (varón/mujer/hombre). Al arrancar está "
+              "activo, como todo lo demás; los perfiles concretos lo desactivan "
+              "porque por sí solo rara vez identifica a nadie."),
 
     # ── Contacto y ubicación ──────────────────────────────────────────────
     Categoria("direccion", "Direcciones postales", "contacto", "#3e63dd",
