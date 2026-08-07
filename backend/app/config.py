@@ -28,4 +28,6 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.9.1 (inglés: desplazamiento de fechas y rangos de edad)"
+# Versión visible en el pie de la interfaz. Limpia y de cara al usuario; el
+# detalle de cada versión vive en los mensajes de commit y en docs/.
+VERSION = "0.9.1"
