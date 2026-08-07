@@ -60,9 +60,21 @@ def test_capa3_desactivada_devuelve_vacio():
     assert capa3.revisar_texto("Paciente Juan Pérez.", {"persona"}) == []
 
 
-def test_capa3_endpoint_caido_no_rompe():
-    # Activada pero apuntando a un puerto sin servidor → [] sin excepción
+def test_capa3_endpoint_caido_no_rompe(monkeypatch):
+    """Si el servidor de IA no responde, la capa 3 devuelve [] sin romper nada.
+
+    El fallo de red se simula en vez de intentar una conexión real: así la
+    batería de pruebas no depende del estado de la red ni de los puertos del
+    equipo (una prueba que sale a la red puede fallar por causas ajenas al
+    código).
+    """
+    def conexion_rechazada(*args, **kwargs):
+        raise ConnectionRefusedError("simulado: no hay nadie escuchando")
+
+    monkeypatch.setattr(capa3, "_get_json", conexion_rechazada)
+    monkeypatch.setattr(capa3, "_post_json", conexion_rechazada)
     capa3.CONFIG.actualizar(activa=True, endpoint="http://127.0.0.1:59999", modelo="x")
+    assert capa3.comprobar_disponible() is False
     assert capa3.revisar_texto("Paciente Juan Pérez.", {"persona"}) == []
     capa3.CONFIG.actualizar(activa=False)
 

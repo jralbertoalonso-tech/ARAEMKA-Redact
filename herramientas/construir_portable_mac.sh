@@ -106,6 +106,74 @@ echo "────────────────────────�
 FIN
 chmod +x "dist/AnoniPRO/PRIMERA VEZ — Abrir aquí.command"
 
+# ── Guía de una página para quien recibe el paquete ─────────────────────
+cat > "dist/AnoniPRO/LÉEME PRIMERO.txt" <<'FIN'
+╔══════════════════════════════════════════════════════════════════════╗
+║  AnoniPRO — Anonimiza documentos sin que los datos salgan de tu Mac  ║
+║  Nodo Local                                                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+CÓMO ABRIRLO
+────────────
+  La PRIMERA vez:
+     1. Clic DERECHO sobre  «PRIMERA VEZ — Abrir aquí»  →  Abrir  →  Abrir
+     2. Si macOS insiste en que la aplicación está dañada (no lo está: es
+        que no lleva la firma de Apple), ve a:
+            Ajustes del Sistema  →  Privacidad y seguridad
+        baja hasta el aviso y pulsa «Abrir igualmente». Vuelve al paso 1.
+
+  Las siguientes veces:
+     Doble clic en  «AnoniPRO»
+
+  Se abrirá una ventana negra: ESA VENTANA ES LA APLICACIÓN, déjala
+  abierta mientras la uses. El navegador se abre solo en unos segundos
+  (la primera vez puede tardar un minuto).
+
+  Para cerrar AnoniPRO: cierra esa ventana negra.
+
+
+CÓMO SE USA
+───────────
+  1. Arrastra tu documento (PDF, Word o una imagen) a la ventana.
+  2. Elige el perfil según el tipo de documento (clínico, jurídico,
+     facturas, personal…) en el panel de la izquierda.
+  3. Revisa lo que ha encontrado en el panel de la derecha: desmarca lo
+     que NO quieras borrar y añade a mano lo que se haya escapado.
+  4. Pulsa «Aplicar redacción» y confirma.
+  5. Descarga el documento anonimizado.
+
+  Nada se borra sin que tú lo confirmes.
+
+
+LO QUE DEBES SABER
+──────────────────
+  · Todo ocurre en TU ordenador. No se envía nada a internet.
+  · Los documentos NO se guardan en el disco: se procesan en memoria y
+    se borran solos a los 30 minutos.
+  · El borrado es real: el dato se elimina del archivo, no se tapa. No
+    se puede recuperar copiando ni pegando.
+  · Revisa siempre el resultado antes de compartir el documento: ninguna
+    herramienta automática es infalible.
+
+  Para documentos ESCANEADOS hace falta instalar el lector de textos una
+  sola vez. Abre la aplicación Terminal y pega:
+      brew install tesseract tesseract-lang
+  (Los PDF normales y los Word funcionan sin esto.)
+
+
+CAMBIAR DE IDIOMA
+─────────────────
+  Botón  ES / EN  arriba a la derecha.
+
+
+NO TOQUES
+─────────
+  La carpeta «_internal» contiene el motor de la aplicación.
+
+──────────────────────────────────────────────────────────────────────
+AnoniPRO · Nodo Local · Autor: Dr. José Ramón Alberto Alonso
+FIN
+
 # Zip listo para distribuir (conserva permisos y enlaces internos)
 rm -f AnoniPRO-portable-mac.zip
 ditto -c -k --keepParent dist/AnoniPRO AnoniPRO-portable-mac.zip
