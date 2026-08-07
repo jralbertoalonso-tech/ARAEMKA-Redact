@@ -28,9 +28,41 @@ class OcrNoDisponible(RuntimeError):
     """Se lanza cuando Tesseract no está instalado en el sistema."""
 
 
+def _localizar_tesseract():
+    """Localiza el binario de Tesseract aunque no esté en el PATH.
+
+    Cuando la app empaquetada se abre con doble clic (Finder o el Explorador
+    de Windows), el sistema NO le pasa el PATH del terminal: en macOS faltan
+    las rutas de Homebrew y en Windows las carpetas de instalación típicas.
+    Se prueban las ubicaciones conocidas y se configura pytesseract con la
+    primera que exista.
+    """
+    import os
+    import shutil
+    import sys
+
+    if shutil.which("tesseract"):
+        return  # ya accesible por PATH
+    candidatos = []
+    if sys.platform == "darwin":
+        candidatos = ["/opt/homebrew/bin/tesseract",      # Apple Silicon (brew)
+                      "/usr/local/bin/tesseract"]         # Intel (brew)
+    elif os.name == "nt":
+        for base in (os.environ.get("ProgramFiles", r"C:\Program Files"),
+                     os.environ.get("ProgramFiles(x86)", ""),
+                     os.environ.get("LOCALAPPDATA", "")):
+            if base:
+                candidatos.append(os.path.join(base, "Tesseract-OCR", "tesseract.exe"))
+    for c in candidatos:
+        if os.path.isfile(c):
+            pytesseract.pytesseract.tesseract_cmd = c
+            return
+
+
 @functools.lru_cache(maxsize=1)
 def diagnostico() -> dict:
     """Comprueba una sola vez si Tesseract y el modelo español están disponibles."""
+    _localizar_tesseract()
     try:
         version = str(pytesseract.get_tesseract_version())
         idiomas = pytesseract.get_languages(config="")

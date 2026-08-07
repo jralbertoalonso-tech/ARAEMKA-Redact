@@ -10,8 +10,11 @@ Flujo normal desde el navegador:
 
 import hashlib
 import io
+import ipaddress
 import json
 import re
+import time
+import urllib.parse
 from datetime import datetime
 
 import fitz
@@ -28,9 +31,35 @@ from .detection.motor import MOTOR, resolver_solapamientos
 from .documentos import fechas, ocr
 from .documentos.docx_doc import CARACTER_REDACCION, DocumentoDocx
 from .documentos.pdf_doc import DocumentoPdf, pdf_desde_imagen
-from .seguridad import comprobar_password, crear_cookie_sesion
+from .seguridad import comprobar_password, crear_cookie_sesion, registrar_intento_login
 
 router = APIRouter(prefix="/api")
+
+# Tiempo máximo total que la capa 3 (LLM) puede consumir por documento.
+CAPA3_PRESUPUESTO_S = 300
+
+
+def _endpoint_en_red_privada(url: str) -> bool:
+    """True solo si la URL apunta a la red local (localhost o RFC1918/mDNS).
+
+    La capa 3 envía el texto clínico SIN anonimizar al endpoint configurado; hay
+    que impedir que se apunte a un servidor de internet (exfiltración) o que se
+    use el sondeo (`extra`) para escanear la red externa (SSRF).
+    """
+    try:
+        host = urllib.parse.urlparse(url if "://" in url else "http://" + url).hostname
+    except Exception:
+        return False
+    if not host:
+        return False
+    host = host.lower()
+    if host == "localhost" or host.endswith(".local"):
+        return True
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return False  # nombres que no son IP ni *.local: se rechazan
+    return ip.is_private or ip.is_loopback or ip.is_link_local
 
 
 def _asegurar_ocr_disponible():
@@ -69,11 +98,17 @@ class DatosLogin(BaseModel):
 
 
 @router.post("/login")
-def login(datos: DatosLogin, response: Response):
+def login(datos: DatosLogin, request: Request, response: Response):
     if not AJUSTES.requiere_password:
         return {"ok": True}
+    ip = request.client.host if request.client else "?"
+    espera = registrar_intento_login(ip, exito=False)  # marca el intento
+    if espera > 0:
+        raise HTTPException(
+            429, f"Demasiados intentos fallidos. Espera {espera} segundos e inténtalo de nuevo.")
     if not comprobar_password(datos.password):
         raise HTTPException(401, "Contraseña incorrecta.")
+    registrar_intento_login(ip, exito=True)  # limpia el contador al acertar
     crear_cookie_sesion(response)
     return {"ok": True}
 
@@ -97,9 +132,11 @@ def diagnostico():
 @router.get("/capa3/estado")
 def capa3_estado(extra: str = ""):
     """Configuración actual + endpoints LLM detectados en la red local."""
+    # Solo se sondea `extra` si apunta a la red privada (evita SSRF).
+    extra_seguro = extra if (extra and _endpoint_en_red_privada(extra)) else ""
     return {
         "config": capa3.CONFIG.como_dict(),
-        "endpoints": capa3.detectar_endpoints(extra),
+        "endpoints": capa3.detectar_endpoints(extra_seguro),
     }
 
 
@@ -112,6 +149,12 @@ class ConfigCapa3Body(BaseModel):
 
 @router.post("/capa3/configurar")
 def capa3_configurar(body: ConfigCapa3Body):
+    # El endpoint de la capa 3 recibe el texto clínico sin anonimizar: solo se
+    # permite apuntar a la red local, nunca a un servidor de internet.
+    if body.endpoint and not _endpoint_en_red_privada(body.endpoint):
+        raise HTTPException(
+            400, "La dirección de la IA debe estar en tu red local (localhost o una IP privada). "
+                 "No se permiten servidores de internet: el texto clínico no debe salir de tu red.")
     capa3.CONFIG.actualizar(
         activa=body.activa, endpoint=body.endpoint, modelo=body.modelo, timeout=body.timeout
     )
@@ -126,6 +169,8 @@ class ProbarCapa3Body(BaseModel):
 @router.post("/capa3/probar")
 def capa3_probar(body: ProbarCapa3Body):
     """Prueba real: envía una petición mínima y comprueba que el modelo responde."""
+    if not _endpoint_en_red_privada(body.endpoint):
+        return {"ok": False, "error": "La dirección debe estar en tu red local (IP privada o localhost)."}
     return capa3.probar(body.endpoint, body.modelo)
 
 
@@ -155,9 +200,12 @@ def _analizar_sesion(
     # en cada página) y se avisa al usuario.
     usar_capa3 = capa3.CONFIG.lista_para_usar and capa3.comprobar_disponible()
     sesion.capa3_no_disponible = capa3.CONFIG.lista_para_usar and not usar_capa3
+    # Presupuesto GLOBAL de tiempo para la capa 3 en todo el documento: evita que
+    # un LLM lento cueste minutos por página en historias de 40 páginas.
+    deadline = time.monotonic() + CAPA3_PRESUPUESTO_S if usar_capa3 else None
 
     def _revisar_llm(texto):
-        return capa3.revisar_texto(texto, activas) if usar_capa3 else []
+        return capa3.revisar_texto(texto, activas, deadline) if usar_capa3 else []
 
     if sesion.tipo == "pdf":
         for pagina in sesion.doc.paginas:
@@ -204,15 +252,25 @@ def _analizar_sesion(
 
 
 @router.post("/documentos")
-async def subir_documento(
+def subir_documento(
     archivo: UploadFile = File(...),
     categorias: str = Form("[]"),          # JSON: ["persona", "dni_nie", …]
     lista_personalizada: str = Form("[]"),  # JSON: términos a redactar siempre
     lista_blanca: str = Form("[]"),         # JSON: términos a respetar siempre
 ):
-    contenido = await archivo.read()
+    # Endpoint SÍNCRONO (def): FastAPI lo ejecuta en el threadpool, de modo que
+    # el trabajo pesado (OCR, NER, LLM) NO bloquea el event loop y otros usuarios
+    # del NAS siguen siendo atendidos mientras se procesa un documento grande.
+    contenido = archivo.file.read(AJUSTES.max_mb * 1024 * 1024 + 1)
     if len(contenido) > AJUSTES.max_mb * 1024 * 1024:
         raise HTTPException(413, f"El archivo supera el máximo de {AJUSTES.max_mb} MB.")
+
+    try:
+        ids_cat_pre = json.loads(categorias)
+        lista_pers = json.loads(lista_personalizada)
+        lista_bl = json.loads(lista_blanca)
+    except (ValueError, TypeError):
+        raise HTTPException(422, "Parámetros de configuración con formato incorrecto.")
 
     nombre = archivo.filename or "documento"
     extension = nombre.rsplit(".", 1)[-1].lower() if "." in nombre else ""
@@ -265,12 +323,12 @@ async def subir_documento(
             "Usa PDF, Word (.docx) o una imagen (JPG, PNG, TIFF).",
         )
 
-    ids_cat = json.loads(categorias) or None
+    ids_cat = ids_cat_pre or None
     detecciones = _analizar_sesion(
         sesion,
         ids_cat if ids_cat is not None else cat.IDS_POR_DEFECTO,
-        json.loads(lista_personalizada),
-        json.loads(lista_blanca),
+        lista_pers,
+        lista_bl,
     )
     ALMACEN.guardar(sesion)
 

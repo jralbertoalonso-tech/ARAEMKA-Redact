@@ -13,10 +13,11 @@ Los .doc antiguos (Word 97-2003) no son compatibles: la API los rechaza con un
 mensaje que sugiere guardarlos como .docx.
 """
 
-import copy
 import io
 
 from docx import Document
+from docx.oxml.ns import qn
+from docx.text.paragraph import Paragraph
 
 CARACTER_REDACCION = "█"
 
@@ -31,31 +32,45 @@ class BloqueDocx:
 
 
 def _parrafos_del_documento(doc) -> list:
-    """Todos los párrafos en orden: cuerpo, tablas, cabeceras y pies."""
+    """TODOS los párrafos del documento, en orden y sin duplicados.
+
+    Recorre el XML buscando cada elemento `w:p` (párrafo) allí donde esté:
+    cuerpo, tablas (incluidas anidadas), cabeceras, pies, **cuadros de texto**
+    (`w:txbxContent`) y **controles de contenido** (`w:sdt`). Esto cubre huecos
+    de la API estructurada de python-docx, que no expone los cuadros de texto y
+    que DUPLICA las celdas combinadas de tabla. La deduplicación por identidad
+    del elemento evita que una celda combinada (o una cabecera vinculada) se
+    procese dos veces, lo que corrompía el texto al redactar.
+    """
     parrafos = []
+    vistos = set()
 
-    def de_tabla(tabla):
-        for fila in tabla.rows:
-            for celda in fila.cells:
-                for p in celda.paragraphs:
-                    parrafos.append((p, "tabla"))
-                for t in celda.tables:  # tablas anidadas
-                    de_tabla(t)
+    def anadir(contenedor, origen):
+        if contenedor is None:
+            return
+        for p_el in contenedor.iter(qn("w:p")):
+            if id(p_el) in vistos:
+                continue
+            vistos.add(id(p_el))
+            parrafos.append((Paragraph(p_el, doc), origen))
 
-    for p in doc.paragraphs:
-        parrafos.append((p, "cuerpo"))
-    for tabla in doc.tables:
-        de_tabla(tabla)
+    anadir(doc.element.body, "cuerpo")
     for seccion in doc.sections:
-        for p in seccion.header.paragraphs:
-            parrafos.append((p, "cabecera"))
-        for tabla in seccion.header.tables:
-            de_tabla(tabla)
-        for p in seccion.footer.paragraphs:
-            parrafos.append((p, "pie"))
-        for tabla in seccion.footer.tables:
-            de_tabla(tabla)
+        anadir(seccion.header._element, "cabecera")
+        anadir(seccion.footer._element, "pie")
+        # Cabeceras/pies de primera página y páginas pares, si existen
+        for extra in (getattr(seccion, "first_page_header", None),
+                      getattr(seccion, "even_page_header", None),
+                      getattr(seccion, "first_page_footer", None),
+                      getattr(seccion, "even_page_footer", None)):
+            if extra is not None:
+                anadir(extra._element, "cabecera")
     return parrafos
+
+
+def _elementos_texto(parrafo):
+    """Todos los `w:t` del párrafo, incluidos los de dentro de hipervínculos."""
+    return parrafo._p.findall(".//" + qn("w:t"))
 
 
 class DocumentoDocx:
@@ -106,15 +121,25 @@ class DocumentoDocx:
             trozos.append(original[cursor:])
             nuevo_texto = "".join(trozos)
 
-            # Sustituye el contenido conservando el formato de la primera
-            # secuencia (fuente, tamaño, negrita del inicio del párrafo).
-            if parrafo.runs:
-                primera = parrafo.runs[0]
-                primera.text = nuevo_texto
-                for run in parrafo.runs[1:]:
-                    run.text = ""
+            # Sustituye el contenido a nivel de XML: pone TODO el texto redactado
+            # en el primer elemento de texto y VACÍA el resto —incluidos los que
+            # están dentro de hipervínculos, que `parrafo.runs` no toca y que
+            # dejaban el dato original (típicamente un email) en el archivo.
+            t_elems = _elementos_texto(parrafo)
+            if t_elems:
+                t_elems[0].text = nuevo_texto
+                t_elems[0].set(qn("xml:space"), "preserve")
+                for t in t_elems[1:]:
+                    t.text = ""
             else:
                 parrafo.add_run(nuevo_texto)
+
+            # Neutraliza los hipervínculos del párrafo redactado: quita la
+            # referencia (r:id) para que la URL —que puede contener el dato,
+            # p. ej. «mailto:nombre@hospital.es»— deje de estar enlazada.
+            for hl in parrafo._p.findall(".//" + qn("w:hyperlink")):
+                if qn("r:id") in hl.attrib:
+                    del hl.attrib[qn("r:id")]
 
         # Limpieza de metadatos del archivo
         nucleo = doc.core_properties

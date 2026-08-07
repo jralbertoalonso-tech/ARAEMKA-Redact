@@ -168,6 +168,10 @@ class MotorDeteccion:
     def __init__(self):
         self._analyzer: AnalyzerEngine | None = None
         self._lock = threading.Lock()
+        # spaCy/Presidio comparten estado interno y NO son seguros para llamadas
+        # simultáneas. Con varios usuarios en el NAS (endpoints en el threadpool)
+        # el análisis debe serializarse para no corromper resultados.
+        self._lock_analisis = threading.Lock()
         self.modelo_cargado: str | None = None
 
     # ── carga perezosa (el modelo tarda unos segundos en cargar) ──────────
@@ -276,13 +280,15 @@ class MotorDeteccion:
         if not entidades and not recs_extra:
             return []
 
-        resultados = analyzer.analyze(
-            text=texto,
-            language="es",
-            entities=sorted(entidades) if entidades else None,
-            ad_hoc_recognizers=recs_extra or None,
-            score_threshold=0.0,
-        )
+        # Serializado: el motor NER no admite llamadas simultáneas (ver __init__)
+        with self._lock_analisis:
+            resultados = analyzer.analyze(
+                text=texto,
+                language="es",
+                entities=sorted(entidades) if entidades else None,
+                ad_hoc_recognizers=recs_extra or None,
+                score_threshold=0.0,
+            )
 
         blanca = {t.strip().lower() for t in (lista_blanca or []) if t.strip()}
         # Términos de UNA palabra de la lista blanca: además de respetarse como
@@ -410,13 +416,13 @@ def resolver_solapamientos(detecciones: list[dict], texto: str) -> list[dict]:
                 ultimo["confianza"] = max(ultimo["confianza"], d["confianza"])
                 ultimo["capa"] = min(ultimo["capa"], d["capa"])
             elif prioridad(d) > prioridad(ultimo):
-                # `d` gana: recorta el final de `ultimo` y añade `d`
+                # `d` gana: se conserva la parte de `ultimo` ANTERIOR a `d` y
+                # también la POSTERIOR (la cola), que antes se descartaba —si
+                # `d` quedaba embebida dentro de `ultimo`, esa cola era texto
+                # sensible que dejaba de redactarse (fuga).
                 previa = recortada(ultimo, ultimo["inicio"], d["inicio"])
-                if previa is not None:
-                    resultado[-1] = previa
-                    resultado.append(d)
-                else:
-                    resultado[-1] = d
+                cola = recortada(ultimo, d["fin"], ultimo["fin"]) if ultimo["fin"] > d["fin"] else None
+                resultado[-1:] = [x for x in (previa, d, cola) if x is not None]
             else:
                 # `ultimo` gana: conserva de `d` solo lo que sobresale
                 resto = recortada(d, ultimo["fin"], d["fin"])

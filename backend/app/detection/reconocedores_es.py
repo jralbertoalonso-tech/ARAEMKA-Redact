@@ -157,7 +157,16 @@ class ReconocedorEdad(PatternRecognizer):
             supported_language="es",
             name="edad_regex",
             patterns=[
-                Pattern("edad_anios", r"\b\d{1,3}\s+años(?:\s+de\s+edad)?\b", 0.5),
+                # El lookahead negativo descarta las DURACIONES clínicas
+                # («HTA de 10 años de evolución», «fumador de 20 años») que no
+                # son la edad del paciente y no deben marcarse ni convertirse a
+                # rango etario.
+                Pattern("edad_anios",
+                        r"\b\d{1,3}\s+años(?:\s+de\s+edad)?\b"
+                        r"(?!\s+de\s+(?:evoluci[oó]n|antig[üu]edad|tratamiento|seguimiento|"
+                        r"diagn[oó]stico|abstinencia|consumo|h[aá]bito|profesi[oó]n|"
+                        r"matrimonio|jubilaci[oó]n|edad\s+gestacional))",
+                        0.5),
                 Pattern("edad_meses", r"\b\d{1,2}\s+meses\s+de\s+edad\b", 0.6),
             ],
             context=["edad", "paciente", "varón", "varon", "mujer", "niño", "niña"],
@@ -266,7 +275,12 @@ class ReconocedorFirmaSanitario(PatternRecognizer):
     """Nombres tras tratamiento profesional o firma: Dr./Dra./Fdo.:/Enf. …"""
 
     TRATAMIENTO = r"(?:Dr[a]?\.?|Doctor[a]?|Fdo\.?\s*:?|Firmado\s*:?|Enf\.?|D\.U\.E\.?|Prof\.?|Lcdo\.?|Lcda\.?|Ldo\.?|Lda\.?)"
-    NOMBRE = r"[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+(?:\s+(?:de\s+|del\s+|de\s+la\s+|[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+|[A-ZÁÉÍÓÚÑ]\.)){1,4}"
+    # Cada repetición consume «espacio + (partícula | palabra | inicial)». Antes
+    # las partículas (de/del/de la) se comían el espacio siguiente, con lo que el
+    # apellido posterior quedaba fuera («Ana de la Cruz» → «Ana de la»): el
+    # apellido del profesional NO se redactaba (fuga). Así se captura completo.
+    NOMBRE = (r"[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+"
+              r"(?:\s+(?:de|del|la|las|los|[A-ZÁÉÍÓÚÑ][\wáéíóúñ]+|[A-ZÁÉÍÓÚÑ]\.)){1,5}")
 
     def __init__(self):
         super().__init__(

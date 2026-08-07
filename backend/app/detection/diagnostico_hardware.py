@@ -153,9 +153,16 @@ def recomendar(hw: dict | None = None) -> dict:
         modelo = None
 
     if modelo is None:
+        # Sin psutil no se puede medir la memoria: hay que decirlo, no dar a
+        # entender que el equipo tiene 0 GB.
+        motivo = (
+            "No se ha podido medir la memoria de este equipo"
+            if not ram else
+            f"Tu equipo tiene poca memoria ({ram} GB en total)"
+        )
         return {
             "resumen": (
-                f"Tu equipo tiene poca RAM libre ({ram} GB) para un LLM local con soltura. "
+                f"{motivo} para ejecutar aquí un modelo de IA con soltura. "
                 "Puedes usar solo las capas 1 y 2 (que ya cubren la mayoría de los casos), "
                 "o delegar la capa 3 en otro equipo de tu red con más memoria."
             ),

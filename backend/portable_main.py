@@ -6,14 +6,11 @@ administrador: basta con descomprimir la carpeta y hacer doble clic.
 """
 
 import socket
+import sys
 import threading
 import time
+import traceback
 import webbrowser
-
-import uvicorn
-
-from app.config import AJUSTES
-from app.main import app
 
 
 def _puerto_libre(preferido: int) -> int:
@@ -29,6 +26,13 @@ def _puerto_libre(preferido: int) -> int:
 
 
 def main():
+    # Los imports pesados van DENTRO de main y bajo try: si falta algo en el
+    # paquete, el usuario ve un mensaje claro en vez de una ventana que se cierra.
+    import uvicorn
+
+    from app.config import AJUSTES
+    from app.main import app
+
     puerto = _puerto_libre(AJUSTES.puerto)
     url = f"http://127.0.0.1:{puerto}"
     print("──────────────────────────────────────────────")
@@ -38,7 +42,18 @@ def main():
     print("──────────────────────────────────────────────")
 
     def abrir_navegador():
-        time.sleep(2.0)
+        # Espera a que el servidor responda de verdad antes de abrir el
+        # navegador (el modelo de idioma tarda; 2 s fijos no bastaban y se
+        # abría una página de error).
+        import urllib.error
+        import urllib.request
+        for _ in range(120):
+            time.sleep(1.0)
+            try:
+                with urllib.request.urlopen(url + "/api/estado", timeout=2):
+                    break
+            except Exception:
+                continue
         webbrowser.open(url)
 
     threading.Thread(target=abrir_navegador, daemon=True).start()
@@ -47,4 +62,20 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        # Sin esto, en Windows la consola se cierra al instante y el usuario no
+        # llega a leer el error.
+        print("\n──────────────────────────────────────────────")
+        print("  ERROR: AnoniPRO no ha podido arrancar.")
+        print("──────────────────────────────────────────────")
+        traceback.print_exc()
+        print("\nCopia este mensaje si necesitas ayuda para resolverlo.")
+        try:
+            input("\nPulsa Intro para cerrar esta ventana… ")
+        except Exception:
+            time.sleep(60)
+        sys.exit(1)

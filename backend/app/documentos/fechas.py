@@ -102,19 +102,25 @@ def rango_etario(texto: str) -> str | None:
     es una edad reconocible."""
     texto = texto.strip()
 
+    def banda(edad_anios, sufijo):
+        if edad_anios >= 85:
+            return f"85 o más años{sufijo}"
+        base = (edad_anios // 5) * 5
+        return f"{base}-{base + 4} años{sufijo}"
+
     m = _RE_EDAD_MESES.match(texto)
     if m:
+        meses = int(m[1])
         sufijo = m[2] or ""
-        return f"menor de 1 año{sufijo}"
+        # «8 meses» es menor de 1 año; pero «18 meses» son 1,5 años y debe
+        # caer en su banda etaria, no marcarse como «menor de 1 año».
+        if meses < 12:
+            return f"menor de 1 año{sufijo}"
+        return banda(meses // 12, sufijo)
 
     m = _RE_EDAD_ANIOS.match(texto)
     if m:
-        edad = int(m[1])
-        sufijo = m[2] or ""
-        if edad >= 85:
-            return f"85 o más años{sufijo}"
-        base = (edad // 5) * 5
-        return f"{base}-{base + 4} años{sufijo}"
+        return banda(int(m[1]), m[2] or "")
 
     return None
 

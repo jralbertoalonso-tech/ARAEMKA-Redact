@@ -222,6 +222,31 @@ button { font: inherit; cursor: pointer; }
   background: repeating-linear-gradient(45deg, #999 0 4px, transparent 4px 8px) !important;
 }
 .resaltado.seleccionado { outline: 3px solid var(--primario); opacity: .6; }
+
+/* Destello de localización: al clicar una fila del panel, la detección
+   parpadea en el documento para encontrarla de un vistazo. */
+@keyframes destello {
+  0%, 100% { outline: 3px solid transparent; outline-offset: 2px; }
+  15%, 45%, 75% { outline: 4px solid #ffb703; outline-offset: 5px; opacity: .95; filter: brightness(1.35); }
+  30%, 60% { outline: 4px solid var(--primario); outline-offset: 2px; }
+}
+.resaltado.flash, mark.resaltado-texto.flash {
+  animation: destello 1.5s ease-in-out 1;
+}
+
+/* Destello inverso: al clicar en el documento, su fila del panel parpadea. */
+@keyframes destello-fila {
+  0%, 100% { background: var(--fondo); }
+  20%, 60% { background: #ffe9b3; }
+  40%, 80% { background: var(--fondo-suave); }
+}
+[data-tema="oscuro"] .fila-deteccion.flash-fila { animation-name: destello-fila-oscuro; }
+@keyframes destello-fila-oscuro {
+  0%, 100% { background: var(--fondo); }
+  20%, 60% { background: #4a3d1a; }
+  40%, 80% { background: var(--fondo-suave); }
+}
+.fila-deteccion.flash-fila { animation: destello-fila 1.2s ease-in-out 1; }
 .resaltado-manual { position: absolute; background: #000; opacity: .55; cursor: pointer; border-radius: 2px; }
 .rect-en-curso { position: absolute; border: 2px dashed var(--primario); background: rgba(80,140,200,.2); }
 

@@ -6,6 +6,8 @@ La clave de firma es efímera: al reiniciar el servidor las sesiones caducan.
 """
 
 import hmac
+import threading
+import time
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -16,11 +18,34 @@ from .config import AJUSTES
 NOMBRE_COOKIE = "anonipro_sesion"
 DURACION_SESION_S = 12 * 3600  # 12 horas
 
+# Límite de intentos de login: tras varios fallos, se bloquea la IP un rato para
+# frenar la fuerza bruta contra la contraseña (que es simple) desde la red local.
+_MAX_FALLOS = 5
+_VENTANA_BLOQUEO_S = 60
+_intentos: dict[str, list[float]] = {}
+_intentos_lock = threading.Lock()
+
 _firmador = TimestampSigner(AJUSTES.clave_firma)
 
 
 def comprobar_password(password: str) -> bool:
     return hmac.compare_digest(password, AJUSTES.password)
+
+
+def registrar_intento_login(ip: str, exito: bool) -> int:
+    """Registra un intento de login. Devuelve los segundos que hay que esperar
+    si la IP está bloqueada por exceso de fallos (0 si puede intentarlo)."""
+    ahora = time.monotonic()
+    with _intentos_lock:
+        if exito:
+            _intentos.pop(ip, None)
+            return 0
+        fallos = [t for t in _intentos.get(ip, []) if ahora - t < _VENTANA_BLOQUEO_S]
+        if len(fallos) >= _MAX_FALLOS:
+            return int(_VENTANA_BLOQUEO_S - (ahora - fallos[0])) + 1
+        fallos.append(ahora)
+        _intentos[ip] = fallos
+        return 0
 
 
 def crear_cookie_sesion(response: Response):

@@ -38,6 +38,7 @@ class PaginaPdf:
         # por cada palabra: (offset_inicio, offset_fin, rect, clave_de_línea)
         self.palabras: list[tuple[int, int, fitz.Rect, tuple]] = []
         self.por_ocr = False          # True si el texto vino de OCR, no de la capa
+        self.area_imagen_rel = 0.0    # fracción de la página cubierta por imágenes
 
     def cargar_palabras(self, palabras: list[tuple[str, fitz.Rect, tuple]]):
         """Reconstruye `texto` y `palabras` (con offsets) a partir de (texto, rect, línea)."""
@@ -76,7 +77,25 @@ class DocumentoPdf:
                     for x0, y0, x1, y1, palabra, bloque, linea, _ in page.get_text("words", sort=True)
                 ]
                 pag.cargar_palabras(palabras)
+                pag.area_imagen_rel = self._cobertura_imagen(page)
                 self.paginas.append(pag)
+
+    @staticmethod
+    def _cobertura_imagen(page) -> float:
+        """Fracción de la página cubierta por la imagen más grande (0-1)."""
+        area_pagina = page.rect.width * page.rect.height
+        if area_pagina <= 0:
+            return 0.0
+        mayor = 0.0
+        try:
+            for info in page.get_image_info():
+                b = info.get("bbox")
+                if b:
+                    r = fitz.Rect(b)
+                    mayor = max(mayor, abs(r.width * r.height))
+        except Exception:
+            return 0.0
+        return min(1.0, mayor / area_pagina)
 
     @property
     def tiene_texto(self) -> bool:
@@ -85,8 +104,22 @@ class DocumentoPdf:
         return total >= 20
 
     def paginas_sin_texto(self) -> list[int]:
-        """Números de página que necesitan OCR (capa de texto vacía o casi)."""
-        return [p.numero for p in self.paginas if len(p.texto.strip()) < 15]
+        """Números de página que necesitan OCR.
+
+        Incluye las páginas sin capa de texto (escaneadas puras) y también las
+        que están DOMINADAS por una imagen (escaneo) pero llevan encima un poco
+        de texto digital —un sello, una firma, «Página X de Y»—: antes ese texto
+        superaba el umbral y la página se saltaba el OCR, dejando sin anonimizar
+        todos los datos que hay dentro de la imagen escaneada (fuga silenciosa).
+        """
+        objetivo = []
+        for p in self.paginas:
+            n = len(p.texto.strip())
+            if n < 15:
+                objetivo.append(p.numero)
+            elif p.area_imagen_rel > 0.55 and n < 600:
+                objetivo.append(p.numero)  # escaneo con sello/firma de texto
+        return objetivo
 
     # ── OCR de las páginas escaneadas ──────────────────────────────────────
     def aplicar_ocr(self, solo_paginas: list[int] | None = None) -> int:
@@ -107,13 +140,22 @@ class DocumentoPdf:
             for pag in self.paginas:
                 if pag.numero not in objetivo:
                     continue
-                pix = doc[pag.numero].get_pixmap(dpi=DPI_OCR)
+                page = doc[pag.numero]
+                pix = page.get_pixmap(dpi=DPI_OCR)
                 imagen = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
                 palabras_px = ocr.palabras_de_imagen(imagen)
-                palabras = [
-                    (texto, fitz.Rect(x0 * escala, y0 * escala, x1 * escala, y1 * escala), linea)
-                    for texto, x0, y0, x1, y1, linea in palabras_px
-                ]
+                # El pixmap se renderiza en la orientación VISIBLE (con la
+                # rotación aplicada). Para que la redacción caiga en el sitio
+                # correcto, las cajas se llevan al sistema de coordenadas real
+                # de la página con la matriz de des-rotación (identidad si
+                # /Rotate == 0). Sin esto, en páginas giradas la redacción de
+                # píxeles no tapaba el dato → fuga.
+                deroto = page.derotation_matrix
+                palabras = []
+                for texto, x0, y0, x1, y1, linea in palabras_px:
+                    r = fitz.Rect(x0 * escala, y0 * escala, x1 * escala, y1 * escala) * deroto
+                    r.normalize()
+                    palabras.append((texto, r, linea))
                 # Reemplaza el contenido (vacío) por lo reconocido
                 pag.palabras = []
                 pag.texto = ""
@@ -231,18 +273,32 @@ class DocumentoPdf:
 
 def pdf_desde_imagen(contenido: bytes) -> bytes:
     """Envuelve una imagen en un PDF (1 punto = 1 píxel) para procesarla igual
-    que un escaneado. Soporta TIFF multipágina."""
+    que un escaneado. Soporta TIFF multipágina, corrige la orientación EXIF de
+    las fotos de móvil y normaliza los modos de color raros (16 bits, CMYK…)."""
+    from PIL import ImageOps
+
     imagen = Image.open(io.BytesIO(contenido))
     doc = fitz.open()
     n_paginas = getattr(imagen, "n_frames", 1)
     for i in range(n_paginas):
         imagen.seek(i)
-        marco = imagen.convert("RGB")
+        marco = imagen
+        # Aplica la rotación que indica el EXIF (las fotos de móvil vienen
+        # «tumbadas» y sin esto el OCR apenas reconoce nada).
+        try:
+            marco = ImageOps.exif_transpose(marco)
+        except Exception:
+            marco = imagen
+        # Normaliza modos que convert('RGB') estropea: I;16 (TIFF 16 bits) da
+        # una página en blanco; hay que escalar a 8 bits antes.
+        if marco.mode in ("I;16", "I;16B", "I;16L", "I"):
+            marco = marco.point(lambda v: v * (1.0 / 256)).convert("L")
+        if marco.mode != "RGB":
+            marco = marco.convert("RGB")
         buf = io.BytesIO()
         marco.save(buf, format="PNG")
-        rect = fitz.Rect(0, 0, marco.width, marco.height)
         page = doc.new_page(width=marco.width, height=marco.height)
-        page.insert_image(rect, stream=buf.getvalue())
+        page.insert_image(fitz.Rect(0, 0, marco.width, marco.height), stream=buf.getvalue())
     salida = doc.tobytes()
     doc.close()
     return salida

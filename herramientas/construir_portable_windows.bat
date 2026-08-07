@@ -13,6 +13,10 @@ REM   herramientas\construir_portable_windows.bat
 
 cd /d "%~dp0\.."
 
+REM Limpia la construccion anterior: sin esto, si PyInstaller falla, el dist\
+REM viejo se queda y la comprobacion final da un falso "todo correcto".
+if exist dist\AnoniPRO rmdir /s /q dist\AnoniPRO
+
 REM --collect-all para spaCy y sus dependencias compiladas: PyInstaller no
 REM detecta solo los modulos en C (spacy.symbols, thinc, blis...).
 .venv\Scripts\pyinstaller --noconfirm --clean ^
@@ -39,7 +43,22 @@ REM detecta solo los modulos en C (spacy.symbols, thinc, blis...).
   --hidden-import cymem.cymem ^
   backend\portable_main.py
 
-REM Comprobacion: cymem debe estar dentro del paquete
+REM Comprobacion 1: PyInstaller debe haber terminado bien
+if errorlevel 1 (
+  echo.
+  echo ERROR: PyInstaller fallo. Revisa los mensajes de arriba.
+  echo   - Si pone "no se reconoce el comando": falta ejecutar
+  echo     .venv\Scripts\pip install pyinstaller
+  echo No distribuyas nada de dist\.
+  exit /b 1
+)
+
+REM Comprobacion 2: el ejecutable debe existir
+if not exist dist\AnoniPRO\AnoniPRO.exe (
+  echo ERROR: no se genero dist\AnoniPRO\AnoniPRO.exe. No lo distribuyas. & exit /b 1
+)
+
+REM Comprobacion 3: cymem debe estar dentro del paquete
 dir /b /s dist\AnoniPRO\_internal\cymem*.pyd >nul 2>&1 || (
   echo ERROR: cymem no quedo dentro del paquete. No lo distribuyas. & exit /b 1
 )

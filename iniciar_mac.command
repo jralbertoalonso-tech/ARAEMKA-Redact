@@ -22,17 +22,43 @@ if [ -z "$PY" ]; then
   exit 1
 fi
 
-# 2) Crear el entorno virtual la primera vez
-if [ ! -d ".venv" ]; then
+# 2) Crear el entorno virtual la primera vez.
+# La marca .venv/.instalacion-ok solo se escribe si TODO fue bien: si una
+# instalación se corta a medias (sin internet, por ejemplo), la próxima vez se
+# rehace en vez de arrancar con un entorno roto para siempre.
+if [ ! -f ".venv/.instalacion-ok" ]; then
   echo "Primera ejecución: preparando el entorno (tarda unos minutos)…"
-  "$PY" -m venv .venv
-  .venv/bin/pip install --quiet --upgrade pip
-  .venv/bin/pip install --quiet -r backend/requirements.txt
-  echo "Descargando el modelo de detección en español…"
-  .venv/bin/python -m spacy download es_core_news_lg
+  rm -rf .venv
+  if ! "$PY" -m venv .venv \
+     || ! .venv/bin/pip install --quiet --upgrade pip \
+     || ! .venv/bin/pip install --quiet -r backend/requirements.txt \
+     || ! .venv/bin/python -m spacy download es_core_news_lg; then
+    echo
+    echo "❌ La preparación falló (¿sin conexión a internet?)."
+    echo "   Comprueba la conexión y vuelve a abrir este archivo: se reintentará."
+    rm -rf .venv
+    read -n 1 -s -r -p "Pulsa una tecla para cerrar."
+    exit 1
+  fi
+  touch .venv/.instalacion-ok
 fi
 
-# 3) Arrancar y abrir el navegador
-echo "Iniciando AnoniPRO en http://localhost:8080 …"
-( sleep 3 && open "http://localhost:8080" ) &
-.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8080 --app-dir backend
+# 3) Elegir un puerto libre (si el 8080 está ocupado por otro servicio, se usa otro)
+PUERTO=8080
+if nc -z 127.0.0.1 $PUERTO 2>/dev/null; then
+  PUERTO=8090
+  while nc -z 127.0.0.1 $PUERTO 2>/dev/null; do PUERTO=$((PUERTO+1)); done
+  echo "El puerto 8080 está ocupado; se usará el $PUERTO."
+fi
+
+# 4) Arrancar y abrir el navegador cuando el servidor responda de verdad
+echo "Iniciando AnoniPRO en http://localhost:$PUERTO …"
+(
+  for _ in $(seq 1 120); do
+    sleep 1
+    if curl -s -m 2 "http://127.0.0.1:$PUERTO/api/estado" >/dev/null 2>&1; then
+      open "http://localhost:$PUERTO"; break
+    fi
+  done
+) &
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port "$PUERTO" --app-dir backend

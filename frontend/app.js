@@ -17,6 +17,7 @@ const estado = {
   textosManuales: [],        // ["texto", …]
   escalas: new Map(),        // nº de página → escala de render
   modoDibujo: false,
+  clicTrasArrastre: false,   // suprime el clic que remata un arrastre de zona
   cola: [],                  // archivos pendientes (proceso por lotes simple)
   ajustesSucios: false,
 };
@@ -367,9 +368,12 @@ function pintarResaltadosPdf() {
       caja.style.background = colorDeCategoria(d.categoria);
       caja.title = `${d.texto} (clic para incluir/excluir)`;
       caja.addEventListener("click", (ev) => {
-        if (estado.modoDibujo) return;
         ev.stopPropagation();
+        // En modo dibujo, un clic simple sigue alternando la detección;
+        // solo se ignora el clic que remata un ARRASTRE (fin de dibujar zona).
+        if (estado.clicTrasArrastre) return;
         alternarDeteccion(id);
+        localizarFilaPanel(id);
       });
       capa.appendChild(caja);
     }
@@ -411,6 +415,11 @@ function conectarDibujoManual(capa, numPagina) {
     inicio = null; caja = null;
     if ((zona.x1 - zona.x0) > 3 && (zona.y1 - zona.y0) > 3) {
       anadirZonaManual(zona, capa, escala);
+      // El clic que remata este arrastre no debe alternar el resaltado de
+      // debajo. El evento click llega justo después del mouseup; la marca se
+      // limpia sola en cuanto pasa (timeout 0), así nunca se queda pegada.
+      estado.clicTrasArrastre = true;
+      setTimeout(() => { estado.clicTrasArrastre = false; }, 0);
     }
   };
   capa.addEventListener("mouseup", terminar);
@@ -427,6 +436,7 @@ function anadirZonaManual(zona, capa, escala) {
   caja.title = "Zona manual (clic para quitarla)";
   caja.addEventListener("click", (ev) => {
     ev.stopPropagation();
+    if (estado.clicTrasArrastre) return;  // no quitar la zona recién dibujada
     estado.zonasManuales = estado.zonasManuales.filter((z) => z.elemento !== caja);
     caja.remove();
     pintarListaDetecciones();
@@ -465,7 +475,10 @@ function pintarDocx() {
       marca.textContent = b.texto.slice(d.inicio, d.fin);
       marca.style.background = colorDeCategoria(d.categoria) + "66";
       marca.title = "Clic para incluir/excluir";
-      marca.addEventListener("click", () => alternarDeteccion(d.id));
+      marca.addEventListener("click", () => {
+        alternarDeteccion(d.id);
+        localizarFilaPanel(d.id);
+      });
       p.appendChild(marca);
       cursor = d.fin;
     }
@@ -579,13 +592,29 @@ function pintarListaDetecciones() {
 }
 
 function desplazarADeteccion(d) {
-  const objetivo = document.querySelector(
-    `.resaltado[data-deteccion="${d.id}"], mark[data-deteccion="${d.id}"]`);
-  if (!objetivo) return;
-  objetivo.scrollIntoView({ behavior: "smooth", block: "center" });
-  document.querySelectorAll(".seleccionado").forEach((e) => e.classList.remove("seleccionado"));
-  objetivo.classList.add("seleccionado");
-  setTimeout(() => objetivo.classList.remove("seleccionado"), 2200);
+  // Todos los rectángulos/marcas de la detección (puede ocupar varias líneas)
+  const objetivos = [...document.querySelectorAll(
+    `.resaltado[data-deteccion="${d.id}"], mark[data-deteccion="${d.id}"]`)];
+  if (!objetivos.length) return;
+  objetivos[0].scrollIntoView({ behavior: "smooth", block: "center" });
+  for (const o of objetivos) {
+    o.classList.remove("flash");
+    void o.offsetWidth;              // reinicia la animación si ya estaba
+    o.classList.add("flash");
+    o.addEventListener("animationend", () => o.classList.remove("flash"), { once: true });
+  }
+}
+
+// Sincronización inversa: al clicar un resaltado en el documento, localiza y
+// destaca su fila en el panel derecho.
+function localizarFilaPanel(id) {
+  const fila = document.querySelector(`.fila-deteccion[data-deteccion="${id}"]`);
+  if (!fila) return;
+  fila.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  fila.classList.remove("flash-fila");
+  void fila.offsetWidth;
+  fila.classList.add("flash-fila");
+  fila.addEventListener("animationend", () => fila.classList.remove("flash-fila"), { once: true });
 }
 
 function escapaHtml(s) {

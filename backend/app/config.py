@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.5.0 (Fase 5 — fechas desplazadas y rangos etarios)"
+VERSION = "0.6.0 (revisión de calidad: correcciones de seguridad, fugas y UX)"

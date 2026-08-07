@@ -24,4 +24,16 @@ services:
     # los documentos nunca tocan el disco del NAS.
     read_only: true
     tmpfs:
-      - /tmp
+      # Tamaño acotado: el NAS comparte memoria con otros servicios y los
+      # documentos se procesan aquí (en RAM). Sin límite, un lote grande podría
+      # llenar la memoria del NAS.
+      - /tmp:size=1g
+    # Límite de memoria del contenedor (el modelo de idioma usa ~1,5 GB).
+    mem_limit: 3g
+    # Si el proceso se cuelga, el NAS lo reinicia solo en vez de mostrarlo «sano».
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/api/estado',timeout=5)\""]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 180s

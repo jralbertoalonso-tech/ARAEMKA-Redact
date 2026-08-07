@@ -16,11 +16,14 @@ No se añaden dependencias: se usa urllib de la biblioteca estándar.
 """
 
 import json
+import logging
 import re
 import threading
 import time
 import urllib.error
 import urllib.request
+
+log = logging.getLogger("anonipro.capa3")
 
 # Endpoints locales habituales que se sondean automáticamente.
 ENDPOINTS_HABITUALES = [
@@ -212,34 +215,85 @@ def probar(base: str, modelo: str, timeout: float = 30) -> dict:
 
 
 # ── revisión de texto ──────────────────────────────────────────────────────
+def _primer_json_balanceado(s: str) -> str | None:
+    """Devuelve el primer objeto JSON `{…}` con llaves equilibradas.
+
+    El fallback anterior usaba `\\{.*\\}` voraz (de la PRIMERA a la ÚLTIMA
+    llave), que con modelos «thinking» (qwen3 — el recomendado) o con prosa
+    alrededor daba una cadena no válida y se perdía todo en silencio.
+    """
+    inicio = s.find("{")
+    while inicio != -1:
+        nivel, en_cadena, escape = 0, False, False
+        for i in range(inicio, len(s)):
+            c = s[i]
+            if en_cadena:
+                if escape:
+                    escape = False
+                elif c == "\\":
+                    escape = True
+                elif c == '"':
+                    en_cadena = False
+            elif c == '"':
+                en_cadena = True
+            elif c == "{":
+                nivel += 1
+            elif c == "}":
+                nivel -= 1
+                if nivel == 0:
+                    return s[inicio:i + 1]
+        inicio = s.find("{", inicio + 1)
+    return None
+
+
 def _extraer_json(contenido: str) -> dict:
-    """Extrae el objeto JSON de la respuesta del modelo, tolerando texto alrededor."""
+    """Extrae el objeto JSON de la respuesta del modelo, tolerando texto alrededor,
+    bloques de razonamiento <think>…</think> y vallas de código."""
     contenido = contenido.strip()
-    # Quita vallas de código ```json … ```
-    contenido = re.sub(r"^```(?:json)?|```$", "", contenido, flags=re.MULTILINE).strip()
+    # 1) Quita el razonamiento de los modelos «thinking» y las vallas de código.
+    contenido = re.sub(r"<think>.*?</think>", "", contenido, flags=re.DOTALL | re.IGNORECASE)
+    contenido = re.sub(r"```(?:json)?|```", "", contenido).strip()
+    # 2) Intento directo.
     try:
         return json.loads(contenido)
     except Exception:
         pass
-    m = re.search(r"\{.*\}", contenido, re.DOTALL)
-    if m:
+    # 3) Primer objeto {…} con llaves equilibradas (no voraz).
+    bloque = _primer_json_balanceado(contenido)
+    if bloque:
         try:
-            return json.loads(m.group(0))
+            return json.loads(bloque)
         except Exception:
-            return {}
+            pass
+    log.warning("Capa 3: la respuesta del LLM no contenía un JSON válido (%d caracteres).",
+                len(contenido))
     return {}
 
 
-def revisar_texto(texto: str, categorias_activas: set[str]) -> list[dict]:
+def _es_borde(c: str) -> bool:
+    """True si el carácter forma parte de una palabra (letra, cifra o guion bajo)."""
+    return c.isalnum() or c == "_"
+
+
+def revisar_texto(texto: str, categorias_activas: set[str], deadline: float | None = None) -> list[dict]:
     """Pide al LLM datos personales y los devuelve como detecciones (capa 3).
 
     Solo se conservan los fragmentos que aparecen LITERALMENTE en el texto y cuya
-    categoría esté activa. Si el endpoint falla, devuelve [] (nunca rompe el flujo).
+    categoría esté activa. `deadline` (time.monotonic) es un presupuesto GLOBAL de
+    tiempo para todo el documento: si ya se ha superado, se salta la llamada (evita
+    que un LLM lento cueste 60 s × página en historias largas). Si el endpoint
+    falla, devuelve [] (nunca rompe el flujo).
     """
     if not CONFIG.lista_para_usar or not texto.strip():
         return []
+    if deadline is not None and time.monotonic() > deadline:
+        return []
 
     try:
+        # El timeout por página se acota además al presupuesto global restante.
+        timeout = CONFIG.timeout
+        if deadline is not None:
+            timeout = max(1.0, min(timeout, deadline - time.monotonic()))
         resp = _post_json(
             CONFIG.endpoint + "/v1/chat/completions",
             {
@@ -250,8 +304,9 @@ def revisar_texto(texto: str, categorias_activas: set[str]) -> list[dict]:
                 ],
                 "temperature": 0,
                 "stream": False,
+                "think": False,  # suprime el razonamiento en modelos que lo admiten
             },
-            CONFIG.timeout,
+            timeout,
         )
         contenido = resp["choices"][0]["message"]["content"]
     except Exception:
@@ -272,14 +327,23 @@ def revisar_texto(texto: str, categorias_activas: set[str]) -> list[dict]:
             continue
         if categoria not in categorias_activas:
             continue
-        # Localiza TODAS las apariciones literales del fragmento (case-insensitive)
-        inicio = 0
+        # Localiza TODAS las apariciones literales del fragmento (case-insensitive),
+        # exigiendo límites de palabra: así «Ana» no marca «Anamnesis» ni
+        # «Analítica» (el LLM devuelve nombres cortos con frecuencia).
         frag_bajo = fragmento.lower()
+        exige_ini = _es_borde(frag_bajo[0])
+        exige_fin = _es_borde(frag_bajo[-1])
+        inicio = 0
         while True:
             pos = texto_bajo.find(frag_bajo, inicio)
             if pos == -1:
                 break
             fin = pos + len(fragmento)
+            inicio = pos + 1
+            if exige_ini and pos > 0 and _es_borde(texto[pos - 1]):
+                continue
+            if exige_fin and fin < len(texto) and _es_borde(texto[fin]):
+                continue
             detecciones.append({
                 "inicio": pos,
                 "fin": fin,
@@ -290,5 +354,5 @@ def revisar_texto(texto: str, categorias_activas: set[str]) -> list[dict]:
                 "contexto": texto[max(0, pos - 60): fin + 60].replace("\n", " ").strip(),
                 "detector": "llm",
             })
-            inicio = fin
+            inicio = fin  # tras una coincidencia válida, sigue después de ella
     return detecciones
