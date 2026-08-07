@@ -40,9 +40,11 @@ backend/
     textos.py        mensajes del servidor en español e inglés
     detection/
       categorias.py            catálogo de datos (una sola fuente de verdad)
-      validators.py            dígitos de control: DNI, NUSS, IBAN, CIF, Luhn…
-      reconocedores_es.py      capa 1: reglas y expresiones regulares
-      motor.py                 orquesta capas 1-2 y resuelve solapamientos
+      validators.py            control: DNI, NUSS, IBAN, CIF, Luhn, NHS, NINO, SSN…
+      reconocedores_es.py      capa 1: reglas españolas
+      reconocedores_en.py      capa 1: reglas inglesas (Reino Unido y EE. UU.)
+      idioma.py                detección automática del idioma del documento
+      motor.py                 orquesta capas 1-2 (dos motores: es/en) y solapamientos
       capa3_llm.py             capa 3: LLM local opcional
       diagnostico_hardware.py  recomendación de modelo según el equipo
     documentos/
@@ -83,6 +85,7 @@ cd backend && ../.venv/bin/python -m pytest tests/ -v
 | `test_fase4.py` | Segunda pasada y auditoría (que no contenga datos originales) |
 | `test_fase5.py` | Desplazamiento de fechas y rangos etarios |
 | `test_universal.py` | IBAN, CIF, tarjetas, matrículas, catastro y perfiles |
+| `test_ingles.py` | NHS, NINO, SSN/ITIN, detección de idioma y enrutado es/en |
 
 ### Métricas de detección
 
@@ -132,13 +135,25 @@ pero no pertenecen a nadie).
 
 ## Cómo funciona la detección
 
+> **Dos motores, uno por idioma.** `idioma.detectar_idioma()` mira una muestra
+> del texto del documento (heurístico de palabras funcionales, sin dependencias
+> ni red) y decide «es» o «en». `motor.py` mantiene dos `AnalyzerEngine`
+> independientes: el español (siempre) y el inglés (carga perezosa la primera
+> vez que llega un documento en inglés). Cada uno tiene sus reconocedores, su
+> modelo spaCy y su lista de ruido. Ante la duda, el detector devuelve «es»
+> (opción conservadora). Los conjuntos de ruido se mantienen SEPARADOS por
+> idioma: «Hospital» es parte legítima de un centro español pero etiqueta en un
+> documento inglés.
+
 ### Capa 1 — Reglas
 
-`reconocedores_es.py`. Cada identificador con dígito de control se valida
-matemáticamente en `validators.py`; si no cuadra, **se descarta**. Los que no
-tienen formato público estable (nº de historia, expedientes, colegiado…) se
-detectan por su **etiqueta** («NHC:», «Expediente nº», «Cliente:»), que es lo
-más fiable cuando el formato varía entre organizaciones.
+`reconocedores_es.py` (español) y `reconocedores_en.py` (inglés: Reino Unido y
+EE. UU.). Cada identificador con dígito de control se valida matemáticamente en
+`validators.py` —DNI/NIE, NUSS, IBAN, CIF, Luhn, **NHS (mód. 11)**, **NINO**,
+**SSN/ITIN** (rangos)—; si no cuadra, **se descarta**. Los que no tienen formato
+público estable (nº de historia, expedientes…) se detectan por su **etiqueta**
+(«NHC:», «MRN:», «Case No.», «Cliente:», «Claimant:»), que es lo más fiable
+cuando el formato varía entre organizaciones.
 
 > ⚠️ **Presidio aplica `re.IGNORECASE` por defecto.** Para los patrones donde
 > las mayúsculas son la señal (nombres de sociedad, IBAN, catastro) hay que
@@ -179,12 +194,15 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.5 | Desplazamiento consistente de fechas y rangos etarios |
 | 0.6 | Revisión de calidad: correcciones de fugas, concurrencia y seguridad |
 | 0.7 | **Universal**: perfiles jurídico, empresa, facturas y personal; IBAN, CIF, tarjetas, catastro, matrículas; identidad Nodo Local |
-| 0.8 | **Bilingüe** español / inglés |
+| 0.8 | **Interfaz bilingüe** español / inglés |
+| 0.9 | **Detección en inglés** (Reino Unido y EE. UU.): NHS, NINO, SSN/ITIN, códigos postales y teléfonos; segundo motor spaCy `en_core_web_lg` con carga perezosa; idioma del documento detectado automáticamente |
 
 ## Ideas pendientes
 
-- Motor de detección para documentos **en inglés** (modelo NER inglés,
-  identificadores SSN/NHS/NI, formato de fecha americano).
+- **Desplazamiento de fechas para documentos en inglés**: `fechas.py` entiende
+  los formatos españoles; los ingleses («March 3, 2024», MM/DD/YYYY) se redactan
+  pero aún no se pueden desplazar de forma consistente. Mientras tanto, la opción
+  «tachar» funciona igual en ambos idiomas.
 - Conversión automática de `.doc` antiguos en el servidor.
 - Procesamiento en paralelo para lotes muy grandes.
 - Sustituir por etiquetas («[PACIENTE]») en lugar de bloques negros.

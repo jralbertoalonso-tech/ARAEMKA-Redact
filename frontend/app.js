@@ -111,28 +111,32 @@ const BASE_IDENTIDAD = ["persona", "dni_nie", "pasaporte", "fecha_nacimiento",
 // Perfiles predefinidos: qué categorías se activan en cada tipo de trabajo.
 // La clave es un identificador estable (no cambia con el idioma); el nombre
 // visible sale de PERFILES_TRADUCIDOS. null = todas las categorías.
+// Nota: los identificadores en inglés (nhs, nino, ssn) se añaden junto a sus
+// equivalentes españoles. Como la detección elige el motor por el idioma del
+// documento, en un documento español simplemente no se disparan (y viceversa),
+// así que incluirlos en los perfiles es inocuo y da cobertura bilingüe.
 const PERFILES_BASE = {
   todo: null,
 
-  clinico: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "iban", "tarjeta"],
+  clinico: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "iban", "tarjeta"],
 
-  publicacion: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro",
+  publicacion: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "centro",
     "servicio_unidad", "sanitario", "colegiado", "organizacion", "logo", "fecha",
     "iban", "tarjeta"],
 
-  docencia: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro", "sanitario",
+  docencia: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "centro", "sanitario",
     "colegiado", "organizacion", "logo", "fecha", "iban", "tarjeta"],
 
-  juridico: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+  juridico: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nino", "ssn",
     "expediente", "catastro", "matricula", "organizacion", "logo", "fecha"],
 
-  empresa: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nuss",
+  empresa: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nuss", "nino", "ssn",
     "expediente", "matricula", "organizacion", "logo"],
 
-  facturas: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+  facturas: [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nino", "ssn",
     "expediente", "organizacion", "logo"],
 
-  personal: [...BASE_IDENTIDAD, "iban", "tarjeta", "nuss",
+  personal: [...BASE_IDENTIDAD, "iban", "tarjeta", "nuss", "nhs", "nino", "ssn",
     "matricula", "catastro", "expediente"],
 };
 

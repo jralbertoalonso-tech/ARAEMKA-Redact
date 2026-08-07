@@ -29,6 +29,7 @@ class SesionDocumento:
         self.ultimo_analisis: dict = {"categorias": [], "lista_personalizada": [], "lista_blanca": []}
         self.auditoria: dict | None = None       # informe de auditoría (sin datos originales)
         self.delta_dias: int | None = None       # desplazamiento de fechas (consistente por documento)
+        self.idioma_doc: str = "es"               # idioma detectado del documento ("es" | "en")
 
     def tocar(self):
         """Renueva el TTL (se llama en cada acceso)."""

@@ -37,6 +37,7 @@ CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.
   --paths backend \
   --add-data "frontend:frontend" \
   --collect-all es_core_news_lg \
+  --collect-all en_core_web_lg \
   --collect-all spacy \
   --collect-all thinc \
   --collect-all blis \

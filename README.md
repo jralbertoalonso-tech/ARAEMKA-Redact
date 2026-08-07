@@ -29,7 +29,7 @@ memoria y se borran solos.
 
 | Admite | Detecta | Idiomas |
 |---|---|---|
-| PDF, PDF escaneado, Word (.docx), imágenes (JPG, PNG, TIFF) | 26 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (botón ES/EN) |
+| PDF, PDF escaneado, Word (.docx), imágenes (JPG, PNG, TIFF) | 29 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (Reino Unido y EE. UU.), con el idioma del documento detectado automáticamente |
 
 ---
 
@@ -171,9 +171,11 @@ Dicho claramente, para que nadie se lleve sorpresas:
 - **El OCR no es perfecto.** En documentos escaneados puede leer mal algún dato,
   sobre todo los correos electrónicos (la `@` se le resiste). Por eso conviene
   revisar y usar el marcado a mano.
-- **La detección está afinada para documentos en español.** La interfaz está en
-  inglés también, pero en un documento escrito en inglés reconocería bien los
-  IBAN, tarjetas y correos, y peor los nombres.
+- **Idiomas: español e inglés.** El programa detecta solo el idioma de cada
+  documento y aplica el motor adecuado. En español reconoce los identificadores
+  españoles (DNI, Seguridad Social, tarjeta sanitaria, catastro…); en inglés,
+  los del **Reino Unido y EE. UU.** (NHS, National Insurance, SSN/ITIN, códigos
+  postales y teléfonos). Otros idiomas no están soportados.
 - **Revisa siempre antes de compartir.** Ninguna herramienta automática es
   infalible: AnoniPRO te enseña lo que ha encontrado precisamente para que la
   decisión final sea tuya.

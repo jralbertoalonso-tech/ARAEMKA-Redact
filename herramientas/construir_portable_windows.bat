@@ -7,6 +7,7 @@ REM Preparacion (una vez, desde la carpeta del proyecto):
 REM   python -m venv .venv
 REM   .venv\Scripts\pip install -r backend\requirements.txt pyinstaller
 REM   .venv\Scripts\python -m spacy download es_core_news_lg
+REM   .venv\Scripts\python -m spacy download en_core_web_lg
 REM
 REM Uso:
 REM   herramientas\construir_portable_windows.bat
@@ -30,6 +31,7 @@ REM detecta solo los modulos en C (spacy.symbols, thinc, blis...).
   --paths backend ^
   --add-data "frontend;frontend" ^
   --collect-all es_core_news_lg ^
+  --collect-all en_core_web_lg ^
   --collect-all spacy ^
   --collect-all thinc ^
   --collect-all blis ^

@@ -19,10 +19,14 @@ WORKDIR /app
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# 2) Modelo NER en español (se descarga en tiempo de BUILD, no en ejecución,
-#    para que el contenedor funcione sin internet). Grande porque el NAS del
-#    usuario tiene 32 GB de RAM; cambia a _md o _sm si necesitas menos memoria.
-RUN python -m spacy download es_core_news_lg
+# 2) Modelos NER (se descargan en tiempo de BUILD, no en ejecución, para que el
+#    contenedor funcione sin internet). Grandes porque el NAS del usuario tiene
+#    32 GB de RAM; cambia a _md o _sm si necesitas menos memoria.
+#    - español: motor por defecto (siempre cargado).
+#    - inglés: para documentos en inglés (Reino Unido y EE. UU.); se carga solo
+#      si llega un documento en ese idioma.
+RUN python -m spacy download es_core_news_lg && \
+    python -m spacy download en_core_web_lg
 
 # 3) Código de la aplicación
 COPY backend /app/backend

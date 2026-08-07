@@ -31,12 +31,14 @@ and wiped automatically.
 
 | Accepts | Detects | Languages |
 |---|---|---|
-| PDF, scanned PDF, Word (.docx), images (JPG, PNG, TIFF) | 26 kinds of personal data, grouped into 8 profiles | Spanish and English (ES/EN button) |
+| PDF, scanned PDF, Word (.docx), images (JPG, PNG, TIFF) | 29 kinds of personal data, grouped into 8 profiles | Spanish and English (UK and US), with each document's language detected automatically |
 
-> **Note on languages.** The interface is fully bilingual. **Detection is tuned
-> for documents written in Spanish**: in an English document it reliably finds
-> internationally formatted data (IBAN, payment cards, e-mail addresses) but is
-> weaker on names and country-specific identifiers.
+> **Note on languages.** The interface is fully bilingual and detection now works
+> in both languages: AnoniPRO detects each document's language and applies the
+> right engine. Spanish documents get the Spanish identifiers (national ID, social
+> security, health card…); English documents get the **UK and US** ones (NHS
+> number, National Insurance, SSN/ITIN, postcodes and phone numbers). Other
+> languages are not supported.
 
 ---
 
@@ -139,7 +141,8 @@ Scanned documents and images first go through optical character recognition
 - **Old `.doc` files** (Word 97-2003) are not supported — save them as `.docx`.
 - **OCR is not perfect.** On scans it can misread data, especially e-mail
   addresses. Review the result and use manual marking where needed.
-- **Detection is tuned for Spanish** (see the note above).
+- **Two languages only: Spanish and English** (UK/US), detected automatically
+  per document. Other languages are not supported.
 - **Always review before sharing.** No automatic tool is infallible: AnoniPRO
   shows you what it found precisely so the final decision is yours.
 

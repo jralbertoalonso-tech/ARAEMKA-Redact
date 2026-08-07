@@ -28,6 +28,7 @@ from .detection import capa3_llm as capa3
 from .detection import categorias as cat
 from .detection import diagnostico_hardware
 from .detection.motor import MOTOR, resolver_solapamientos
+from .detection.idioma import detectar_idioma
 from .documentos import fechas, ocr
 from .documentos.docx_doc import CARACTER_REDACCION, DocumentoDocx
 from .documentos.pdf_doc import DocumentoPdf, pdf_desde_imagen
@@ -181,6 +182,15 @@ def _analizar_sesion(
     detecciones: list[dict] = []
     contador = 0
 
+    # Idioma del DOCUMENTO (no el de la interfaz): se detecta automáticamente a
+    # partir de una muestra de su texto y decide qué motor se usa (español o
+    # inglés). Se guarda en la sesión para que la segunda pasada lo reutilice.
+    if sesion.tipo == "pdf":
+        muestra = " ".join(p.texto for p in sesion.doc.paginas[:6])
+    else:
+        muestra = " ".join(b.texto for b in sesion.doc.bloques[:60])
+    sesion.idioma_doc = detectar_idioma(muestra)
+
     activas = set(ids_categorias)
     # Guarda los parámetros para reutilizarlos en la segunda pasada de verificación
     sesion.ultimo_analisis = {
@@ -202,7 +212,8 @@ def _analizar_sesion(
 
     if sesion.tipo == "pdf":
         for pagina in sesion.doc.paginas:
-            base = MOTOR.detectar(pagina.texto, ids_categorias, lista_personalizada, lista_blanca)
+            base = MOTOR.detectar(pagina.texto, ids_categorias, lista_personalizada,
+                                  lista_blanca, sesion.idioma_doc)
             # Capa 3 (LLM local opcional): caza lo que las capas 1-2 no vieron
             extra = _revisar_llm(pagina.texto)
             for d in resolver_solapamientos(base + extra, pagina.texto):
@@ -232,7 +243,8 @@ def _analizar_sesion(
                 contador += 1
     else:  # docx
         for bloque in sesion.doc.bloques:
-            base = MOTOR.detectar(bloque.texto, ids_categorias, lista_personalizada, lista_blanca)
+            base = MOTOR.detectar(bloque.texto, ids_categorias, lista_personalizada,
+                                  lista_blanca, sesion.idioma_doc)
             extra = _revisar_llm(bloque.texto)
             for d in resolver_solapamientos(base + extra, bloque.texto):
                 d["id"] = f"d{contador}"
@@ -538,7 +550,8 @@ def _segunda_pasada(
         if not texto.strip():
             continue
         for d in MOTOR.detectar(
-            texto, params["categorias"], params["lista_personalizada"], params["lista_blanca"]
+            texto, params["categorias"], params["lista_personalizada"],
+            params["lista_blanca"], sesion.idioma_doc
         ):
             clave = d["texto"].strip().lower()
             if not clave or clave in vistos or clave in textos_rechazados:

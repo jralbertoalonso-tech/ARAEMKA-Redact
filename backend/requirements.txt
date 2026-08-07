@@ -14,3 +14,4 @@ psutil>=5.9                      # diagnóstico de hardware (RAM/CPU) para recom
 itsdangerous>=2.1                # firma de la cookie de sesión (contraseña opcional)
 # El modelo NER se instala aparte (ver README):
 #   python -m spacy download es_core_news_lg
+#   python -m spacy download en_core_web_lg

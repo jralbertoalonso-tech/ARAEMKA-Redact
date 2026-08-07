@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.8.0 (universal y bilingüe español/inglés)"
+VERSION = "0.9.0 (detección en inglés: Reino Unido y EE. UU.)"
