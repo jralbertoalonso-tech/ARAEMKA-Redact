@@ -428,13 +428,14 @@ def _delta_de_sesion(sesion: SesionDocumento) -> int:
     return sesion.delta_dias
 
 
-def _texto_reemplazo(d: dict, opciones: OpcionesRedaccion, delta: int) -> str | None:
+def _texto_reemplazo(d: dict, opciones: OpcionesRedaccion, delta: int,
+                     idioma: str = "es") -> str | None:
     """Texto de sustitución para una detección, o None si debe taparse en negro."""
     if d["categoria"] == "fecha" and opciones.fechas == "desplazar":
-        return fechas.desplazar_fecha(d["texto"], delta)
+        return fechas.desplazar_fecha(d["texto"], delta, idioma)
     if d["categoria"] == "fecha_nacimiento" and opciones.edad == "rango" \
-            and fechas.es_edad(d["texto"]):
-        return fechas.rango_etario(d["texto"])
+            and fechas.es_edad(d["texto"], idioma):
+        return fechas.rango_etario(d["texto"], idioma)
     return None
 
 
@@ -453,7 +454,7 @@ def redactar(id_doc: str, peticion: PeticionRedaccion, request: Request):
         zonas: list[tuple[int, fitz.Rect]] = []
         reemplazos: list[tuple[int, fitz.Rect, str]] = []
         for d in aprobadas:
-            nuevo = _texto_reemplazo(d, peticion.opciones, delta)
+            nuevo = _texto_reemplazo(d, peticion.opciones, delta, sesion.idioma_doc)
             # La sustitución solo es viable si la detección ocupa un único
             # rectángulo (una línea); si no, se tapa en negro (conservador).
             if nuevo is not None and len(d["rects"]) == 1:
@@ -476,7 +477,7 @@ def redactar(id_doc: str, peticion: PeticionRedaccion, request: Request):
     else:
         spans_por_bloque: dict[int, list[tuple]] = {}
         for d in aprobadas:
-            nuevo = _texto_reemplazo(d, peticion.opciones, delta)
+            nuevo = _texto_reemplazo(d, peticion.opciones, delta, sesion.idioma_doc)
             span = (d["inicio"], d["fin"]) if nuevo is None else (d["inicio"], d["fin"], nuevo)
             spans_por_bloque.setdefault(d["bloque"], []).append(span)
         for termino in peticion.textos_manuales:
@@ -565,7 +566,7 @@ def _segunda_pasada(
             if d["categoria"] == "fecha" and opciones.fechas == "desplazar":
                 continue
             if d["categoria"] == "fecha_nacimiento" and opciones.edad == "rango" \
-                    and fechas.es_edad(d["texto"]):
+                    and fechas.es_edad(d["texto"], sesion.idioma_doc):
                 continue
             vistos.add(clave)
             residuales.append({"texto": d["texto"], "categoria": d["categoria"]})

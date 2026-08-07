@@ -238,6 +238,8 @@ class ReconocedorFechaEn(PatternRecognizer):
                 Pattern("fecha_iso", r"\b\d{4}-\d{2}-\d{2}\b", 0.5),
                 Pattern("fecha_texto_md", rf"\b(?:{self._MESES})\.?\s+\d{{1,2}}(?:st|nd|rd|th)?,?\s+\d{{4}}\b", 0.6),
                 Pattern("fecha_texto_dm", rf"\b\d{{1,2}}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:{self._MESES})\.?,?\s+\d{{4}}\b", 0.6),
+                # Mes y año, sin día: «April 2024», «Jan 2024»
+                Pattern("fecha_mes_anio", rf"\b(?:{self._MESES})\.?\s+\d{{4}}\b", 0.45),
             ],
             context=["date", "dated", "on", "signed", "issued", "due", "expiry", "expires"],
         )

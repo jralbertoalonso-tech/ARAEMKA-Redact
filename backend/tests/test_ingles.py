@@ -14,6 +14,7 @@ Ejecutar desde `backend/`:
 from app.detection import validators as v
 from app.detection.idioma import detectar_idioma
 from app.detection.motor import MOTOR
+from app.documentos import fechas as F
 
 
 # ── validadores con control ────────────────────────────────────────────────
@@ -119,3 +120,44 @@ def test_identificadores_espanoles_no_se_detectan_en_ingles():
     cats = _cats(texto_es, "en")
     assert "dni_nie" not in cats
     assert "cip" not in cats
+
+
+# ── desplazamiento de fechas en inglés ─────────────────────────────────────
+
+def test_desplazar_fecha_ingles_textual():
+    """Fechas con el mes escrito: inequívocas, se desplazan conservando el estilo."""
+    assert F.desplazar_fecha("March 3, 2024", 100, "en") == "June 11, 2024"
+    assert F.desplazar_fecha("3 March 2024", 100, "en") == "11 June 2024"
+    assert F.desplazar_fecha("Mar 3 2024", 100, "en") == "Jun 11, 2024"   # abreviado
+    assert F.desplazar_fecha("3rd of March, 2024", 100, "en") == "11 June 2024"
+    assert F.desplazar_fecha("January 2024", 100, "en") == "April 2024"
+    assert F.desplazar_fecha("2024-01-05", 100, "en") == "2024-04-14"     # ISO
+
+
+def test_desplazar_fecha_ingles_numerica_inequivoca():
+    """Numéricas que se delatan solas (algún número > 12) sí se desplazan."""
+    assert F.desplazar_fecha("05/14/1978", 100, "en") == "08/22/1978"   # mes/día (EE.UU.)
+    assert F.desplazar_fecha("25/12/2024", 100, "en") == "04/04/2025"   # día/mes (RU)
+
+
+def test_desplazar_fecha_ingles_ambigua_se_tacha():
+    """Numérica con ambos números ≤ 12: ambigua → None (se tacha, nunca se adivina)."""
+    assert F.desplazar_fecha("03/04/2024", 100, "en") is None
+    assert F.desplazar_fecha("13/13/2024", 100, "en") is None   # imposible
+
+
+def test_rango_etario_ingles():
+    assert F.rango_etario("47 years old", "en") == "45-49 years"
+    assert F.rango_etario("aged 47", "en") == "45-49 years"
+    assert F.rango_etario("47-year-old", "en") == "45-49 years"
+    assert F.rango_etario("8 months old", "en") == "under 1 year"
+    assert F.rango_etario("88 years old", "en") == "85 or older"
+    assert F.es_edad("aged 47", "en") is True
+
+
+def test_fechas_espanol_intactas():
+    """El camino español NO cambia (misma interpretación día/mes y mismos textos)."""
+    assert F.desplazar_fecha("03/04/2024", 100) == "12/07/2024"      # día/mes
+    assert F.desplazar_fecha("3 de marzo de 2024", 100) == "11 de junio de 2024"
+    assert F.rango_etario("47 años") == "45-49 años"
+    assert F.rango_etario("8 meses de edad") == "menor de 1 año de edad"

@@ -199,10 +199,14 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 
 ## Ideas pendientes
 
-- **Desplazamiento de fechas para documentos en inglés**: `fechas.py` entiende
-  los formatos españoles; los ingleses («March 3, 2024», MM/DD/YYYY) se redactan
-  pero aún no se pueden desplazar de forma consistente. Mientras tanto, la opción
-  «tachar» funciona igual en ambos idiomas.
+- **Fechas numéricas inglesas ambiguas**: `fechas.py` ya desplaza las fechas
+  inglesas con el mes escrito («March 3, 2024»), las numéricas que se delatan
+  solas (algún número > 12) y las edades («47 years old» → «45-49 years»). Lo que
+  queda: las numéricas con ambos números ≤ 12 (p. ej. `03/04/2024`), genuinamente
+  ambiguas entre el formato británico (día/mes) y el estadounidense (mes/día). Se
+  **tachan** en vez de desplazarse (nunca se adivina el orden). Mejora posible:
+  deducir el país por los identificadores del documento (NHS → UK, SSN → EE. UU.)
+  y aplicarlo solo a esas fechas, marcado como «mejor esfuerzo».
 - Conversión automática de `.doc` antiguos en el servidor.
 - Procesamiento en paralelo para lotes muy grandes.
 - Sustituir por etiquetas («[PACIENTE]») en lugar de bloques negros.

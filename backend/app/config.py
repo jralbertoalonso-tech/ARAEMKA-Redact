@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.9.0 (detección en inglés: Reino Unido y EE. UU.)"
+VERSION = "0.9.1 (inglés: desplazamiento de fechas y rangos de edad)"
