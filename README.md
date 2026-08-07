@@ -1,29 +1,68 @@
-# 🩺 AnoniPRO — Anonimización local de documentos clínicos
+# AnoniPRO — Anonimización local de documentos
+
+<img src="frontend/iconos/icono-128.png" width="96" alt="AnoniPRO">
+
+**Nodo Local**
 
 **Autor: Dr. José Ramón Alberto Alonso**
 
-Aplicación **100 % local** para anonimizar informes clínicos (PDF y Word) sin que
-ningún dato salga de tu equipo o de tu red. Sin telemetría, sin llamadas a
-servicios externos, sin cuentas. Una vez instalada, funciona **sin conexión a
-internet**.
+Aplicación **100 % local** para anonimizar cualquier documento (PDF, Word e
+imágenes) sin que ningún dato salga de tu equipo o de tu red. Sin telemetría,
+sin llamadas a servicios externos, sin cuentas. Una vez instalada, funciona
+**sin conexión a internet**.
 
-Pensada para uso médico: interfaz en español, clara y sin jerga técnica.
+Sirve para **informes clínicos, escritos jurídicos, documentación de empresa y
+RR. HH., facturas y papeles personales**: eliges el perfil y la aplicación
+detecta los datos sensibles propios de ese ámbito. Interfaz en español, clara y
+sin jerga técnica.
 
-> **Estado actual: Fase 5 (proyecto completo).** Todo lo de las fases 1-4
-> (OCR, tres capas, auditoría, segunda pasada, lotes, métricas, portable) más:
-> **desplazamiento aleatorio consistente de fechas** (conserva la cronología
-> clínica) y **rango etario en lugar de edad exacta**, elegibles en el panel
-> «Fechas y edad».
+> **Estado actual: versión universal (0.7).** Detecta y elimina datos personales
+> en documentos de cualquier ámbito, con **8 perfiles** listos (clínico, jurídico,
+> empresa y RR. HH., facturas, personal, publicación científica, docencia y «todo
+> activado») y **26 categorías** de datos. Incluye OCR de escaneados, tres capas
+> de detección (reglas validadas, modelo de nombres y IA local opcional),
+> verificación previa, redacción destructiva real, informe de auditoría y modos
+> servidor (NAS) y portable (macOS/Windows).
+
 
 ---
 
 ## ¿Qué hace, en una frase?
 
-Subes un informe, la aplicación **te muestra** todos los datos personales que ha
-encontrado (nombre del paciente, DNI, teléfono, historia clínica, médicos,
-hospital…), **tú revisas y confirmas**, y descarga una copia con esos datos
-**eliminados de verdad** del archivo (no tapados con un rectángulo: borrados, no
-se pueden recuperar copiando ni pegando).
+Subes un documento, la aplicación **te muestra** todos los datos personales que
+ha encontrado (nombres, DNI, teléfonos, cuentas bancarias, matrículas, números de
+expediente, historia clínica…), **tú revisas y confirmas**, y descargas una copia
+con esos datos **eliminados de verdad** del archivo (no tapados con un rectángulo:
+borrados, no se pueden recuperar copiando ni pegando).
+
+## Perfiles: qué protege cada uno
+
+Elige el perfil en el panel izquierdo y los interruptores se ajustan solos. Puedes
+retocarlos y guardar tus propios perfiles.
+
+| Perfil | Pensado para | Además de nombres, DNI, dirección, teléfono y correo, protege |
+|---|---|---|
+| **Documento clínico** | Sesión clínica, historia compartida | CIP/tarjeta sanitaria, nº de historia y episodio, NUSS, cuentas y tarjetas |
+| **Publicación científica** | Artículos, congresos, casos publicados | Todo lo clínico **más** hospital, servicio, médicos, nº de colegiado, fechas y logos |
+| **Docencia** | Sesiones y material docente | Como el anterior, manteniendo la estructura del caso |
+| **Jurídico (contratos y escritos)** | Abogacía, notaría, procedimientos | Nº de expediente/autos/protocolo, referencia catastral y finca, matrículas, IBAN, tarjetas, CIF, juzgados y notarías |
+| **Empresa y RR. HH.** | Nóminas, contratos laborales, personal | NUSS, IBAN, CIF, nº de empleado/expediente, matrículas, razón social y logos |
+| **Facturas y contabilidad** | Facturas, presupuestos, albaranes | CIF/NIF, IBAN, tarjetas, nº de factura/pedido y datos del cliente |
+| **Documento personal** | Papeles propios antes de compartirlos | IBAN, tarjetas, NUSS, matrícula, catastro y expedientes |
+| **Todo activado** | Máxima protección | Absolutamente todas las categorías |
+
+### Datos sensibles que reconoce
+
+- **Identidad:** nombres (también tras su rol: «Cliente:», «Demandante:», «Trabajador:»), DNI/NIE, pasaporte, fecha de nacimiento y edad, sexo.
+- **Contacto:** direcciones, teléfonos, correos, localidades y códigos postales.
+- **Económicos:** IBAN y cuentas antiguas (CCC), tarjetas de pago, CIF/NIF de empresa.
+- **Salud:** CIP y tarjeta sanitaria (incluido T.I.S.), nº de historia y episodio, NUSS, personal sanitario, nº de colegiado, hospitales y servicios.
+- **Trámites y bienes:** expedientes, procedimientos y autos judiciales, protocolo notarial, pólizas, contratos, facturas, referencia catastral, finca registral y matrículas de vehículo.
+- **Organizaciones:** empresas (S.L., S.A.…), juzgados, notarías y registros; y los logotipos del membrete.
+
+Los identificadores con dígito de control (**DNI, NIE, NUSS, IBAN, CIF, tarjetas**)
+se **validan matemáticamente**: si el control no cuadra, no se marcan. Así se
+evitan falsos positivos con números que solo se parecen.
 
 ---
 
@@ -96,13 +135,13 @@ Windows sin permisos de administrador llega en la Fase 4.)
 
 ---
 
-## Cómo se usa (para el médico)
+## Cómo se usa
 
-1. **Arrastra** un informe (PDF o `.docx`) a la ventana, o pulsa *Elegir archivo*.
-   Puedes soltar varios: se procesan en cola, uno tras otro.
-2. En el **panel izquierdo** decides qué tipos de datos anonimizar (interruptores)
-   o eliges un **perfil** ya hecho: *Sesión clínica*, *Publicación científica*,
-   *Docencia*…
+1. **Arrastra** un documento (PDF, `.docx` o una imagen) a la ventana, o pulsa
+   *Elegir archivo*. Puedes soltar varios, o una carpeta entera: se procesan en
+   cola, uno tras otro.
+2. En el **panel izquierdo** eliges un **perfil** (*Documento clínico*,
+   *Jurídico*, *Facturas*…) y, si quieres, afinas los interruptores.
 3. En el **panel derecho** aparece la **lista de todo lo detectado**, con su
    categoría, la confianza y la frase donde sale. Se resalta por colores sobre el
    documento.

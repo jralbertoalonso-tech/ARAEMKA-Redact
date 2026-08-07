@@ -46,12 +46,21 @@ ENTIDAD_A_CATEGORIA = {
     "TELEFONO": "telefono",
     "EMAIL": "email",
     "CENTRO": "centro",
-    "ORGANIZATION": "centro",     # organizaciones del NER → institucional
+    "ORGANIZACION": "organizacion",
+    "ORGANIZATION": "organizacion",   # organizaciones del NER (empresas, juzgados…)
     "SERVICIO_UNIDAD": "servicio_unidad",
     "COLEGIADO": "colegiado",
     "LOCALIDAD": "localidad",
     "LOCATION": "localidad",
     "PERSONALIZADA": "personalizada",
+    # Uso general (jurídico, empresa, facturación, particulares)
+    "IBAN": "iban",
+    "TARJETA": "tarjeta",
+    "CIF": "cif",
+    "MATRICULA": "matricula",
+    "CATASTRO": "catastro",
+    "EXPEDIENTE": "expediente",
+    "PASAPORTE": "pasaporte",
 }
 
 # Qué entidades hay que pedir al motor para cubrir cada categoría activa.
@@ -68,13 +77,22 @@ CATEGORIA_A_ENTIDADES = {
     "direccion": ["DIRECCION"],
     "telefono": ["TELEFONO"],
     "email": ["EMAIL"],
-    "centro": ["CENTRO", "ORGANIZATION"],
+    "centro": ["CENTRO"],
+    "organizacion": ["ORGANIZACION", "ORGANIZATION"],
     "servicio_unidad": ["SERVICIO_UNIDAD"],
     "logo": [],  # no viene del texto: se detecta por la estructura del PDF (imágenes)
     "colegiado": ["COLEGIADO"],
     "fecha": ["FECHA", "FECHA_NACIMIENTO"],
     "localidad": ["LOCALIDAD", "LOCATION"],
     "personalizada": ["PERSONALIZADA"],
+    # Uso general
+    "iban": ["IBAN"],
+    "tarjeta": ["TARJETA"],
+    "cif": ["CIF"],
+    "matricula": ["MATRICULA"],
+    "catastro": ["CATASTRO"],
+    "expediente": ["EXPEDIENTE"],
+    "pasaporte": ["PASAPORTE"],
 }
 
 # Contexto que indica que un nombre pertenece a personal sanitario
@@ -105,6 +123,19 @@ _RUIDO_NER = {
     "tratamiento", "evolución", "evolucion", "exploración", "exploracion",
     "anamnesis", "antecedentes", "alergias", "constantes", "diagnóstico",
     "diagnostico", "motivo de consulta", "sexo", "edad",
+    # etiquetas de documentos generales (jurídicos, facturas, contratos)
+    "tarjeta", "vehículo", "vehiculo", "matrícula", "matricula", "factura",
+    "contrato", "expediente", "procedimiento", "autos", "protocolo", "póliza",
+    "poliza", "cuenta", "iban", "cif", "nif", "importe", "total", "subtotal",
+    "base imponible", "iva", "pedido", "albarán", "albaran", "presupuesto",
+    "referencia", "catastral", "finca", "parcela", "cliente", "proveedor",
+    "concepto", "cantidad", "precio", "descuento", "vencimiento", "emisión",
+    "emision", "firma", "sello", "anexo", "cláusula", "clausula", "estipulación",
+    "estipulacion", "comparece", "otorga", "manifiesta", "exponen", "acuerdan",
+    "nómina", "nomina", "empresa", "trabajador", "trabajadora", "persona",
+    "categoría", "categoria", "antigüedad", "antiguedad", "abono", "devengado",
+    "retención", "retencion", "líquido", "liquido", "percibir", "descripción",
+    "descripcion", "observaciones", "asunto", "destinatario", "remitente",
     # títulos profesionales genéricos (no identifican a nadie)
     "médico", "medico", "facultativo", "enfermero", "enfermera", "residente",
     "facultativo de análisis clínicos", "médico peticionario", "atención primaria",
@@ -126,6 +157,39 @@ _RUIDO_NER = {
     "torax", "pelvis", "cardias", "píloro", "piloro", "bulbo", "mucosa",
     "laringe", "faringe", "tráquea", "traquea", "bronquios", "mediastino",
 }
+
+
+# Partículas y marcadores que nunca deben quedar en el BORDE de una detección
+# («Notaría de Santa Cruz de » → «Notaría de Santa Cruz»). Solo se recortan de
+# los extremos: dentro de la expresión son parte del nombre.
+_PARTICULAS_BORDE = {
+    "de", "del", "la", "las", "los", "el", "y", "e", "en", "a", "con", "por",
+    "n", "nº", "no", "núm", "num", "nro",
+}
+
+
+def _recortar_particulas(texto: str, inicio: int, fin: int) -> tuple[int, int]:
+    """Quita partículas y signos sueltos de los extremos de una detección."""
+    tokens = [(m.start() + inicio, m.end() + inicio)
+              for m in re.finditer(r"\S+", texto[inicio:fin])]
+
+    def es_particula(tok):
+        limpio = texto[tok[0]:tok[1]].strip(".:;,–—-ºª()[]").lower()
+        return limpio in _PARTICULAS_BORDE or limpio == ""
+
+    while tokens and es_particula(tokens[-1]):
+        tokens.pop()
+    while tokens and es_particula(tokens[0]):
+        tokens.pop(0)
+    if not tokens:
+        return inicio, inicio
+    # Recorta además la puntuación pegada a los extremos
+    ini, fi = tokens[0][0], tokens[-1][1]
+    while ini < fi and texto[ini] in ".,;:-–—()[]" :
+        ini += 1
+    while fi > ini and texto[fi - 1] in ".,;:-–—()[]":
+        fi -= 1
+    return ini, fi
 
 
 def _recortar_ruido(texto: str, inicio: int, fin: int,
@@ -428,7 +492,23 @@ def resolver_solapamientos(detecciones: list[dict], texto: str) -> list[dict]:
                 resto = recortada(d, ultimo["fin"], d["fin"])
                 if resto is not None:
                     resultado.append(resto)
-        return resultado
+
+        # Limpieza final: ninguna detección debe empezar ni acabar en una
+        # partícula suelta («… de », «Juzgado … nº»), en una etiqueta del
+        # documento («… S.A. CIF») ni en signos de puntuación.
+        limpias = []
+        for d in resultado:
+            if d["categoria"] == "personalizada":
+                limpias.append(d)          # los términos del usuario van tal cual
+                continue
+            ini, fi = _recortar_ruido(texto, d["inicio"], d["fin"])
+            ini, fi = _recortar_particulas(texto, ini, fi)
+            if fi - ini < 2:
+                continue
+            if (ini, fi) != (d["inicio"], d["fin"]):
+                d = dict(d, inicio=ini, fin=fi, texto=texto[ini:fi])
+            limpias.append(d)
+        return limpias
 
 
 # Instancia única compartida por toda la aplicación

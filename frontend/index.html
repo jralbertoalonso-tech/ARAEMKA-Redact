@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AnoniPRO — Anonimización de documentos clínicos</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+  <title>AnoniPRO — Anonimización local de documentos</title>
+  <link rel="stylesheet" href="styles.css?v=0.7">
+  <link rel="icon" type="image/svg+xml" href="icono.svg">
+  <link rel="apple-touch-icon" href="iconos/icono-256.png">
 </head>
 <body>
 
 <!-- ══════════ Pantalla de contraseña (solo si está configurada) ══════════ -->
 <div id="pantalla-login" class="oculto">
   <div class="tarjeta-login">
-    <h1>🩺 AnoniPRO</h1>
+    <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
     <p>Introduce la contraseña de acceso.</p>
     <form id="form-login">
       <input type="password" id="campo-password" placeholder="Contraseña" autocomplete="current-password">
@@ -27,8 +28,8 @@
 
   <header>
     <div class="titulo">
-      <h1>🩺 AnoniPRO</h1>
-      <span class="subtitulo">Anonimización local de documentos clínicos — ningún dato sale de tu red</span>
+      <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
+      <span class="subtitulo">Anonimización local de documentos — ningún dato sale de tu equipo</span>
     </div>
     <div class="acciones-cabecera">
       <span id="estado-modelo" class="chip" title="Modelo de detección de nombres">…</span>
@@ -68,8 +69,8 @@
 
       <section class="bloque-panel">
         <span class="etiqueta-panel">Fechas y edad</span>
-        <label class="etiqueta-opcion" for="opcion-fechas">Fechas de asistencia</label>
-        <select id="opcion-fechas" title="«Desplazar» mueve todas las fechas el mismo número aleatorio de días: se conserva la cronología clínica sin revelar las fechas reales.">
+        <label class="etiqueta-opcion" for="opcion-fechas">Fechas del documento</label>
+        <select id="opcion-fechas" title="«Desplazar» mueve todas las fechas el mismo número aleatorio de días: se conserva el orden y los intervalos entre ellas sin revelar las fechas reales.">
           <option value="redactar">Tachar (redactar)</option>
           <option value="desplazar">Desplazar (conserva la cronología)</option>
         </select>
@@ -219,11 +220,11 @@
 
   <footer>
     <span id="version-app"></span> · Procesamiento 100&nbsp;% local · Sin conexión a internet · Los documentos nunca se guardan en disco<br>
-    <span class="autor">Autor: Dr. José Ramón Alberto Alonso</span>
+    <span class="autor">Nodo Local</span> · Autor: Dr. José Ramón Alberto Alonso
   </footer>
 </div>
 
 <script src="vendor/pdfjs/pdf.min.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=0.7"></script>
 </body>
 </html>

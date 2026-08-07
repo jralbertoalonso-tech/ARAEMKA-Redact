@@ -24,24 +24,35 @@ const estado = {
 
 const $ = (id) => document.getElementById(id);
 
-const NOMBRES_GRUPO = {
-  paciente: "Datos del paciente",
-  institucional: "Datos del centro",
-  sanitario: "Personal sanitario",
-  otros: "Otros",
-};
+// Datos de identidad y contacto: el mínimo común a casi todos los perfiles.
+const BASE_IDENTIDAD = ["persona", "dni_nie", "pasaporte", "fecha_nacimiento",
+  "direccion", "telefono", "email", "localidad", "personalizada"];
 
-// Perfiles predefinidos: qué categorías se activan en cada situación.
+// Perfiles predefinidos: qué categorías se activan en cada tipo de trabajo.
+// (null = todas). El usuario puede crear los suyos y se guardan en el navegador.
 const PERFILES_BASE = {
-  "Todo activado": null, // null = todas las categorías activadas
-  "Sesión clínica interna": ["persona", "dni_nie", "nuss", "cip", "nhc",
-    "fecha_nacimiento", "direccion", "telefono", "email", "localidad", "personalizada"],
-  "Publicación científica": ["persona", "dni_nie", "nuss", "cip", "nhc",
-    "fecha_nacimiento", "direccion", "telefono", "email", "centro", "servicio_unidad",
-    "sanitario", "colegiado", "fecha", "localidad", "personalizada"],
-  "Docencia": ["persona", "dni_nie", "nuss", "cip", "nhc", "fecha_nacimiento",
-    "direccion", "telefono", "email", "centro", "sanitario", "colegiado",
-    "fecha", "localidad", "personalizada"],
+  "Todo activado": null,
+
+  "Documento clínico": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "iban", "tarjeta"],
+
+  "Publicación científica": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro",
+    "servicio_unidad", "sanitario", "colegiado", "organizacion", "logo", "fecha",
+    "iban", "tarjeta"],
+
+  "Docencia": [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "centro", "sanitario",
+    "colegiado", "organizacion", "logo", "fecha", "iban", "tarjeta"],
+
+  "Jurídico (contratos y escritos)": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+    "expediente", "catastro", "matricula", "organizacion", "logo", "fecha"],
+
+  "Empresa y RR. HH.": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif", "nuss",
+    "expediente", "matricula", "organizacion", "logo"],
+
+  "Facturas y contabilidad": [...BASE_IDENTIDAD, "iban", "tarjeta", "cif",
+    "expediente", "organizacion", "logo"],
+
+  "Documento personal": [...BASE_IDENTIDAD, "iban", "tarjeta", "nuss",
+    "matricula", "catastro", "expediente"],
 };
 
 // ───────────────────────── arranque ─────────────────────────
@@ -102,13 +113,18 @@ async function arrancarAplicacion() {
 function pintarInterruptores() {
   const cont = $("lista-categorias");
   cont.innerHTML = "";
-  const grupos = ["paciente", "institucional", "sanitario", "otros"];
+  // Los grupos y su orden los define el servidor (catálogo de categorías),
+  // así que añadir una categoría nueva no obliga a tocar la interfaz.
+  const grupos = [...new Set(estado.categorias
+    .slice()
+    .sort((a, b) => (a.orden_grupo ?? 99) - (b.orden_grupo ?? 99))
+    .map((c) => c.grupo))];
   for (const grupo of grupos) {
     const cats = estado.categorias.filter((c) => c.grupo === grupo);
     if (!cats.length) continue;
     const div = document.createElement("div");
     div.className = "grupo-categorias";
-    div.innerHTML = `<div class="titulo-grupo">${NOMBRES_GRUPO[grupo]}</div>`;
+    div.innerHTML = `<div class="titulo-grupo">${escapaHtml(cats[0].grupo_nombre || grupo)}</div>`;
     for (const c of cats) {
       const fila = document.createElement("label");
       fila.className = "interruptor";

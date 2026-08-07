@@ -32,6 +32,22 @@ else:
 
 app = FastAPI(title="AnoniPRO", version=VERSION, docs_url=None, redoc_url=None)
 app.middleware("http")(middleware_password)
+
+
+@app.middleware("http")
+async def sin_cache_en_la_interfaz(request, call_next):
+    """Evita que el navegador se quede con una versión antigua de la interfaz.
+
+    Los archivos son pequeños y locales, así que no cachearlos no cuesta nada;
+    a cambio, al actualizar AnoniPRO (en el NAS o en el portable) el usuario ve
+    siempre la interfaz nueva sin tener que vaciar la caché a mano.
+    """
+    respuesta = await call_next(request)
+    if not request.url.path.startswith("/api"):
+        respuesta.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return respuesta
+
+
 app.include_router(router)
 app.mount("/", StaticFiles(directory=str(RUTA_FRONTEND), html=True), name="frontend")
 

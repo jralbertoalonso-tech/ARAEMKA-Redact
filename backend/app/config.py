@@ -28,4 +28,4 @@ class Ajustes:
 
 AJUSTES = Ajustes()
 
-VERSION = "0.6.0 (revisión de calidad: correcciones de seguridad, fugas y UX)"
+VERSION = "0.7.0 (universal: perfiles para clínica, jurídico, empresa y facturas)"

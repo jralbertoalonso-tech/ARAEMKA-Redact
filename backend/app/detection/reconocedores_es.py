@@ -108,6 +108,155 @@ class ReconocedorEmail(PatternRecognizer):
         )
 
 
+class ReconocedorIban(PatternRecognizer):
+    """Cuentas bancarias IBAN (cualquier país), con dígito de control módulo 97."""
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="IBAN",
+            supported_language="es",
+            name="iban_regex",
+            # SIN re.IGNORECASE: con él, el patrón se tragaba la palabra
+            # siguiente («…1332 Total») y la validación descartaba el IBAN entero.
+            global_regex_flags=re.MULTILINE | re.DOTALL,
+            patterns=[
+                # España y la mayoría de países: tras el prefijo, solo dígitos
+                # (así el patrón no puede absorber palabras del texto).
+                Pattern("iban_numerico", r"\b[A-Z]{2}\d{2}(?:[\s\-]?\d{4}){2,7}(?:[\s\-]?\d{1,3})?\b", 0.5),
+                # Países con letras en la cuenta (Reino Unido, Países Bajos…)
+                Pattern("iban_alfanumerico", r"\b[A-Z]{2}\d{2}[A-Z]{4}(?:[\s\-]?[A-Z0-9]{4}){2,6}\b", 0.5),
+            ],
+            context=["iban", "cuenta", "bancaria", "banco", "ccc", "domiciliación", "domiciliacion", "transferencia"],
+        )
+
+    def validate_result(self, pattern_text: str):
+        return validators.validar_iban(pattern_text)
+
+
+class ReconocedorTarjeta(PatternRecognizer):
+    """Tarjetas de pago: 13-19 dígitos con algoritmo de Luhn.
+
+    Se exige además que empiecen por 3-6 (Amex, Visa, Mastercard, Discover…):
+    Luhn por sí solo aceptaría uno de cada diez números largos cualesquiera.
+    """
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="TARJETA",
+            supported_language="es",
+            name="tarjeta_regex",
+            patterns=[
+                Pattern("tarjeta", r"\b[3-6]\d{3}(?:[\s\-]?\d{4}){2}[\s\-]?\d{1,7}\b", 0.5),
+            ],
+            context=["tarjeta", "visa", "mastercard", "crédito", "credito", "débito", "debito", "pago"],
+        )
+
+    def validate_result(self, pattern_text: str):
+        return validators.validar_tarjeta(pattern_text)
+
+
+class ReconocedorCif(PatternRecognizer):
+    """CIF/NIF de empresas y entidades, con carácter de control verificado."""
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="CIF",
+            supported_language="es",
+            name="cif_regex",
+            patterns=[
+                Pattern("cif", r"\b[ABCDEFGHJKLMNPQRSUVW][\s\-]?\d{7}[\s\-]?[0-9A-J]\b", 0.4),
+            ],
+            context=["cif", "nif", "fiscal", "empresa", "sociedad", "entidad", "razón", "razon"],
+        )
+
+    def validate_result(self, pattern_text: str):
+        return validators.validar_cif(pattern_text)
+
+
+class ReconocedorMatricula(PatternRecognizer):
+    """Matrículas de vehículo españolas (actual «1234 BCD» y formato antiguo)."""
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="MATRICULA",
+            supported_language="es",
+            name="matricula_regex",
+            patterns=[
+                # Formato actual: las 3 letras nunca llevan vocales ni Ñ/Q
+                Pattern("matricula_actual", r"\b\d{4}[\s\-]?[BCDFGHJKLMNPRSTVWXYZ]{3}\b", 0.5),
+                # Formato antiguo provincial (M-1234-AB): necesita contexto
+                Pattern("matricula_antigua", r"\b[A-Z]{1,2}[\s\-]\d{4}[\s\-][A-Z]{1,2}\b", 0.3),
+            ],
+            context=["matrícula", "matricula", "vehículo", "vehiculo", "coche", "turismo",
+                     "furgoneta", "motocicleta", "remolque", "placa"],
+        )
+
+    def validate_result(self, pattern_text: str):
+        return None if validators.es_matricula_es(pattern_text) else False
+
+
+class ReconocedorCatastro(PatternRecognizer):
+    """Referencia catastral: 20 caracteres alfanuméricos (finca/inmueble)."""
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="CATASTRO",
+            supported_language="es",
+            name="catastro_regex",
+            # Las referencias catastrales van siempre en mayúsculas.
+            global_regex_flags=re.MULTILINE | re.DOTALL,
+            patterns=[
+                Pattern("referencia_catastral", r"\b(?=[A-Z0-9]{20}\b)(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{20}\b", 0.6),
+            ],
+            context=["catastral", "catastro", "inmueble", "finca", "parcela", "referencia"],
+        )
+
+    def validate_result(self, pattern_text: str):
+        return None if validators.validar_referencia_catastral(pattern_text) else False
+
+
+class ReconocedorOrganizacion(PatternRecognizer):
+    """Empresas, juzgados, notarías y otros organismos con forma reconocible."""
+
+    def __init__(self):
+        super().__init__(
+            supported_entity="ORGANIZACION",
+            supported_language="es",
+            name="organizacion_regex",
+            # SIN re.IGNORECASE (Presidio lo pone por defecto): aquí las
+            # mayúsculas son la señal de que algo es un nombre propio; si no,
+            # el patrón arrancaría en cualquier palabra en minúscula.
+            global_regex_flags=re.MULTILINE | re.DOTALL,
+            patterns=[
+                # Denominación social con forma jurídica: «Talleres Pérez, S.L.»
+                # Las palabras del nombre NO pueden llevar punto: así el patrón no
+                # salta de una frase a la siguiente («…Tenerife. En representación
+                # de TALLERES PÉREZ, S.L.» → solo «TALLERES PÉREZ, S.L.»).
+                # Las palabras del nombre son solo letras (ni cifras ni guiones):
+                # así el patrón no encadena números de factura ni referencias
+                # que estén delante del nombre de la sociedad.
+                Pattern(
+                    "sociedad",
+                    r"\b[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ&]*(?:\s+[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ&]*){0,4}"
+                    r"\s*,?\s*(?:S\.?L\.?U?\.?|S\.?A\.?U?\.?|S\.?L\.?P\.?|S\.?C\.?P\.?|S\.?Coop\.?|"
+                    r"C\.?B\.?|A\.?I\.?E\.?|U\.?T\.?E\.?)(?![\wáéíóúñ])",
+                    0.55,
+                ),
+                # Órganos judiciales, notarías y registros. La expresión termina
+                # siempre en una palabra con mayúscula o en «nº N», nunca en una
+                # partícula suelta.
+                Pattern(
+                    "juzgado",
+                    r"\b(?:Juzgado|Tribunal|Audiencia|Fiscalía|Fiscalia|Notaría|Notaria|Registro)"
+                    r"(?:\s+(?:de|del|la|las|los|lo|en|y))*"
+                    r"(?:\s+[A-ZÁÉÍÓÚÑ][\wáéíóúñÁÉÍÓÚÑ]*(?:\s+(?:de|del|la|las|los|y))*){1,6}"
+                    r"(?:\s+n[ºo°]?\.?\s*\d{1,4})?",
+                    0.6,
+                ),
+            ],
+        )
+
+
 class ReconocedorCipSns(PatternRecognizer):
     """CIP-SNS nacional: 16 caracteres, actualmente BBBBBBBB + 2 letras + 6 dígitos."""
 
@@ -367,11 +516,19 @@ _NOMBRE_PROPIO = (
 def crear_reconocedores_contexto() -> list[EntityRecognizer]:
     """Reconocedores etiqueta→valor para NHC, episodio, CIP autonómico y colegiado."""
     return [
-        # Nombre del paciente etiquetado: «Paciente: María Pérez…», «Apellidos y nombre: …»
-        # No depende del NER: es la vía más fiable en informes con membrete.
+        # Nombre precedido de su ROL: «Paciente: María Pérez», «Cliente: …»,
+        # «Demandante: …», «Trabajador: …». No depende del modelo de lenguaje,
+        # así que es la vía más fiable en documentos con formulario o membrete.
         ReconocedorPorContexto(
-            "PERSON", "paciente_etiquetado",
-            rf"(?i:\b(?:paciente|nombre(?:\s+(?:del?\s+paciente|y\s+apellidos))?|apellidos(?:\s+y\s+nombre)?))"
+            "PERSON", "nombre_etiquetado",
+            rf"(?i:\b(?:paciente|nombre(?:\s+(?:del?\s+paciente|y\s+apellidos))?|"
+            rf"apellidos(?:\s+y\s+nombre)?|cliente|interesad[oa]|titular|solicitante|"
+            rf"demandante|demandad[oa]|denunciante|denunciad[oa]|querellante|"
+            rf"trabajador(?:a)?|emplead[oa]|contratante|arrendador(?:a)?|"
+            rf"arrendatari[oa]|comprador(?:a)?|vendedor(?:a)?|propietari[oa]|"
+            rf"destinatari[oa]|remitente|beneficiari[oa]|asegurad[oa]|tomador(?:a)?|"
+            rf"representante|apoderad[oa]|firmante|usuari[oa]|socio|socia|"
+            rf"a\s*la\s*atenci[oó]n\s*de|at(?:t)?n))"
             rf"\s*:\s*({_NOMBRE_PROPIO})",
             0.85,
             flags=0,
@@ -394,7 +551,7 @@ def crear_reconocedores_contexto() -> list[EntityRecognizer]:
         # Nº de episodio, caso o proceso asistencial (admite 2024-118332, EP/44821…)
         ReconocedorPorContexto(
             "NHC", "episodio_contexto",
-            r"(?:\bepisodio|\bcaso|\bproceso|\bingreso)\s*(?:n[ºo°]\.?|:)?\s*([A-Z]{0,3}[\s\-/]?\d{4,12}(?:[\-/]\d{1,10})?)",
+            r"(?:\bepisodio|\bcaso|\bproceso|\bingreso)\s*(?:n[ºo°]?\.?|:)?\s*([A-Z]{0,3}[\s\-/]?\d{4,12}(?:[\-/]\d{1,10})?)",
             0.6,
         ),
         # CIP autonómico / tarjeta sanitaria: «CIP: 1234567890», «TIS ABCD123456»,
@@ -402,14 +559,14 @@ def crear_reconocedores_contexto() -> list[EntityRecognizer]:
         ReconocedorPorContexto(
             "CIP", "cip_contexto",
             r"(?:\bCIP(?:[\s\-]?(?:AUT|SNS|SCS))?|\bT\.?I\.?S\.?(?![A-Za-z])|\bCIPA\b|tarjeta\s+sanitaria)"
-            r"\s*(?:n[ºo°]\.?|:)?\s*([A-Z]{0,10}\d{6,16})",
+            r"\s*(?:n[ºo°]?\.?|:)?\s*([A-Z]{0,10}\d{6,16})",
             0.8,
         ),
         # Nº de colegiado: «Nº Col.: 38/38/12345», «Colegiado 12345»
         ReconocedorPorContexto(
             "COLEGIADO", "colegiado_contexto",
             r"(?:\bn[ºo°]?\.?\s*(?:de\s+)?col(?:\.|egiad[oa])?|\bcolegiad[oa])"
-            r"\s*(?:n[ºo°]\.?|:)?\s*(\d{2,9}(?:[/\-]\d{1,9}){0,3})",
+            r"\s*(?:n[ºo°]?\.?|:)?\s*(\d{2,9}(?:[/\-]\d{1,9}){0,3})",
             0.8,
         ),
         # Fecha de nacimiento etiquetada: «F. Nac.: 01/02/1980», «Fecha de nacimiento: …»
@@ -418,6 +575,43 @@ def crear_reconocedores_contexto() -> list[EntityRecognizer]:
             r"(?:f(?:echa)?\.?\s*(?:de\s+)?nac(?:\.|imiento)?|nacid[oa]\s+el)"
             r"\s*:?\s*(\d{1,2}[/\-.]\d{1,2}[/\-.](?:\d{4}|\d{2})|\d{1,2}\s+de\s+\w+\s+(?:de\s+)?\d{4})",
             0.85,
+        ),
+
+        # ── Uso general: expedientes, referencias y documentos ────────────
+        # Nº de expediente, procedimiento judicial, autos, protocolo notarial,
+        # póliza, contrato, factura, pedido, albarán, NIG… Cada oficina usa su
+        # propio formato, así que se detectan por su ETIQUETA (lo más fiable).
+        ReconocedorPorContexto(
+            "EXPEDIENTE", "expediente_contexto",
+            r"(?:\bexpediente|\bexpte\.?|\bprocedimiento|\bautos|\bdiligencias|"
+            r"\bprotocolo|\bp[oó]liza|\bcontrato|\bfactura|\balbar[aá]n|\bpedido|"
+            r"\bpresupuesto|\breferencia|\bn\.?i\.?g\.?|\bsiniestro|\bticket|\bcaso)"
+            r"\s*(?:n[ºo°]?\.?|núm\.?|num\.?|:)?\s*"
+            r"([A-Z]{0,6}[\s\-/]?\d{2,}(?:[\-/.]\d{1,6}){0,4}(?:[\-/][A-Z]{1,4})?)",
+            0.7,
+        ),
+        # Pasaporte: solo por etiqueta (su formato es demasiado genérico para
+        # detectarlo suelto sin llenar el documento de falsos positivos).
+        ReconocedorPorContexto(
+            "PASAPORTE", "pasaporte_contexto",
+            r"(?:\bpasaporte|\bpassport)\s*(?:n[ºo°]?\.?|núm\.?|:)?\s*([A-Z]{2,3}\s?\d{6})",
+            0.85,
+        ),
+        # Finca registral: «finca nº 12.345», «finca registral 4567»
+        ReconocedorPorContexto(
+            "CATASTRO", "finca_contexto",
+            r"(?:\bfinca(?:\s+registral)?|\bparcela|\bpol[ií]gono)"
+            # El formato con puntos de millar exige separador explícito; si no,
+            # «45678» se cortaba en «456» al casar la primera alternativa.
+            r"\s*(?:n[ºo°]?\.?|núm\.?|:)?\s*(\d{1,3}(?:[.\s]\d{3})+|\d{1,7})",
+            0.65,
+        ),
+        # Cuenta bancaria en formato antiguo CCC (20 dígitos en 4 grupos)
+        ReconocedorPorContexto(
+            "IBAN", "ccc_contexto",
+            r"(?:\bc\.?c\.?c\.?|\bcuenta(?:\s+bancaria)?|\bn[ºo°]\s*de\s*cuenta)"
+            r"\s*(?:n[ºo°]?\.?|:)?\s*(\d{4}[\s\-]?\d{4}[\s\-]?\d{2}[\s\-]?\d{10})",
+            0.8,
         ),
     ]
 
@@ -452,4 +646,11 @@ def crear_reconocedores_regex() -> list[PatternRecognizer]:
         ReconocedorCentro(),
         ReconocedorFirmaSanitario(),
         ReconocedorSexo(),
+        # Uso general (jurídico, empresa, facturación, particulares)
+        ReconocedorIban(),
+        ReconocedorTarjeta(),
+        ReconocedorCif(),
+        ReconocedorMatricula(),
+        ReconocedorCatastro(),
+        ReconocedorOrganizacion(),
     ]

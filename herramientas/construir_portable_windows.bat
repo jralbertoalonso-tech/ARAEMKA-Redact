@@ -13,6 +13,9 @@ REM   herramientas\construir_portable_windows.bat
 
 cd /d "%~dp0\.."
 
+REM Iconos de la aplicacion (a partir de frontend/icono.svg)
+.venv\Scripts\python herramientas\generar_iconos.py
+
 REM Limpia la construccion anterior: sin esto, si PyInstaller falla, el dist\
 REM viejo se queda y la comprobacion final da un falso "todo correcto".
 if exist dist\AnoniPRO rmdir /s /q dist\AnoniPRO
@@ -21,6 +24,7 @@ REM --collect-all para spaCy y sus dependencias compiladas: PyInstaller no
 REM detecta solo los modulos en C (spacy.symbols, thinc, blis...).
 .venv\Scripts\pyinstaller --noconfirm --clean ^
   --name AnoniPRO ^
+  --icon frontend\iconos\icono.ico ^
   --onedir ^
   --console ^
   --paths backend ^

@@ -20,6 +20,9 @@ fi
 
 .venv/bin/pip install --quiet pyinstaller
 
+# Iconos de la aplicación (a partir de frontend/icono.svg)
+.venv/bin/python herramientas/generar_iconos.py >/dev/null
+
 # --collect-all para spaCy y sus dependencias compiladas: PyInstaller no
 # detecta solo los módulos en C (spacy.symbols, thinc, blis…).
 # cymem además se fuerza con --add-binary: en la práctica hemos visto que en la
@@ -28,6 +31,7 @@ CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.
 
 .venv/bin/pyinstaller --noconfirm --clean \
   --name AnoniPRO \
+  --icon frontend/iconos/icono.icns \
   --onedir \
   --console \
   --paths backend \

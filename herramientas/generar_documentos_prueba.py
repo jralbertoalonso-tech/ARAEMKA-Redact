@@ -114,6 +114,73 @@ Validado por: Dr. Andrés Lorenzo Brito, Facultativo de Análisis Clínicos.
 """
 
 
+# ── Documentos de otros ámbitos (perfiles jurídico, empresa y facturas) ────
+
+CONTRATO = f"""CONTRATO DE ARRENDAMIENTO DE VIVIENDA
+
+Ante mí, Dña. Marta Ruiz Sanz, Notaria del Ilustre Colegio de Canarias.
+Protocolo nº 1.245/2024.
+
+COMPARECEN
+De una parte, D. Antonio Medina Cabrera, mayor de edad, con DNI {dni_valido(41902288)},
+pasaporte nº XDA123456, y domicilio en Calle El Pilar 8, 38700 Santa Cruz de La Palma.
+Teléfono 617 88 99 00 y correo antonio.medina@correo.es
+
+De otra, TALLERES PEREZ, S.L., con CIF A58818501, representada por
+Dña. Nieves Toledo García, con DNI {dni_valido(42667211)}.
+
+ESTIPULACIONES
+Primera. Objeto: la vivienda sita en Avda. de los Menceyes 27, 2ºA, 38320 La Laguna,
+con referencia catastral 9872023VH5797S0001WX, finca registral nº 45.678.
+
+Segunda. Renta: 750 EUR mensuales, mediante transferencia a la cuenta
+ES91 2100 0418 4502 0005 1332. Garantía con tarjeta 4539 5787 6362 1486.
+
+Tercera. Se autoriza el estacionamiento del vehículo matrícula 1234 BCD.
+
+Cuarta. Para cualquier controversia, las partes se someten al Juzgado de Primera
+Instancia nº 3 de Santa Cruz de Tenerife. Procedimiento previo: autos 512/2024.
+
+En Santa Cruz de Tenerife, a 12 de marzo de 2024.
+"""
+
+FACTURA = f"""FACTURA Nº F-2024-0451
+
+GESTORIA MARTIN Y ASOCIADOS, S.L.
+CIF B12345674 · Avda. de Anaga 45, 38001 Santa Cruz de Tenerife
+Tel. 922 24 55 66 · admin@gestoriamartin.es
+
+CLIENTE: Construcciones Delgado, S.A.
+CIF A58818501
+Domicilio: Calle El Pilar 8, 38700 Santa Cruz de La Palma
+Persona de contacto: Nieves Toledo García - ntoledo@construcciones.es - 655 12 34 56
+
+Fecha de emisión: 12/03/2024        Vencimiento: 12/04/2024
+Nº de pedido: PED-2024-0912
+
+Concepto: asesoría fiscal y laboral del primer trimestre
+Base imponible: 1.200,00 EUR    IVA 21%: 252,00 EUR    TOTAL: 1.452,00 EUR
+
+Forma de pago: transferencia a ES91 2100 0418 4502 0005 1332
+Vehículo de reparto asociado: matrícula 4521 KLM
+"""
+
+NOMINA = f"""RECIBO DE SALARIOS - Mayo de 2026
+
+Empresa: TALLERES PEREZ, S.L.   CIF A58818501
+Centro de trabajo: Ctra. General del Norte 102, 38320 La Laguna
+
+Trabajador: Yeray Santana Marrero
+DNI: {dni_valido(43811223)}   NAF Seguridad Social: {nuss_valido(38, 44556677)}
+Fecha de nacimiento: 14/02/1988   Antigüedad: 12/01/2019
+Domicilio: C/ Herradores 45, 38201 La Laguna   Teléfono: 628 11 22 33
+Correo: ysantana@correo.es   Nº de empleado: EMP-0457
+
+Total devengado: 1.850,00 EUR   Deducciones: 315,00 EUR   Líquido: 1.535,00 EUR
+Abono en cuenta: ES91 2100 0418 4502 0005 1332
+"""
+
+
 def crear_pdf(ruta: Path, texto: str):
     doc = fitz.open()
     pagina = doc.new_page()  # A4 por defecto
@@ -159,8 +226,13 @@ if __name__ == "__main__":
     crear_pdf(SALIDA / "informe_alta.pdf", INFORME_ALTA)
     crear_docx(SALIDA / "interconsulta.docx", INTERCONSULTA)
     crear_pdf(SALIDA / "analitica.pdf", ANALITICA)
+    # Otros ámbitos (perfiles jurídico, empresa y facturación)
+    crear_pdf(SALIDA / "contrato_JURIDICO.pdf", CONTRATO)
+    crear_pdf(SALIDA / "factura_EMPRESA.pdf", FACTURA)
+    crear_docx(SALIDA / "nomina_RRHH.docx", NOMINA)
     # Fase 2 — documentos para probar el OCR:
     crear_pdf_escaneado(SALIDA / "informe_alta_ESCANEADO.pdf", INFORME_ALTA)
     crear_imagen(SALIDA / "analitica_IMAGEN.png", ANALITICA)
     print(f"Documentos sintéticos creados en: {SALIDA}")
-    print("  · informe_alta_ESCANEADO.pdf y analitica_IMAGEN.png sirven para probar el OCR (Fase 2)")
+    print("  · informe_alta_ESCANEADO.pdf y analitica_IMAGEN.png sirven para probar el OCR")
+    print("  · contrato_JURIDICO.pdf, factura_EMPRESA.pdf y nomina_RRHH.docx prueban los perfiles no clínicos")
