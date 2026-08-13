@@ -127,6 +127,9 @@ pero no pertenecen a nadie).
   aunque estén declarados: por eso se fuerzan y se comprueban.
 - El paquete de Windows incluye una copia mínima de Tesseract y los modelos
   `spa`, `eng` y `osd`; la máquina de construcción debe tenerlos instalados.
+- El portable de Windows incluye `es_core_news_md` y `en_core_web_md`: conservan
+  NER en ambos idiomas sin añadir cerca de 1 GB de vectores estáticos. Para el
+  desarrollo local se siguen recomendando los modelos `lg`.
 - Los enlaces simbólicos internos se rompen al copiar la carpeta entre discos:
   el script los convierte en archivos reales.
 - Distribuye siempre el **.zip**, nunca la carpeta suelta.

@@ -82,8 +82,10 @@ jobs:
           python -m venv .venv
           .venv\Scripts\python -m pip install --upgrade pip
           .venv\Scripts\python -m pip install -r backend\requirements.txt pyinstaller pytest
-          .venv\Scripts\python -m spacy download es_core_news_lg
-          .venv\Scripts\python -m spacy download en_core_web_lg
+          # Los modelos medianos mantienen NER es/en y evitan añadir ~1 GB de
+          # vectores estáticos al portable. En desarrollo se pueden usar los lg.
+          .venv\Scripts\python -m spacy download es_core_news_md
+          .venv\Scripts\python -m spacy download en_core_web_md
 
       - name: Ejecutar pruebas
         shell: pwsh

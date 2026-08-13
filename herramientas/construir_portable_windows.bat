@@ -8,8 +8,8 @@ REM
 REM Preparacion (una vez, desde la carpeta del proyecto):
 REM   py -3.12 -m venv .venv
 REM   .venv\Scripts\pip install -r backend\requirements.txt pyinstaller
-REM   .venv\Scripts\python -m spacy download es_core_news_lg
-REM   .venv\Scripts\python -m spacy download en_core_web_lg
+REM   .venv\Scripts\python -m spacy download es_core_news_md
+REM   .venv\Scripts\python -m spacy download en_core_web_md
 REM
 REM Tambien debe estar instalado Tesseract para construir el paquete, con los
 REM idiomas Spanish y English. Se puede indicar otra ubicacion con:
@@ -78,7 +78,9 @@ REM ── Metadatos e iconos ────────────────�
 REM Limpiar la construccion anterior para evitar falsos positivos.
 if exist "dist\AnoniPRO" rmdir /s /q "dist\AnoniPRO"
 
-REM --collect-all fuerza las extensiones compiladas de spaCy y dependencias.
+REM Los modelos medianos mantienen NER y reducen cientos de MB de vectores que
+REM el portable no necesita. Los hooks oficiales de PyInstaller recopilan spaCy
+REM y thinc; las extensiones compiladas restantes se fuerzan explicitamente.
 .venv\Scripts\pyinstaller --noconfirm --clean ^
   --name AnoniPRO ^
   --icon frontend\iconos\icono.ico ^
@@ -87,11 +89,9 @@ REM --collect-all fuerza las extensiones compiladas de spaCy y dependencias.
   --console ^
   --paths backend ^
   --add-data "frontend;frontend" ^
-  --add-binary "%TESS_STAGE%;tesseract" ^
-  --collect-all es_core_news_lg ^
-  --collect-all en_core_web_lg ^
-  --collect-all spacy ^
-  --collect-all thinc ^
+  --add-data "%TESS_STAGE%;tesseract" ^
+  --collect-all es_core_news_md ^
+  --collect-all en_core_web_md ^
   --collect-all blis ^
   --collect-all srsly ^
   --collect-all preshed ^
