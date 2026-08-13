@@ -75,8 +75,9 @@ Para desarrolladores o para compilar tus propios paquetes:
    sobre el documento. Desmarca lo que NO quieras borrar y añade a mano lo que
    se haya escapado.
 4. Pulsa **Aplicar redacción** y confirma.
-5. **Descarga** el documento anonimizado. AnoniPRO lo revisa otra vez y te avisa
-   si detecta algún resto.
+5. AnoniPRO realiza una segunda comprobación automática y te avisa si encuentra
+   posibles residuos. **Revisa el resultado completo** y descárgalo solo cuando
+   estés conforme.
 
 Nada se borra sin que tú lo confirmes.
 
@@ -130,8 +131,9 @@ se marcan. Así no se señalan números que solo se parecen.
 - **El borrado es real.** En PDF se elimina el texto de la capa de contenido; en
   escaneados e imágenes se borran los píxeles; en Word se sustituye dentro del
   archivo. También se limpian los metadatos ocultos (autor, título…).
-- **Se revisa dos veces.** Tras borrar, el documento resultante se vuelve a
-  analizar para comprobar que no queda nada.
+- **Se realiza una segunda comprobación automática.** Tras borrar, el resultado
+  se vuelve a analizar para buscar coincidencias y posibles datos residuales.
+  Esta comprobación ayuda a revisar, pero no certifica que no quede ningún dato.
 
 ---
 
@@ -181,6 +183,29 @@ Dicho claramente, para que nadie se lleve sorpresas:
 - **Revisa siempre antes de compartir.** Ninguna herramienta automática es
   infalible: AnoniPRO te enseña lo que ha encontrado precisamente para que la
   decisión final sea tuya.
+
+---
+
+## Advertencia sobre los resultados y responsabilidad
+
+AnoniPRO es una **herramienta de apoyo**: no garantiza la detección o eliminación
+completa de todos los datos personales. El OCR, los modelos lingüísticos y las
+reglas automáticas pueden omitir información, interpretarla incorrectamente o
+dejar elementos visibles o susceptibles de reidentificación.
+
+El resultado debe revisarse íntegramente antes de compartirlo, publicarlo o
+utilizarlo. Cuando corresponda, la persona u organización responsable del
+tratamiento conserva sus obligaciones legales y debe valorar el riesgo y
+aplicar las medidas adicionales adecuadas al caso concreto.
+
+En la máxima medida permitida por la legislación aplicable, el autor no responde
+de daños indirectos derivados de un uso incorrecto, de la falta de revisión o de
+usos no previstos. Esta limitación no excluye las responsabilidades ni los
+derechos que legalmente no puedan limitarse.
+
+Consulta las condiciones completas en **[AVISO-LEGAL.md](AVISO-LEGAL.md)**. Antes
+de una distribución comercial, institucional o pública deben adaptarse al modelo
+de licencia y revisarse por un profesional jurídico cualificado.
 
 ---
 

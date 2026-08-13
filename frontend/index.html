@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="app.titulo_pagina">AnoniPRO — Anonimización local de documentos</title>
-  <link rel="stylesheet" href="styles.css?v=0.9">
+  <link rel="stylesheet" href="styles.css?v=0.9.2">
   <link rel="icon" type="image/svg+xml" href="icono.svg">
   <link rel="apple-touch-icon" href="iconos/icono-256.png">
 </head>
@@ -163,14 +163,30 @@
       </div>
     </div>
     <div id="contenido-resultado" class="oculto">
-      <h2 data-i18n="res.titulo">✅ Documento anonimizado</h2>
+      <h2 data-i18n="res.titulo">✅ Procesamiento completado</h2>
       <div id="avisos-verificacion"></div>
       <div id="residuales-verificacion"></div>
+      <div id="advertencia-resultado" class="advertencia-resultado" data-i18n="res.advertencia_general">
+        Las verificaciones automáticas no garantizan la ausencia total de datos personales. Revisa el resultado completo antes de descargarlo, compartirlo o publicarlo.
+      </div>
       <div class="fila-botones">
         <button id="boton-cerrar-dialogo" class="boton-secundario" data-i18n="res.cerrar">Cerrar</button>
         <a id="enlace-auditoria" class="boton-secundario boton-enlace-descarga" download data-i18n="res.auditoria" data-i18n-titulo="res.auditoria_ayuda" title="Informe de qué se redactó">📋 Informe de auditoría</a>
-        <a id="enlace-descarga" class="boton-primario boton-enlace-descarga" download data-i18n="res.descargar">⬇ Descargar documento anonimizado</a>
+        <a id="enlace-descarga" class="boton-primario boton-enlace-descarga" download data-i18n="res.descargar">⬇ Descargar resultado</a>
       </div>
+    </div>
+  </dialog>
+
+  <!-- ── Diálogo: advertencia y condiciones de uso ── -->
+  <dialog id="dialogo-aviso-legal">
+    <h2 data-i18n="legal.titulo">Aviso legal y condiciones de uso</h2>
+    <p data-i18n="legal.apoyo">AnoniPRO es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.</p>
+    <p data-i18n="legal.limites">El OCR, los modelos lingüísticos y las reglas automáticas pueden omitir información, interpretarla incorrectamente o dejar elementos visibles o susceptibles de reidentificación.</p>
+    <p data-i18n="legal.revision">La persona usuaria debe revisar el documento resultante antes de compartirlo, publicarlo o utilizarlo. Cuando corresponda, el responsable del tratamiento conserva sus obligaciones legales y debe valorar el riesgo y aplicar las medidas adecuadas.</p>
+    <p data-i18n="legal.responsabilidad">En la máxima medida permitida por la ley, el autor no responde de daños indirectos derivados del uso incorrecto, de la falta de revisión o de usos no previstos. No se excluyen las responsabilidades ni los derechos que legalmente no puedan limitarse.</p>
+    <p class="texto-suave" data-i18n="legal.no_asesora">El programa y esta información no sustituyen el asesoramiento jurídico, de protección de datos o profesional.</p>
+    <div class="fila-botones">
+      <button id="boton-cerrar-aviso-legal" class="boton-primario" data-i18n="legal.cerrar">Entendido</button>
     </div>
   </dialog>
 
@@ -222,12 +238,13 @@
 
   <footer>
     <span id="version-app"></span> · <span data-i18n="app.pie">Procesamiento 100 % local · Sin conexión a internet · Los documentos nunca se guardan en disco</span><br>
-    <span class="autor">Nodo Local</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span>
+    <span class="autor">Nodo Local</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span> ·
+    <button id="boton-aviso-legal" class="boton-enlace boton-aviso-legal" data-i18n="legal.abrir">Aviso legal y condiciones de uso</button>
   </footer>
 </div>
 
 <script src="vendor/pdfjs/pdf.min.js"></script>
-<script src="idiomas.js?v=0.9"></script>
-<script src="app.js?v=0.9"></script>
+<script src="idiomas.js?v=0.9.2"></script>
+<script src="app.js?v=0.9.2"></script>
 </body>
 </html>

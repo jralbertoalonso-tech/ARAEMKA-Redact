@@ -829,6 +829,12 @@ async function confirmarRedaccion() {
     return;
   }
   const datos = await r.json();
+  const claveAdvertencia = datos.avisos.length || (datos.residuales || []).length
+    ? "res.advertencia_con_residuos"
+    : "res.advertencia_sin_residuos";
+  const advertencia = $("advertencia-resultado");
+  advertencia.dataset.i18n = claveAdvertencia;
+  advertencia.textContent = t(claveAdvertencia);
   const avisos = $("avisos-verificacion");
   avisos.innerHTML = "";
   if (datos.avisos.length) {
@@ -984,6 +990,8 @@ function conectarEventos() {
   $("boton-cancelar-redaccion").addEventListener("click", () => $("dialogo-resultado").close());
   $("boton-confirmar-redaccion").addEventListener("click", confirmarRedaccion);
   $("boton-cerrar-dialogo").addEventListener("click", () => $("dialogo-resultado").close());
+  $("boton-aviso-legal").addEventListener("click", () => $("dialogo-aviso-legal").showModal());
+  $("boton-cerrar-aviso-legal").addEventListener("click", () => $("dialogo-aviso-legal").close());
   $("boton-cerrar-doc").addEventListener("click", () => {
     if (confirm(t("doc.terminar_confirmar"))) {
       cerrarDocumento();

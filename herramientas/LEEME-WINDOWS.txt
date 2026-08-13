@@ -18,6 +18,24 @@ PRIVACIDAD
 Todo el procesamiento ocurre dentro de este ordenador. Los documentos no se
 envían a internet y permanecen únicamente en memoria durante la sesión.
 
+AVISO IMPORTANTE SOBRE LOS RESULTADOS
+-------------------------------------
+AnoniPRO es una herramienta de apoyo. No garantiza la detección o eliminación
+completa de todos los datos personales. El OCR, los modelos lingüísticos y las
+reglas automáticas pueden omitir información, interpretarla incorrectamente o
+dejar elementos visibles o susceptibles de reidentificación.
+
+Revisa íntegramente el documento resultante antes de compartirlo, publicarlo o
+utilizarlo. La ausencia de avisos en las verificaciones automáticas no certifica
+que no quede ningún dato personal. Cuando corresponda, la persona u organización
+responsable del tratamiento conserva sus obligaciones legales y debe valorar el
+riesgo y aplicar las medidas adicionales adecuadas.
+
+En la máxima medida permitida por la legislación aplicable, el autor no responde
+de daños indirectos derivados de un uso incorrecto, de la falta de revisión o de
+usos no previstos. No se excluyen las responsabilidades ni los derechos que
+legalmente no puedan limitarse. Consulta también AVISO LEGAL.txt.
+
 AVISO DE WINDOWS SMARTSCREEN
 ----------------------------
 Esta edición todavía no lleva una firma digital Authenticode. Por eso Windows

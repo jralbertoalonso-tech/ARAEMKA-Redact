@@ -201,6 +201,7 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.7 | **Universal**: perfiles jurídico, empresa, facturas y personal; IBAN, CIF, tarjetas, catastro, matrículas; identidad Nodo Local |
 | 0.8 | **Interfaz bilingüe** español / inglés |
 | 0.9 | **Detección en inglés** (Reino Unido y EE. UU.): NHS, NINO, SSN/ITIN, códigos postales y teléfonos; segundo motor spaCy `en_core_web_lg` con carga perezosa; idioma del documento detectado automáticamente |
+| 0.9.2 | Avisos de riesgo y responsabilidad en la interfaz y los portables; resultado presentado como verificación automática, sin afirmar infalibilidad; condiciones de uso bilingües |
 
 ## Ideas pendientes
 

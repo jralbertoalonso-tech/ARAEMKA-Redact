@@ -125,6 +125,7 @@ for %%F in (tesseract.exe tessdata\spa.traineddata tessdata\eng.traineddata) do 
 )
 
 copy /y "herramientas\LEEME-WINDOWS.txt" "dist\AnoniPRO\LEEME PRIMERO.txt" >nul || exit /b 1
+copy /y "AVISO-LEGAL.md" "dist\AnoniPRO\AVISO LEGAL.txt" >nul || exit /b 1
 
 REM ── Prueba real: arranque, API y OCR de una imagen sintetica ──────────
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "herramientas\probar_portable_windows.ps1"

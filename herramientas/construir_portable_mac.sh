@@ -141,7 +141,8 @@ CÓMO SE USA
   3. Revisa lo que ha encontrado en el panel de la derecha: desmarca lo
      que NO quieras borrar y añade a mano lo que se haya escapado.
   4. Pulsa «Aplicar redacción» y confirma.
-  5. Descarga el documento anonimizado.
+  5. Revisa la comprobación automática, examina el resultado completo y
+     descárgalo solo cuando estés conforme.
 
   Nada se borra sin que tú lo confirmes.
 
@@ -155,6 +156,25 @@ LO QUE DEBES SABER
     se puede recuperar copiando ni pegando.
   · Revisa siempre el resultado antes de compartir el documento: ninguna
     herramienta automática es infalible.
+
+
+AVISO IMPORTANTE SOBRE LOS RESULTADOS
+─────────────────────────────────────
+  AnoniPRO es una herramienta de apoyo. No garantiza la detección o
+  eliminación completa de todos los datos personales. El OCR, los modelos
+  lingüísticos y las reglas automáticas pueden omitir información,
+  interpretarla incorrectamente o dejar elementos visibles o susceptibles
+  de reidentificación.
+
+  La ausencia de avisos automáticos no certifica que no quede ningún dato.
+  Revisa íntegramente el resultado antes de compartirlo, publicarlo o usarlo.
+  Cuando corresponda, el responsable del tratamiento conserva sus obligaciones
+  legales y debe valorar el riesgo y aplicar medidas adicionales adecuadas.
+
+  En la máxima medida permitida por la ley, el autor no responde de daños
+  indirectos derivados del uso incorrecto, de la falta de revisión o de usos
+  no previstos. No se excluyen responsabilidades ni derechos que legalmente
+  no puedan limitarse. Consulta también «AVISO LEGAL.txt».
 
   Para documentos ESCANEADOS hace falta instalar el lector de textos una
   sola vez. Abre la aplicación Terminal y pega:
@@ -174,6 +194,8 @@ NO TOQUES
 ──────────────────────────────────────────────────────────────────────
 AnoniPRO · Nodo Local · Autor: Dr. José Ramón Alberto Alonso
 FIN
+
+cp "AVISO-LEGAL.md" "dist/AnoniPRO/AVISO LEGAL.txt"
 
 # Zip listo para distribuir (conserva permisos y enlaces internos)
 rm -f AnoniPRO-portable-mac.zip

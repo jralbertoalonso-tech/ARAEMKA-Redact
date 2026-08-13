@@ -142,7 +142,7 @@ textarea { resize: vertical; margin-bottom: 10px; }
 .resultado-prueba.mal { background: #fdeaea; color: #b3261e; border-color: #f2c2c0; }
 [data-tema="oscuro"] .resultado-prueba.ok { background: #14342a; color: #6fd3a1; border-color: #2c5a45; }
 [data-tema="oscuro"] .resultado-prueba.mal { background: #3a1f1f; color: #f3a29c; border-color: #5c2f2c; }
-#dialogo-diagnostico, #dialogo-ajustes-ia { max-width: 560px; width: 92vw; }
+#dialogo-diagnostico, #dialogo-ajustes-ia, #dialogo-aviso-legal { max-width: 560px; width: 92vw; }
 
 .grupo-categorias { margin-bottom: 12px; }
 .titulo-grupo { font-weight: 600; font-size: 13px; margin: 10px 0 6px; }
@@ -305,6 +305,15 @@ dialog {
 dialog::backdrop { background: rgba(0,0,0,.45); }
 dialog h2 { margin-top: 0; font-size: 18px; }
 .boton-enlace-descarga { text-decoration: none; display: inline-block; }
+.advertencia-resultado {
+  background: #eef3f7; color: #243746; border: 1px solid #c8d5df;
+  padding: 10px 13px; border-radius: 9px; font-size: 13px; line-height: 1.45;
+  margin: 12px 0 4px;
+}
+[data-tema="oscuro"] .advertencia-resultado {
+  background: #202b34; color: #c8d9e5; border-color: #3b4b57;
+}
+.boton-aviso-legal { vertical-align: baseline; }
 .aviso-residuo {
   background: #fff3cd; color: #664d03; border: 1px solid #ffe69c;
   padding: 8px 12px; border-radius: 8px; font-size: 13px; margin: 6px 0;
