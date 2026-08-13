@@ -9,12 +9,13 @@ término, el español.
 MENSAJES: dict[str, dict[str, str]] = {
     "ocr_no_instalado": {
         "es": "Este documento necesita OCR (está escaneado o es una imagen) y "
-              "Tesseract no está instalado en este equipo. En la versión del NAS "
-              "ya viene incluido; en macOS instálalo con «brew install tesseract "
-              "tesseract-lang».",
+              "Tesseract no está disponible en este equipo. En las versiones de "
+              "Windows y NAS ya viene incluido; en macOS instálalo con "
+              "«brew install tesseract tesseract-lang».",
         "en": "This document needs OCR (it is scanned or an image) and Tesseract is "
-              "not installed on this computer. The NAS version already includes it; "
-              "on macOS install it with «brew install tesseract tesseract-lang».",
+              "not available on this computer. The Windows and NAS versions already "
+              "include it; on macOS install it with «brew install tesseract "
+              "tesseract-lang».",
     },
     "login_bloqueado": {
         "es": "Demasiados intentos fallidos. Espera {espera} segundos e inténtalo de nuevo.",

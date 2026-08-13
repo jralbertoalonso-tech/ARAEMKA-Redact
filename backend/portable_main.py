@@ -5,6 +5,7 @@ abre el navegador automáticamente. Sin instalación y sin permisos de
 administrador: basta con descomprimir la carpeta y hacer doble clic.
 """
 
+import os
 import socket
 import sys
 import threading
@@ -56,7 +57,10 @@ def main():
                 continue
         webbrowser.open(url)
 
-    threading.Thread(target=abrir_navegador, daemon=True).start()
+    # Las pruebas automáticas arrancan el ejecutable sin abrir una ventana del
+    # navegador dentro de la máquina de compilación.
+    if os.environ.get("ANONIPRO_NO_ABRIR_NAVEGADOR") != "1":
+        threading.Thread(target=abrir_navegador, daemon=True).start()
     # Solo escucha en 127.0.0.1: el modo portable es de uso personal, no servidor
     uvicorn.run(app, host="127.0.0.1", port=puerto, log_level="warning")
 

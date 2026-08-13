@@ -158,9 +158,12 @@ async function iniciar() {
   $("nota-ttl").textContent = t("subir.ttl", { min: info.ttl_minutos });
   $("estado-modelo").textContent = "NER: " + info.modelo_ner;
   const chipOcr = $("estado-ocr");
-  chipOcr.textContent = info.ocr_disponible
-    ? "OCR: " + (info.ocr_espanol ? "es ✓" : "—")
-    : "OCR: ✗";
+  if (!info.ocr_disponible) {
+    chipOcr.textContent = "OCR: ✗";
+  } else {
+    const idiomasOcr = [info.ocr_espanol && "es", info.ocr_ingles && "en"].filter(Boolean);
+    chipOcr.textContent = "OCR: " + (idiomasOcr.length ? idiomasOcr.join("+") + " ✓" : "—");
+  }
 
   if (info.requiere_password && !info.autenticado) {
     $("pantalla-login").classList.remove("oculto");

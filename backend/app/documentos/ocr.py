@@ -34,12 +34,33 @@ def _localizar_tesseract():
     Cuando la app empaquetada se abre con doble clic (Finder o el Explorador
     de Windows), el sistema NO le pasa el PATH del terminal: en macOS faltan
     las rutas de Homebrew y en Windows las carpetas de instalación típicas.
-    Se prueban las ubicaciones conocidas y se configura pytesseract con la
-    primera que exista.
+    El portable de Windows incluye su propia copia en ``_internal/tesseract``;
+    esa copia tiene prioridad para que el OCR funcione sin instalar nada.
+    Después se prueban el PATH y las ubicaciones conocidas del sistema.
     """
     import os
     import shutil
     import sys
+
+    def configurar(ejecutable: str) -> bool:
+        if not os.path.isfile(ejecutable):
+            return False
+        pytesseract.pytesseract.tesseract_cmd = ejecutable
+        tessdata = os.path.join(os.path.dirname(ejecutable), "tessdata")
+        if os.path.isdir(tessdata):
+            # Tesseract espera que TESSDATA_PREFIX apunte al directorio que
+            # contiene los .traineddata. Sobrescribirlo aquí evita que una
+            # variable global del equipo rompa el OCR incluido en el portable.
+            os.environ["TESSDATA_PREFIX"] = tessdata
+        return True
+
+    # PyInstaller expone los recursos añadidos dentro de sys._MEIPASS. En modo
+    # --onedir será normalmente dist/AnoniPRO/_internal.
+    base_empaquetada = getattr(sys, "_MEIPASS", "")
+    if base_empaquetada:
+        incluido = os.path.join(base_empaquetada, "tesseract", "tesseract.exe")
+        if configurar(incluido):
+            return
 
     if shutil.which("tesseract"):
         return  # ya accesible por PATH
@@ -54,8 +75,7 @@ def _localizar_tesseract():
             if base:
                 candidatos.append(os.path.join(base, "Tesseract-OCR", "tesseract.exe"))
     for c in candidatos:
-        if os.path.isfile(c):
-            pytesseract.pytesseract.tesseract_cmd = c
+        if configurar(c):
             return
 
 
@@ -67,23 +87,32 @@ def diagnostico() -> dict:
         version = str(pytesseract.get_tesseract_version())
         idiomas = pytesseract.get_languages(config="")
     except Exception:
-        return {"disponible": False, "version": None, "tiene_espanol": False, "idiomas": []}
+        return {
+            "disponible": False,
+            "version": None,
+            "tiene_espanol": False,
+            "tiene_ingles": False,
+            "idiomas": [],
+        }
     return {
         "disponible": True,
         "version": version,
         "tiene_espanol": "spa" in idiomas,
+        "tiene_ingles": "eng" in idiomas,
         "idiomas": idiomas,
     }
 
 
 def _idioma() -> str:
-    """Usa español si está; si no, cae a inglés con aviso implícito en el log."""
+    """Usa los modelos español e inglés disponibles en el equipo."""
     diag = diagnostico()
     if not diag["disponible"]:
         raise OcrNoDisponible(
             "Tesseract no está instalado. En macOS: «brew install tesseract tesseract-lang». "
             "En el NAS ya viene incluido en la imagen Docker."
         )
+    if diag["tiene_espanol"] and diag["tiene_ingles"]:
+        return "spa+eng"
     if diag["tiene_espanol"]:
         return "spa"
     return "eng"

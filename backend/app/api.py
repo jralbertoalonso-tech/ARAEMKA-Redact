@@ -82,6 +82,7 @@ def estado(request: Request):
         "modelo_ner": MOTOR.modelo_cargado or "(se carga con el primer documento)",
         "ocr_disponible": diag_ocr["disponible"],
         "ocr_espanol": diag_ocr["tiene_espanol"],
+        "ocr_ingles": diag_ocr["tiene_ingles"],
         "requiere_password": AJUSTES.requiere_password,
         "autenticado": getattr(request.state, "autenticado", not AJUSTES.requiere_password),
         "ttl_minutos": AJUSTES.ttl_minutos,

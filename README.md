@@ -39,7 +39,8 @@ Elige **una** forma según dónde lo vayas a usar.
 
 ### 🖥️ En tu Mac o tu PC — la más sencilla
 
-1. Descomprime el archivo `AnoniPRO-portable-mac.zip`.
+1. Descomprime el archivo portable para tu sistema (`AnoniPRO-portable-mac.zip`
+   o `AnoniPRO-portable-windows-x64-v…zip`).
 2. Doble clic en **`AnoniPRO`** (en Windows, `AnoniPRO.exe`).
 3. Se abre el navegador solo. Ya está.
 
@@ -154,8 +155,9 @@ reconocimiento óptico (OCR) en tu propio equipo.
 | Qué ocurre | Qué hacer |
 |---|---|
 | macOS dice que la app «está dañada» | No lo está. Usa «PRIMERA VEZ — Abrir aquí» (arriba lo explica) |
+| Windows muestra «Windows protegió su PC» | Comprueba el SHA-256 publicado con el ZIP; si coincide, pulsa «Más información» → «Ejecutar de todas formas» |
 | La ventana negra se cierra sola | Es la aplicación: déjala abierta mientras la uses |
-| Un PDF escaneado no se lee | Falta el OCR. En Mac: `brew install tesseract tesseract-lang`. En el NAS ya viene incluido |
+| Un PDF escaneado no se lee | En Windows y NAS el OCR ya viene incluido. En Mac: `brew install tesseract tesseract-lang` |
 | Marca cosas que no son datos | Escríbelas en «No redactar nunca estos términos» del panel izquierdo |
 | No detecta un dato tuyo | Añádelo a mano en el panel derecho, o a «Redactar siempre estos términos» |
 | Sale «El documento caducó» | Ha pasado el tiempo de seguridad y se borró de la memoria: vuelve a subirlo |

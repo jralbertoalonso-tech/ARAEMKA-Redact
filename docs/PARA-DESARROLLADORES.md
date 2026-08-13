@@ -117,7 +117,7 @@ pero no pertenecen a nadie).
 | Paquete | Comando | Notas |
 |---|---|---|
 | Portable macOS | `bash herramientas/construir_portable_mac.sh` | Se autocomprueba: verifica que no quedan enlaces simbólicos, que los módulos compilados están dentro y que **el ejecutable arranca de verdad** antes de darlo por bueno |
-| Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: PyInstaller no compila para otra plataforma |
+| Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: incluye Tesseract OCR (es/en), hace una prueba funcional real y genera ZIP + SHA-256 |
 | Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma |
 | Iconos | `.venv/bin/python herramientas/generar_iconos.py` | Genera `.icns`, `.ico` y PNG desde `frontend/icono.svg`. Los dos empaquetadores ya lo llaman |
 
@@ -125,6 +125,8 @@ pero no pertenecen a nadie).
 
 - PyInstaller puede dejar fuera módulos compilados de spaCy (`cymem`, `thinc`…)
   aunque estén declarados: por eso se fuerzan y se comprueban.
+- El paquete de Windows incluye una copia mínima de Tesseract y los modelos
+  `spa`, `eng` y `osd`; la máquina de construcción debe tenerlos instalados.
 - Los enlaces simbólicos internos se rompen al copiar la carpeta entre discos:
   el script los convierte en archivos reales.
 - Distribuye siempre el **.zip**, nunca la carpeta suelta.
