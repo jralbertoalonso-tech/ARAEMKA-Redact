@@ -1,7 +1,8 @@
 #!/bin/bash
 # Construye el AnoniPRO portable para macOS (Apple Silicon o Intel, según
-# dónde se ejecute). Resultado: dist/AnoniPRO/ — carpeta autocontenida que se
-# puede comprimir y llevar a cualquier Mac SIN instalar nada.
+# dónde se ejecute). Resultado: dist/AnoniPRO/ y un ZIP versionado para esa
+# arquitectura. Python y las librerías quedan incluidos; para OCR hace falta
+# Tesseract instalado en el Mac de destino (véase LÉEME PRIMERO.txt).
 #
 # Uso (desde la raíz del proyecto):
 #   bash herramientas/construir_portable_mac.sh
@@ -18,13 +19,27 @@ if [ ! -d ".venv" ]; then
   echo "Primero prepara el entorno de desarrollo (ver README)." && exit 1
 fi
 
+ANONIPRO_VERSION=$(PYTHONPATH=backend .venv/bin/python -c "from app.config import VERSION; print(VERSION)")
+MAC_ARCH=$(uname -m)
+ZIP="AnoniPRO-portable-macos-${MAC_ARCH}-v${ANONIPRO_VERSION}.zip"
+ANONIPRO_PYINSTALLER_CONFIG="${TMPDIR:-/tmp}/anonipro-pyinstaller-cache"
+mkdir -p "$ANONIPRO_PYINSTALLER_CONFIG"
+export PYINSTALLER_CONFIG_DIR="$ANONIPRO_PYINSTALLER_CONFIG"
+
 .venv/bin/pip install --quiet pyinstaller
+
+for MODELO in es_core_news_md en_core_web_md; do
+  if ! .venv/bin/python -c "import ${MODELO}" 2>/dev/null; then
+    echo "❌ ERROR: falta el modelo ${MODELO}. Instálalo antes de construir." && exit 1
+  fi
+done
 
 # Iconos de la aplicación (a partir de frontend/icono.svg)
 .venv/bin/python herramientas/generar_iconos.py >/dev/null
 
-# --collect-all para spaCy y sus dependencias compiladas: PyInstaller no
-# detecta solo los módulos en C (spacy.symbols, thinc, blis…).
+# Los modelos medianos mantienen NER y evitan incluir cientos de MB de vectores
+# que AnoniPRO no necesita. Los hooks oficiales recopilan spaCy y thinc; las
+# extensiones compiladas restantes se fuerzan explícitamente.
 # cymem además se fuerza con --add-binary: en la práctica hemos visto que en la
 # construcción grande puede quedarse fuera aunque --collect-all lo declare.
 CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.join(os.path.dirname(cymem.__file__), 'cymem.*.so'))[0])")
@@ -36,10 +51,8 @@ CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.
   --console \
   --paths backend \
   --add-data "frontend:frontend" \
-  --collect-all es_core_news_lg \
-  --collect-all en_core_web_lg \
-  --collect-all spacy \
-  --collect-all thinc \
+  --collect-all es_core_news_md \
+  --collect-all en_core_web_md \
   --collect-all blis \
   --collect-all srsly \
   --collect-all preshed \
@@ -74,15 +87,17 @@ if ! find dist/AnoniPRO/_internal -name 'cymem*.so' | grep -q .; then
   echo "❌ ERROR: cymem no quedó dentro del paquete. No lo distribuyas." && exit 1
 fi
 echo "Comprobando que el ejecutable arranca…"
-ANONIPRO_PUERTO=8765 ./dist/AnoniPRO/AnoniPRO &
+ANONIPRO_NO_ABRIR_NAVEGADOR=1 ANONIPRO_PUERTO=8765 ./dist/AnoniPRO/AnoniPRO &
 PID=$!
 # El primer arranque en frío puede tardar (macOS escanea el binario nuevo):
 # hasta 120 s de margen.
+ESTADO=""
 for i in $(seq 1 120); do
   sleep 1
-  if curl -s -m 2 http://127.0.0.1:8765/api/estado | grep -q version; then
+  ESTADO=$(curl -s -m 2 http://127.0.0.1:8765/api/estado || true)
+  if printf '%s' "$ESTADO" | grep -q "\"version\":\"${ANONIPRO_VERSION}\""; then
     kill $PID 2>/dev/null
-    echo "✅ El ejecutable arranca y responde."
+    wait $PID 2>/dev/null || true
     break
   fi
   if ! kill -0 $PID 2>/dev/null; then
@@ -90,6 +105,16 @@ for i in $(seq 1 120); do
   fi
   [ "$i" = 120 ] && kill $PID 2>/dev/null && echo "❌ ERROR: no respondió a tiempo." && exit 1
 done
+if ! printf '%s' "$ESTADO" | grep -q '"ocr_disponible":true'; then
+  echo "❌ ERROR: el paquete arrancó, pero no localizó Tesseract." && exit 1
+fi
+if ! printf '%s' "$ESTADO" | grep -q '"ocr_espanol":true'; then
+  echo "❌ ERROR: Tesseract no dispone del idioma español." && exit 1
+fi
+if ! printf '%s' "$ESTADO" | grep -q '"ocr_ingles":true'; then
+  echo "❌ ERROR: Tesseract no dispone del idioma inglés." && exit 1
+fi
+echo "✅ El ejecutable ${ANONIPRO_VERSION} arranca; OCR español e inglés disponibles."
 
 # ── Desbloqueador de Gatekeeper para el primer arranque en otro Mac ──────
 # Sin firma de Apple, macOS marca la app copiada como «dañada» (cuarentena).
@@ -197,15 +222,17 @@ FIN
 
 cp "AVISO-LEGAL.md" "dist/AnoniPRO/AVISO LEGAL.txt"
 
-# Zip listo para distribuir (conserva permisos y enlaces internos)
-rm -f AnoniPRO-portable-mac.zip
-ditto -c -k --keepParent dist/AnoniPRO AnoniPRO-portable-mac.zip
+# ZIP listo para distribuir (conserva permisos) y suma verificable.
+rm -f "$ZIP" "$ZIP.sha256.txt"
+ditto -c -k --keepParent dist/AnoniPRO "$ZIP"
+SHA256=$(shasum -a 256 "$ZIP" | awk '{print $1}')
+printf '%s  %s\n' "$SHA256" "$ZIP" > "$ZIP.sha256.txt"
 
 echo
 echo "✅ Portable creado en: dist/AnoniPRO/"
-echo "✅ Zip de distribución: AnoniPRO-portable-mac.zip"
+echo "✅ ZIP de distribución: $ZIP"
+echo "✅ SHA-256: $SHA256"
 echo "   Ejecutable:          dist/AnoniPRO/AnoniPRO"
-echo "   Para distribuirlo:   comprime la carpeta dist/AnoniPRO en un .zip"
 echo
 echo "OCR en el equipo de destino (opcional, solo para escaneados):"
 echo "   brew install tesseract tesseract-lang"

@@ -39,7 +39,7 @@ Elige **una** forma según dónde lo vayas a usar.
 
 ### 🖥️ En tu Mac o tu PC — la más sencilla
 
-1. Descomprime el archivo portable para tu sistema (`AnoniPRO-portable-mac.zip`
+1. Descomprime el archivo portable para tu sistema (`AnoniPRO-portable-macos-…zip`
    o `AnoniPRO-portable-windows-x64-v…zip`).
 2. Doble clic en **`AnoniPRO`** (en Windows, `AnoniPRO.exe`).
 3. Se abre el navegador solo. Ya está.

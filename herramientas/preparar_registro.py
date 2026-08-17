@@ -72,7 +72,7 @@ TERCEROS = [
     ("FastAPI, Starlette, Uvicorn", "Framework y servidor web", "MIT / BSD-3"),
     ("Microsoft Presidio (presidio-analyzer)", "Orquestación de detección de PII (capa 1-2)", "MIT"),
     ("spaCy", "Motor de reconocimiento de entidades (capa 2)", "MIT"),
-    ("Modelo es_core_news_lg (spaCy)", "Modelo NER en español", "Verificar licencia del modelo"),
+    ("Modelo es_core_news_md (spaCy)", "Modelo NER en español", "Verificar licencia del modelo"),
     ("PyMuPDF (fitz)", "Lectura y redacción destructiva de PDF", "AGPL-3.0 / comercial (Artifex)"),
     ("python-docx", "Lectura y escritura de documentos Word", "MIT"),
     ("pytesseract + Tesseract OCR", "OCR de escaneados e imágenes (capa Fase 2)", "Apache-2.0"),

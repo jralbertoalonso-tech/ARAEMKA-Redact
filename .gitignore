@@ -13,6 +13,7 @@ dist/
 build/
 *.spec
 *.zip
+*.zip.sha256.txt
 AnoniPRO-synology/anonipro-imagen.tar.gz
 
 # Documentos de prueba (se regeneran con herramientas/generar_documentos_prueba.py)
