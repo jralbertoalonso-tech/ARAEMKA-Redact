@@ -50,6 +50,8 @@ backend/
     documentos/
       pdf_doc.py       PDF: extracción posicionada y redacción destructiva
       docx_doc.py      Word: extracción y sustitución dentro del XML
+      xlsx_doc.py      Excel: extracción contextual y sustitución de celdas
+      ooxml.py         Saneado de propiedades y contenido oculto Office
       ocr.py           Tesseract
       fechas.py        desplazamiento de fechas y rangos etarios
   tests/             63 pruebas
@@ -202,6 +204,7 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.8 | **Interfaz bilingüe** español / inglés |
 | 0.9 | **Detección en inglés** (Reino Unido y EE. UU.): NHS, NINO, SSN/ITIN, códigos postales y teléfonos; segundo motor spaCy `en_core_web_lg` con carga perezosa; idioma del documento detectado automáticamente |
 | 0.9.2 | Avisos de riesgo y responsabilidad en la interfaz y los portables; resultado presentado como verificación automática, sin afirmar infalibilidad; condiciones de uso bilingües |
+| 0.10.0 | Excel `.xlsx`; resaltado inmediato de términos manuales; fechas en el perfil clínico; saneado reforzado de PDF/Word/Excel y nombres de descarga genéricos |
 
 ## Ideas pendientes
 

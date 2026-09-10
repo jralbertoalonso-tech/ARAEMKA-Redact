@@ -15,6 +15,8 @@ const estado = {
   detecciones: new Map(),    // id → {…deteccion, aprobada}
   zonasManuales: [],         // [{pagina,x0,y0,x1,y1, elemento}]
   textosManuales: [],        // ["texto", …]
+  coincidenciasManuales: [], // posiciones devueltas al añadir un texto manual
+  versionBusquedaManual: 0,  // evita que una respuesta antigua pise otra nueva
   escalas: new Map(),        // nº de página → escala de render
   modoDibujo: false,
   clicTrasArrastre: false,   // suprime el clic que remata un arrastre de zona
@@ -96,7 +98,7 @@ function cambiarIdioma() {
   sincronizarPerfilConInterruptores();
   actualizarCasillasIdioma();
   if (estado.doc) {
-    if (estado.doc.tipo === "docx") pintarDocx(); else pintarResaltadosPdf();
+    if (estado.doc.tipo === "pdf") pintarResaltadosPdf(); else pintarDocx();
     pintarListaDetecciones();
     mostrarAvisosDocumento();
   }
@@ -118,7 +120,7 @@ const BASE_IDENTIDAD = ["persona", "dni_nie", "pasaporte", "fecha_nacimiento",
 const PERFILES_BASE = {
   todo: null,
 
-  clinico: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "iban", "tarjeta"],
+  clinico: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "fecha", "iban", "tarjeta"],
 
   publicacion: [...BASE_IDENTIDAD, "cip", "nhc", "nuss", "nhs", "ssn", "centro",
     "servicio_unidad", "sanitario", "colegiado", "organizacion", "logo", "fecha",
@@ -412,6 +414,8 @@ async function subirArchivo(archivo) {
   cargarDetecciones(estado.doc.detecciones);
   estado.zonasManuales = [];
   estado.textosManuales = [];
+  estado.coincidenciasManuales = [];
+  estado.versionBusquedaManual += 1;
   $("nombre-documento").textContent = estado.doc.nombre +
     (estado.cola.length ? t("subir.quedan", { n: estado.cola.length }) : "");
   $("boton-zona-manual").classList.toggle("oculto", estado.doc.tipo !== "pdf");
@@ -538,6 +542,25 @@ function pintarResaltadosPdf() {
       capa.appendChild(caja);
     }
   }
+  // Los términos añadidos manualmente aparecen de inmediato en morado. No
+  // interceptan el ratón: se gestionan desde su fila del panel derecho.
+  for (const coincidencia of estado.coincidenciasManuales) {
+    const capa = document.querySelector(
+      `.capa-resaltados[data-pagina="${coincidencia.pagina}"]`
+    );
+    if (!capa || !coincidencia.rects) continue;
+    const escala = estado.escalas.get(coincidencia.pagina) || 1;
+    for (const [x0, y0, x1, y1] of coincidencia.rects) {
+      const caja = document.createElement("div");
+      caja.className = "resaltado coincidencia-manual";
+      caja.style.left = x0 * escala + "px";
+      caja.style.top = y0 * escala + "px";
+      caja.style.width = (x1 - x0) * escala + "px";
+      caja.style.height = (y1 - y0) * escala + "px";
+      caja.title = t("det.coincidencia_manual", { texto: coincidencia.termino });
+      capa.appendChild(caja);
+    }
+  }
 }
 
 // Dibujo de zonas manuales sobre el PDF
@@ -607,7 +630,7 @@ function anadirZonaManual(zona, capa, escala) {
   pintarListaDetecciones();
 }
 
-// ───────────────────────── vista previa DOCX ─────────────────────────
+// ───────────────────────── vista previa DOCX / XLSX ─────────────────────────
 function pintarDocx() {
   const cont = $("contenedor-paginas");
   cont.innerHTML = "";
@@ -624,26 +647,52 @@ function pintarDocx() {
   for (const b of estado.doc.bloques) {
     const p = document.createElement("p");
     if (b.origen !== "cuerpo") p.className = "origen-" + b.origen;
-    const dets = (porBloque.get(b.indice) || []).sort((a, z) => a.inicio - z.inicio);
-    let cursor = 0;
-    for (const d of dets) {
-      if (d.inicio < cursor) continue; // solapada, ya cubierta
-      p.appendChild(document.createTextNode(b.texto.slice(cursor, d.inicio)));
-      const marca = document.createElement("mark");
-      marca.className = "resaltado-texto" + (estado.detecciones.get(d.id).aprobada ? "" : " descartado");
-      marca.dataset.deteccion = d.id;
-      marca.textContent = b.texto.slice(d.inicio, d.fin);
-      marca.style.background = colorDeCategoria(d.categoria) + "66";
-      marca.title = t("det.incluir_excluir");
-      marca.addEventListener("click", () => {
-        alternarDeteccion(d.id);
-        localizarFilaPanel(d.id);
-      });
-      p.appendChild(marca);
-      cursor = d.fin;
+    if (b.referencia) {
+      const referencia = document.createElement("span");
+      referencia.className = "referencia-bloque";
+      referencia.textContent = b.referencia;
+      p.appendChild(referencia);
     }
-    p.appendChild(document.createTextNode(b.texto.slice(cursor)));
-    if (!b.texto.trim()) p.innerHTML = "&nbsp;";
+    const dets = porBloque.get(b.indice) || [];
+    const manuales = estado.coincidenciasManuales.filter((c) => c.bloque === b.indice);
+    const spans = [
+      ...dets.map((d) => ({ ...d, tipo: "automatica" })),
+      ...manuales.map((m) => ({ ...m, tipo: "manual" })),
+    ];
+    const limites = new Set([0, b.texto.length]);
+    for (const span of spans) {
+      limites.add(Math.max(0, Math.min(b.texto.length, span.inicio)));
+      limites.add(Math.max(0, Math.min(b.texto.length, span.fin)));
+    }
+    const orden = [...limites].sort((a, z) => a - z);
+    for (let i = 0; i < orden.length - 1; i++) {
+      const inicio = orden[i], fin = orden[i + 1];
+      if (inicio === fin) continue;
+      const manual = manuales.find((m) => m.inicio < fin && m.fin > inicio);
+      const automatica = dets.find((d) => d.inicio < fin && d.fin > inicio);
+      if (!manual && !automatica) {
+        p.appendChild(document.createTextNode(b.texto.slice(inicio, fin)));
+        continue;
+      }
+      const marca = document.createElement("mark");
+      marca.textContent = b.texto.slice(inicio, fin);
+      if (manual) {
+        marca.className = "resaltado-texto coincidencia-manual-texto";
+        marca.title = t("det.coincidencia_manual", { texto: manual.termino });
+      } else {
+        const activa = estado.detecciones.get(automatica.id).aprobada;
+        marca.className = "resaltado-texto" + (activa ? "" : " descartado");
+        marca.dataset.deteccion = automatica.id;
+        marca.style.background = colorDeCategoria(automatica.categoria) + "66";
+        marca.title = t("det.incluir_excluir");
+        marca.addEventListener("click", () => {
+          alternarDeteccion(automatica.id);
+          localizarFilaPanel(automatica.id);
+        });
+      }
+      p.appendChild(marca);
+    }
+    if (!b.texto.trim() && !b.referencia) p.innerHTML = "&nbsp;";
     hoja.appendChild(p);
   }
   cont.appendChild(hoja);
@@ -683,15 +732,19 @@ function pintarListaDetecciones() {
     titulo.textContent = t("det.anadidos");
     cont.appendChild(titulo);
     estado.textosManuales.forEach((texto, i) => {
+      const n = estado.coincidenciasManuales.filter(
+        (c) => c.termino.toLocaleLowerCase() === texto.toLocaleLowerCase()
+      ).length;
       const fila = document.createElement("div");
       fila.className = "fila-deteccion";
       fila.innerHTML = `<input type="checkbox" checked disabled>
         <div class="cuerpo-deteccion"><div class="texto-deteccion">${escapaHtml(texto)}</div>
-        <div class="metadatos-deteccion"><span class="etiqueta-capa">${t("det.texto_manual")}</span></div></div>
+        <div class="metadatos-deteccion"><span class="etiqueta-capa">${t("det.texto_manual")}</span>
+        <span class="etiqueta-confianza">${t("det.coincidencias", { n })}</span></div></div>
         <button class="boton-enlace" title="Quitar">✖</button>`;
-      fila.querySelector("button").addEventListener("click", () => {
+      fila.querySelector("button").addEventListener("click", async () => {
         estado.textosManuales.splice(i, 1);
-        pintarListaDetecciones();
+        await actualizarCoincidenciasManuales();
       });
       cont.appendChild(fila);
     });
@@ -742,7 +795,7 @@ function pintarListaDetecciones() {
     cont.appendChild(fila);
   }
 
-  if (!ordenadas.length) {
+  if (!ordenadas.length && !estado.textosManuales.length && !estado.zonasManuales.length) {
     const p = document.createElement("p");
     p.className = "texto-suave";
     p.textContent = t("det.vacio");
@@ -865,11 +918,10 @@ async function confirmarRedaccion() {
       const boton = document.createElement("button");
       boton.className = "boton-enlace";
       boton.textContent = t("res.redactar_tambien");
-      boton.addEventListener("click", () => {
-        if (!estado.textosManuales.includes(r.texto)) estado.textosManuales.push(r.texto);
+      boton.addEventListener("click", async () => {
+        await anadirTextoManualValor(r.texto);
         boton.textContent = t("res.anadido");
         boton.disabled = true;
-        pintarListaDetecciones();
       });
       li.appendChild(boton);
       ul.appendChild(li);
@@ -897,6 +949,8 @@ function cerrarDocumento(avisarServidor = true) {
   estado.detecciones = new Map();
   estado.zonasManuales = [];
   estado.textosManuales = [];
+  estado.coincidenciasManuales = [];
+  estado.versionBusquedaManual += 1;
   estado.escalas = new Map();
   desactivarModoDibujo();
   $("contenedor-paginas").innerHTML = "";
@@ -1174,7 +1228,7 @@ async function recogerDeEntrada(entrada, archivos) {
 }
 
 function recibirArchivos(archivos) {
-  const validos = archivos.filter((a) => /\.(pdf|docx|jpe?g|png|tiff?|bmp|webp)$/i.test(a.name));
+  const validos = archivos.filter((a) => /\.(pdf|docx|xlsx?|xlsm|jpe?g|png|tiff?|bmp|webp)$/i.test(a.name));
   if (!validos.length) {
     alert(t("subir.formato_no"));
     return;
@@ -1183,12 +1237,48 @@ function recibirArchivos(archivos) {
   subirArchivo(validos[0]);
 }
 
-function anadirTextoManual() {
+async function actualizarCoincidenciasManuales() {
+  const version = ++estado.versionBusquedaManual;
+  if (!estado.doc || !estado.textosManuales.length) {
+    estado.coincidenciasManuales = [];
+  } else {
+    try {
+      const respuesta = await fetch(`/api/documentos/${estado.doc.id}/buscar-textos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ textos: estado.textosManuales }),
+      });
+      if (version !== estado.versionBusquedaManual) return;
+      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+      estado.coincidenciasManuales = (await respuesta.json()).coincidencias || [];
+    } catch (error) {
+      if (version !== estado.versionBusquedaManual) return;
+      estado.coincidenciasManuales = [];
+      console.warn("No se pudieron resaltar los términos manuales", error);
+    }
+  }
+  if (version !== estado.versionBusquedaManual) return;
+  if (estado.doc) {
+    if (estado.doc.tipo === "pdf") pintarResaltadosPdf(); else pintarDocx();
+  }
+  pintarListaDetecciones();
+}
+
+async function anadirTextoManualValor(valor) {
+  const texto = (valor || "").trim();
+  if (!texto) return;
+  const clave = texto.toLocaleLowerCase();
+  if (!estado.textosManuales.some((t) => t.toLocaleLowerCase() === clave)) {
+    estado.textosManuales.push(texto);
+  }
+  await actualizarCoincidenciasManuales();
+}
+
+async function anadirTextoManual() {
   const texto = $("campo-texto-manual").value.trim();
   if (!texto) return;
-  estado.textosManuales.push(texto);
   $("campo-texto-manual").value = "";
-  pintarListaDetecciones();
+  await anadirTextoManualValor(texto);
 }
 
 iniciar();

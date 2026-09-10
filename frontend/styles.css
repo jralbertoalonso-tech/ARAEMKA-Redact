@@ -223,6 +223,12 @@ button { font: inherit; cursor: pointer; }
   opacity: .18; border-style: dashed; border-color: var(--texto-suave);
   background: repeating-linear-gradient(45deg, #999 0 4px, transparent 4px 8px) !important;
 }
+.resaltado.coincidencia-manual {
+  background: #8e4ec6;
+  opacity: .42;
+  outline: 2px solid #8e4ec6;
+  pointer-events: none;
+}
 .resaltado.seleccionado { outline: 3px solid var(--primario); opacity: .6; }
 
 /* Destello de localización: al clicar una fila del panel, la detección
@@ -264,6 +270,26 @@ mark.resaltado-texto {
 }
 mark.resaltado-texto.descartado { background: var(--fondo-suave) !important; text-decoration: line-through; color: var(--texto-suave); }
 mark.resaltado-texto.seleccionado { outline: 2.5px solid var(--primario); }
+mark.coincidencia-manual-texto {
+  background: #8e4ec666;
+  outline: 1px solid #8e4ec6;
+}
+.referencia-bloque {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--fondo-suave);
+  color: var(--texto-suave);
+  font: 600 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.origen-hoja {
+  margin-top: 20px !important;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--borde);
+  font-weight: 700;
+}
+.origen-celda_oculta, .origen-formula_oculta { opacity: .8; }
 
 /* ── Lista de detecciones ───────────────────────────────────────── */
 .cabecera-detecciones { display: flex; align-items: center; justify-content: space-between; }

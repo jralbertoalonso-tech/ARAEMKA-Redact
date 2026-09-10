@@ -31,7 +31,7 @@ and wiped automatically.
 
 | Accepts | Detects | Languages |
 |---|---|---|
-| PDF, scanned PDF, Word (.docx), images (JPG, PNG, TIFF) | 29 kinds of personal data, grouped into 8 profiles | Spanish and English (UK and US), with each document's language detected automatically |
+| PDF, scanned PDF, Word (.docx), Excel (.xlsx), images (JPG, PNG, TIFF) | 29 kinds of personal data, grouped into 8 profiles | Spanish and English (UK and US), with each document's language detected automatically |
 
 > **Note on languages.** The interface is fully bilingual and detection now works
 > in both languages: AnoniPRO detects each document's language and applies the
@@ -89,7 +89,7 @@ Nothing is deleted without your confirmation.
 
 | Profile | For | Protects, on top of names, ID, address, phone and e-mail |
 |---|---|---|
-| **Clinical document** | Records and reports | Health card, medical record and episode numbers, social security |
+| **Clinical document** | Records and reports | Health card, medical record and episode numbers, social security and dates (including specimen collection date) |
 | **Scientific publication** | Papers, conferences | The above **plus** hospital, department, doctors, registration numbers and dates |
 | **Teaching** | Teaching material | As above, keeping the structure of the case |
 | **Legal** | Contracts, filings, notary | Case files, court records, deeds, land registry, number plates, IBAN, company tax ID |
@@ -117,7 +117,10 @@ settings — never including the original data.
   30 minutes, or when you press *Finish*.
 - **Deletion is real.** In PDFs the text is removed from the content layer; in
   scans and images the pixels are erased; in Word it is replaced inside the
-  file. Hidden metadata (author, title…) is cleaned too.
+  file; in Excel the relevant cell values are replaced. Compatible hidden
+  properties, comments, deleted revisions, external links and metadata are
+  removed too. Downloads use a generic filename so a patient name or record
+  number in the original filename is not copied to the result.
 - **It is checked twice.** After redacting, the resulting document is analysed
   again to make sure nothing survived.
 
@@ -139,6 +142,11 @@ Scanned documents and images first go through optical character recognition
 ## Current limitations
 
 - **Old `.doc` files** (Word 97-2003) are not supported — save them as `.docx`.
+- **Excel support is `.xlsx` without macros.** Save old `.xls` and macro-enabled
+  `.xlsm` files as `.xlsx`. Hidden sheets/cells, tab names and print headers and
+  footers are reviewed; comments and links are removed. Formulae, embedded
+  objects and complex formatting may change, so review the resulting workbook
+  both visually and functionally.
 - **OCR is not perfect.** On scans it can misread data, especially e-mail
   addresses. Review the result and use manual marking where needed.
 - **Two languages only: Spanish and English** (UK/US), detected automatically
@@ -153,7 +161,7 @@ Scanned documents and images first go through optical character recognition
 The AnoniPRO source code is the author's work; **all rights reserved**.
 
 It uses third-party open-source components, owned by their respective authors:
-FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, Tesseract
+FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, openpyxl, Tesseract
 OCR, Pillow and PDF.js. Language and AI models are distributed under their own
 licences.
 

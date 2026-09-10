@@ -18,8 +18,8 @@ class SesionDocumento:
     def __init__(self, nombre: str, tipo: str, doc):
         self.id = uuid.uuid4().hex
         self.nombre = nombre                  # nombre original del archivo
-        self.tipo = tipo                      # "pdf" | "docx"
-        self.doc = doc                        # DocumentoPdf | DocumentoDocx
+        self.tipo = tipo                      # "pdf" | "docx" | "xlsx"
+        self.doc = doc                        # DocumentoPdf | DocumentoDocx | DocumentoXlsx
         self.creado_en = time.monotonic()
         self.detecciones: dict[str, dict] = {}   # id_detección → detección
         self.resultado: bytes | None = None      # archivo ya redactado

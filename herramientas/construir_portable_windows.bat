@@ -100,9 +100,18 @@ REM y thinc; las extensiones compiladas restantes se fuerzan explicitamente.
   --collect-all wasabi ^
   --collect-all catalogue ^
   --collect-all confection ^
+  --collect-all openpyxl ^
   --collect-data presidio_analyzer ^
   --collect-submodules uvicorn ^
   --collect-submodules app ^
+  --exclude-module pytest ^
+  --exclude-module blis.tests ^
+  --exclude-module srsly.tests ^
+  --exclude-module preshed.tests ^
+  --exclude-module cymem.tests ^
+  --exclude-module murmurhash.tests ^
+  --exclude-module wasabi.tests ^
+  --exclude-module catalogue.tests ^
   --hidden-import cymem ^
   --hidden-import cymem.cymem ^
   backend\portable_main.py

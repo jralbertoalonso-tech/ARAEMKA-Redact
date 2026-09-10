@@ -1,6 +1,6 @@
 # AnoniPRO — Aviso legal y condiciones de uso
 
-Última actualización: 13 de agosto de 2026.
+Última actualización: 10 de septiembre de 2026.
 
 ## 1. Naturaleza y finalidad
 
@@ -21,6 +21,12 @@ Antes de descargar, comunicar, publicar o utilizar el resultado, la persona
 usuaria debe revisar íntegramente el documento, incluidas imágenes, membretes,
 metadatos, texto reconocido por OCR y datos que puedan permitir una
 identificación indirecta o por combinación con otras fuentes.
+
+En libros Excel, la revisión debe incluir todas las hojas, incluidas las
+ocultas, los nombres de pestaña, fórmulas, objetos incrustados y el efecto de la
+redacción sobre cálculos y formato. En documentos Office complejos, la limpieza
+de metadatos y contenido oculto compatible no certifica que una extensión,
+macro u objeto no admitido carezca de información residual.
 
 La persona u organización que determine los fines y medios del tratamiento —o
 que tenga legalmente la condición de responsable del tratamiento— conserva sus
@@ -89,13 +95,19 @@ cualificado.
 
 # AnoniPRO — Legal notice and terms of use
 
-Last updated: 13 August 2026.
+Last updated: 10 September 2026.
 
 AnoniPRO is an assistive document-detection and redaction tool. It is not an
 anonymisation certification and does not guarantee the complete detection or
 removal of all personal data. OCR, automated rules, language models and local
 AI may omit or misinterpret information or leave visible or potentially
 re-identifiable elements.
+
+For Excel workbooks, review every sheet (including hidden sheets), tab names,
+formulae, embedded objects and the effect of redaction on calculations and
+formatting. Cleaning supported metadata and hidden content does not certify
+that an unsupported extension, macro or embedded object contains no residual
+information.
 
 The user must review the entire resulting document before downloading,
 sharing, publishing or using it. Where applicable, the person or organisation

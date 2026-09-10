@@ -15,36 +15,38 @@ cd "$(dirname "$0")/.."
 
 echo "── AnoniPRO · construcción del portable (macOS) ──"
 
-if [ ! -d ".venv" ]; then
+VENV_DIR="${ANONIPRO_VENV:-.venv}"
+if [ ! -x "$VENV_DIR/bin/python" ]; then
   echo "Primero prepara el entorno de desarrollo (ver README)." && exit 1
 fi
 
-ANONIPRO_VERSION=$(PYTHONPATH=backend .venv/bin/python -c "from app.config import VERSION; print(VERSION)")
+ANONIPRO_VERSION=$(PYTHONPATH=backend "$VENV_DIR/bin/python" -c "from app.config import VERSION; print(VERSION)")
 MAC_ARCH=$(uname -m)
 ZIP="AnoniPRO-portable-macos-${MAC_ARCH}-v${ANONIPRO_VERSION}.zip"
 ANONIPRO_PYINSTALLER_CONFIG="${TMPDIR:-/tmp}/anonipro-pyinstaller-cache"
 mkdir -p "$ANONIPRO_PYINSTALLER_CONFIG"
 export PYINSTALLER_CONFIG_DIR="$ANONIPRO_PYINSTALLER_CONFIG"
 
-.venv/bin/pip install --quiet pyinstaller
+"$VENV_DIR/bin/pip" install --quiet pyinstaller
 
 for MODELO in es_core_news_md en_core_web_md; do
-  if ! .venv/bin/python -c "import ${MODELO}" 2>/dev/null; then
+  if ! "$VENV_DIR/bin/python" -c \
+      "import importlib.util,sys;sys.exit(0 if importlib.util.find_spec('${MODELO}') else 1)"; then
     echo "❌ ERROR: falta el modelo ${MODELO}. Instálalo antes de construir." && exit 1
   fi
 done
 
 # Iconos de la aplicación (a partir de frontend/icono.svg)
-.venv/bin/python herramientas/generar_iconos.py >/dev/null
+"$VENV_DIR/bin/python" herramientas/generar_iconos.py >/dev/null
 
 # Los modelos medianos mantienen NER y evitan incluir cientos de MB de vectores
 # que AnoniPRO no necesita. Los hooks oficiales recopilan spaCy y thinc; las
 # extensiones compiladas restantes se fuerzan explícitamente.
 # cymem además se fuerza con --add-binary: en la práctica hemos visto que en la
 # construcción grande puede quedarse fuera aunque --collect-all lo declare.
-CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.join(os.path.dirname(cymem.__file__), 'cymem.*.so'))[0])")
+CYMEM_SO=$("$VENV_DIR/bin/python" -c "import cymem, glob, os; print(glob.glob(os.path.join(os.path.dirname(cymem.__file__), 'cymem.*.so'))[0])")
 
-.venv/bin/pyinstaller --noconfirm --clean \
+"$VENV_DIR/bin/pyinstaller" --noconfirm --clean \
   --name AnoniPRO \
   --icon frontend/iconos/icono.icns \
   --onedir \
@@ -61,9 +63,18 @@ CYMEM_SO=$(.venv/bin/python -c "import cymem, glob, os; print(glob.glob(os.path.
   --collect-all wasabi \
   --collect-all catalogue \
   --collect-all confection \
+  --collect-all openpyxl \
   --collect-data presidio_analyzer \
   --collect-submodules uvicorn \
   --collect-submodules app \
+  --exclude-module pytest \
+  --exclude-module blis.tests \
+  --exclude-module srsly.tests \
+  --exclude-module preshed.tests \
+  --exclude-module cymem.tests \
+  --exclude-module murmurhash.tests \
+  --exclude-module wasabi.tests \
+  --exclude-module catalogue.tests \
   --add-binary "$CYMEM_SO:cymem" \
   --hidden-import cymem \
   --hidden-import cymem.cymem \
@@ -160,7 +171,7 @@ CÓMO ABRIRLO
 
 CÓMO SE USA
 ───────────
-  1. Arrastra tu documento (PDF, Word o una imagen) a la ventana.
+  1. Arrastra tu documento (PDF, Word, Excel .xlsx o una imagen) a la ventana.
   2. Elige el perfil según el tipo de documento (clínico, jurídico,
      facturas, personal…) en el panel de la izquierda.
   3. Revisa lo que ha encontrado en el panel de la derecha: desmarca lo
@@ -179,6 +190,11 @@ LO QUE DEBES SABER
     se borran solos a los 30 minutos.
   · El borrado es real: el dato se elimina del archivo, no se tapa. No
     se puede recuperar copiando ni pegando.
+  · Al crear el resultado se limpian los metadatos compatibles. En PDF se
+    eliminan también adjuntos, enlaces y contenido oculto; en Word/Excel,
+    propiedades, comentarios, revisiones borradas y enlaces externos.
+  · Excel admite .xlsx sin macros. Convierte antes los .xls y .xlsm, y revisa
+    visual y funcionalmente el libro resultante (especialmente las fórmulas).
   · Revisa siempre el resultado antes de compartir el documento: ninguna
     herramienta automática es infalible.
 

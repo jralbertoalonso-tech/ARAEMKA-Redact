@@ -3,6 +3,10 @@
 
 FROM python:3.12-slim
 
+ARG ANONIPRO_VERSION=0.10.0
+LABEL org.opencontainers.image.title="AnoniPRO" \
+      org.opencontainers.image.version="${ANONIPRO_VERSION}"
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ANONIPRO_PUERTO=8080
@@ -10,7 +14,7 @@ ENV PYTHONUNBUFFERED=1 \
 # OCR local (Fase 2): Tesseract + modelo español. Se instala del repositorio de
 # Debian en tiempo de BUILD, así el contenedor funciona sin internet.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tesseract-ocr tesseract-ocr-spa \
+        tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

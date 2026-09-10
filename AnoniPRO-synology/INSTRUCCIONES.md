@@ -4,7 +4,7 @@ Esta carpeta contiene la aplicación **ya construida y probada**: el NAS no
 necesita internet ni compilar nada.
 
 ```
-anonipro-imagen.tar.gz   la aplicación (~1,3 GB)
+anonipro-imagen.tar.gz   la aplicación y sus modelos locales (~2 GB)
 docker-compose.yml       la configuración
 ```
 

@@ -13,10 +13,19 @@ OCR INCLUIDO
 El reconocimiento de documentos escaneados e imágenes está incluido para
 español e inglés. No hace falta instalar Tesseract ni configurar nada.
 
+FORMATOS
+--------
+Admite PDF, Word (.docx), Excel (.xlsx) e imágenes JPG/PNG/TIFF. Los Excel
+.xls antiguos o .xlsm con macros deben guardarse antes como .xlsx.
+
 PRIVACIDAD
 ----------
 Todo el procesamiento ocurre dentro de este ordenador. Los documentos no se
 envían a internet y permanecen únicamente en memoria durante la sesión.
+Al crear el resultado se limpian los metadatos compatibles. En PDF se eliminan
+también adjuntos, enlaces y contenido oculto; en Word/Excel se eliminan
+propiedades, comentarios, revisiones borradas y enlaces externos. El resultado
+usa un nombre de archivo genérico para no copiar datos del nombre original.
 
 AVISO IMPORTANTE SOBRE LOS RESULTADOS
 -------------------------------------

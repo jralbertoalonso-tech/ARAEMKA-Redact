@@ -29,7 +29,7 @@ memoria y se borran solos.
 
 | Admite | Detecta | Idiomas |
 |---|---|---|
-| PDF, PDF escaneado, Word (.docx), imágenes (JPG, PNG, TIFF) | 29 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (Reino Unido y EE. UU.), con el idioma del documento detectado automáticamente |
+| PDF, PDF escaneado, Word (.docx), Excel (.xlsx), imágenes (JPG, PNG, TIFF) | 29 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (Reino Unido y EE. UU.), con el idioma del documento detectado automáticamente |
 
 ---
 
@@ -90,7 +90,7 @@ retocarlos y guardar los tuyos.
 
 | Perfil | Para qué | Qué protege, además de nombres, DNI, dirección, teléfono y correo |
 |---|---|---|
-| **Documento clínico** | Historias, informes | Tarjeta sanitaria, nº de historia y episodio, nº de la Seguridad Social |
+| **Documento clínico** | Historias, informes | Tarjeta sanitaria, nº de historia y episodio, nº de la Seguridad Social y fechas (incluida la fecha de la toma) |
 | **Publicación científica** | Artículos, congresos | Lo anterior **más** hospital, servicio, médicos, nº de colegiado y fechas |
 | **Docencia** | Sesiones y material docente | Como el anterior, conservando la estructura del caso |
 | **Jurídico** | Contratos, escritos, notaría | Expedientes y autos, protocolo, catastro y fincas, matrículas, IBAN, CIF, juzgados |
@@ -127,10 +127,13 @@ se marcan. Así no se señalan números que solo se parecen.
 - **Nada sale de tu equipo.** Ninguna parte del programa se conecta a internet.
   Puedes desconectar la red y sigue funcionando igual.
 - **Nada se guarda en disco.** Los documentos viven en la memoria y se borran
-  solos a a los 30 minutos, o cuando pulsas *Terminar*.
+  solos a los 30 minutos, o cuando pulsas *Terminar*.
 - **El borrado es real.** En PDF se elimina el texto de la capa de contenido; en
   escaneados e imágenes se borran los píxeles; en Word se sustituye dentro del
-  archivo. También se limpian los metadatos ocultos (autor, título…).
+  archivo; en Excel se sustituyen los valores de las celdas. También se limpian
+  propiedades ocultas, comentarios, revisiones eliminadas, enlaces externos y
+  otros metadatos compatibles. El nombre descargado es genérico para no copiar
+  un posible nombre o NHC presente en el nombre del archivo original.
 - **Se realiza una segunda comprobación automática.** Tras borrar, el resultado
   se vuelve a analizar para buscar coincidencias y posibles datos residuales.
   Esta comprobación ayuda a revisar, pero no certifica que no quede ningún dato.
@@ -172,6 +175,11 @@ Dicho claramente, para que nadie se lleve sorpresas:
 
 - **No abre archivos `.doc` antiguos** (Word 97-2003). Ábrelos en Word y
   guárdalos como `.docx`.
+- **Excel admite `.xlsx`, sin macros.** Los `.xls` antiguos y `.xlsm` deben
+  guardarse como `.xlsx`. Se revisan también hojas y celdas ocultas, nombres de
+  pestañas y cabeceras/pies; se eliminan comentarios y enlaces. Fórmulas,
+  objetos incrustados o formatos complejos pueden alterarse y exigen una
+  revisión visual y funcional del libro resultante.
 - **El OCR no es perfecto.** En documentos escaneados puede leer mal algún dato,
   sobre todo los correos electrónicos (la `@` se le resiste). Por eso conviene
   revisar y usar el marcado a mano.
@@ -215,7 +223,7 @@ El código de AnoniPRO es obra del autor; **todos los derechos reservados**.
 
 Utiliza componentes libres de terceros, cuya autoría corresponde a sus
 respectivos titulares: FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0),
-python-docx, Tesseract OCR, Pillow y PDF.js. Los modelos de lenguaje y de IA se
+python-docx, openpyxl, Tesseract OCR, Pillow y PDF.js. Los modelos de lenguaje y de IA se
 distribuyen bajo sus propias licencias.
 
 ---

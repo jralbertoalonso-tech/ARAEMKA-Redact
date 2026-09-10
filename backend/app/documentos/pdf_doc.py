@@ -255,6 +255,11 @@ class DocumentoPdf:
                 # (imprescindible para escaneados y logos)
                 page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_PIXELS)
 
+            # Saneado integral de PyMuPDF: elimina adjuntos y ficheros
+            # incrustados, JavaScript, texto oculto, miniaturas, enlaces,
+            # respuestas de formularios y sus valores. Todo ello puede guardar
+            # información personal aunque no se vea al abrir la página.
+            doc.scrub()
             doc.set_metadata({})
             doc.del_xml_metadata()
             return doc.tobytes(garbage=4, deflate=True, clean=True)
