@@ -57,7 +57,7 @@ def test_agpl_y_codigo_fuente_son_visibles_y_se_distribuyen():
 
     assert "AGPL-3.0-only" in aviso
     assert "AGPL-3.0-only" in readme
-    assert "github.com/jralbertoalonso-tech/AnoniPRO" in html
+    assert "github.com/jralbertoalonso-tech/ARAEMKA-Redact" in html
     assert idiomas.count('"legal.codigo_fuente"') == 2
     for ruta in ("LICENSE", "CODIGO-FUENTE.md", "THIRD-PARTY-NOTICES.md", "TRADEMARKS.md"):
         assert (RAIZ / ruta).is_file()

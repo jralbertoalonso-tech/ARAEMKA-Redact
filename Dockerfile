@@ -7,7 +7,7 @@ ARG ANONIPRO_VERSION=0.10.0
 LABEL org.opencontainers.image.title="ARAEMKA Redact" \
       org.opencontainers.image.version="${ANONIPRO_VERSION}" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
-      org.opencontainers.image.source="https://github.com/jralbertoalonso-tech/AnoniPRO"
+      org.opencontainers.image.source="https://github.com/jralbertoalonso-tech/ARAEMKA-Redact"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

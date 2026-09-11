@@ -6,7 +6,7 @@ de la licencia está en [LICENSE](LICENSE).
 
 El código fuente correspondiente de la aplicación está disponible sin coste en:
 
-https://github.com/jralbertoalonso-tech/AnoniPRO
+https://github.com/jralbertoalonso-tech/ARAEMKA-Redact
 
 Cada paquete de distribución identifica la versión y la revisión exactas con
 las que fue construido. Las etiquetas y los archivos de código fuente de cada
@@ -29,7 +29,7 @@ included in [LICENSE](LICENSE).
 
 The application's corresponding source code is available at no charge from:
 
-https://github.com/jralbertoalonso-tech/AnoniPRO
+https://github.com/jralbertoalonso-tech/ARAEMKA-Redact
 
 Each distribution package identifies the exact version and revision used to
 build it. Release tags and source archives provide the corresponding material

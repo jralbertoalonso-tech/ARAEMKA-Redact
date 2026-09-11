@@ -149,7 +149,7 @@ git diff --quiet --ignore-submodules HEAD 2>nul || set "ESTADO_CODIGO=con-cambio
   echo ARAEMKA Redact
   echo Revision de codigo: !REVISION_CODIGO!
   echo Estado de construccion: !ESTADO_CODIGO!
-  echo Codigo fuente: https://github.com/jralbertoalonso-tech/AnoniPRO
+  echo Codigo fuente: https://github.com/jralbertoalonso-tech/ARAEMKA-Redact
 ) > "dist\ARAEMKA-Redact\REVISION DE CODIGO.txt"
 
 REM ── Prueba real: arranque, API y OCR de una imagen sintetica ──────────

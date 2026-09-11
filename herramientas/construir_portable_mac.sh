@@ -259,7 +259,7 @@ printf '%s\n' \
   "ARAEMKA Redact ${ANONIPRO_VERSION}" \
   "Revisión de código: ${REVISION_CODIGO}" \
   "Estado de construcción: ${ESTADO_CODIGO}" \
-  "Código fuente: https://github.com/jralbertoalonso-tech/AnoniPRO" \
+  "Código fuente: https://github.com/jralbertoalonso-tech/ARAEMKA-Redact" \
   > "dist/ARAEMKA-Redact/REVISION DE CODIGO.txt"
 
 # ZIP listo para distribuir (conserva permisos) y suma verificable.
