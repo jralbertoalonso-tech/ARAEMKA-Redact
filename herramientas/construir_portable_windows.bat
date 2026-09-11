@@ -1,5 +1,5 @@
 @echo off
-REM Construye AnoniPRO portable para Windows 10/11 de 64 bits.
+REM Construye ARAEMKA Redact portable para Windows 10/11 de 64 bits.
 REM DEBE ejecutarse en Windows: PyInstaller no cross-compila desde macOS.
 REM
 REM El resultado incluye Tesseract OCR y los modelos espanol e ingles. El
@@ -19,7 +19,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0\.."
 
 echo.
-echo ==== AnoniPRO - portable Windows con OCR ====
+echo ==== ARAEMKA Redact - portable Windows con OCR ====
 
 if not exist ".venv\Scripts\python.exe" (
   echo ERROR: falta el entorno .venv. Sigue la preparacion indicada al principio.
@@ -76,13 +76,13 @@ REM ── Metadatos e iconos ────────────────�
 .venv\Scripts\python herramientas\generar_version_windows.py || exit /b 1
 
 REM Limpiar la construccion anterior para evitar falsos positivos.
-if exist "dist\AnoniPRO" rmdir /s /q "dist\AnoniPRO"
+if exist "dist\ARAEMKA-Redact" rmdir /s /q "dist\ARAEMKA-Redact"
 
 REM Los modelos medianos mantienen NER y reducen cientos de MB de vectores que
 REM el portable no necesita. Los hooks oficiales de PyInstaller recopilan spaCy
 REM y thinc; las extensiones compiladas restantes se fuerzan explicitamente.
 .venv\Scripts\pyinstaller --noconfirm --clean ^
-  --name AnoniPRO ^
+  --name ARAEMKA-Redact ^
   --icon frontend\iconos\icono.ico ^
   --version-file build\version_info_windows.txt ^
   --onedir ^
@@ -120,21 +120,37 @@ if errorlevel 1 (
   echo ERROR: PyInstaller fallo. No distribuyas nada de dist\.
   exit /b 1
 )
-if not exist "dist\AnoniPRO\AnoniPRO.exe" (
-  echo ERROR: no se genero dist\AnoniPRO\AnoniPRO.exe.
+if not exist "dist\ARAEMKA-Redact\ARAEMKA-Redact.exe" (
+  echo ERROR: no se genero dist\ARAEMKA-Redact\ARAEMKA-Redact.exe.
   exit /b 1
 )
-dir /b /s "dist\AnoniPRO\_internal\cymem*.pyd" >nul 2>&1 || (
+dir /b /s "dist\ARAEMKA-Redact\_internal\cymem*.pyd" >nul 2>&1 || (
   echo ERROR: cymem no quedo dentro del paquete.
   exit /b 1
 )
-for %%F in (tesseract.exe tessdata\spa.traineddata tessdata\eng.traineddata) do if not exist "dist\AnoniPRO\_internal\tesseract\%%F" (
+for %%F in (tesseract.exe tessdata\spa.traineddata tessdata\eng.traineddata) do if not exist "dist\ARAEMKA-Redact\_internal\tesseract\%%F" (
   echo ERROR: falta OCR dentro del paquete: %%F
   exit /b 1
 )
 
-copy /y "herramientas\LEEME-WINDOWS.txt" "dist\AnoniPRO\LEEME PRIMERO.txt" >nul || exit /b 1
-copy /y "AVISO-LEGAL.md" "dist\AnoniPRO\AVISO LEGAL.txt" >nul || exit /b 1
+copy /y "herramientas\LEEME-WINDOWS.txt" "dist\ARAEMKA-Redact\LEEME PRIMERO.txt" >nul || exit /b 1
+copy /y "AVISO-LEGAL.md" "dist\ARAEMKA-Redact\AVISO LEGAL.txt" >nul || exit /b 1
+copy /y "LICENSE" "dist\ARAEMKA-Redact\LICENSE.txt" >nul || exit /b 1
+copy /y "CODIGO-FUENTE.md" "dist\ARAEMKA-Redact\CODIGO FUENTE.txt" >nul || exit /b 1
+copy /y "THIRD-PARTY-NOTICES.md" "dist\ARAEMKA-Redact\COMPONENTES Y LICENCIAS.txt" >nul || exit /b 1
+copy /y "TRADEMARKS.md" "dist\ARAEMKA-Redact\MARCAS.txt" >nul || exit /b 1
+.venv\Scripts\python herramientas\generar_avisos_terceros.py "dist\ARAEMKA-Redact\LICENCIAS-TERCEROS" || exit /b 1
+
+set "REVISION_CODIGO=sin-revision"
+for /f %%G in ('git rev-parse HEAD 2^>nul') do set "REVISION_CODIGO=%%G"
+set "ESTADO_CODIGO=limpio"
+git diff --quiet --ignore-submodules HEAD 2>nul || set "ESTADO_CODIGO=con-cambios-locales"
+(
+  echo ARAEMKA Redact
+  echo Revision de codigo: !REVISION_CODIGO!
+  echo Estado de construccion: !ESTADO_CODIGO!
+  echo Codigo fuente: https://github.com/jralbertoalonso-tech/AnoniPRO
+) > "dist\ARAEMKA-Redact\REVISION DE CODIGO.txt"
 
 REM ── Prueba real: arranque, API y OCR de una imagen sintetica ──────────
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "herramientas\probar_portable_windows.ps1"
@@ -146,10 +162,10 @@ if errorlevel 1 (
 REM ── ZIP final y suma verificable ─────────────────────────────────────
 set /p ANONIPRO_VERSION=<"build\VERSION.txt"
 if not defined ANONIPRO_VERSION set "ANONIPRO_VERSION=sin-version"
-set "ZIP=AnoniPRO-portable-windows-x64-v%ANONIPRO_VERSION%.zip"
+set "ZIP=ARAEMKA-Redact-portable-windows-x64-v%ANONIPRO_VERSION%.zip"
 if exist "%ZIP%" del /q "%ZIP%"
 if exist "%ZIP%.sha256.txt" del /q "%ZIP%.sha256.txt"
-powershell.exe -NoLogo -NoProfile -Command "Compress-Archive -Path 'dist\AnoniPRO' -DestinationPath '%ZIP%' -CompressionLevel Optimal -Force; $h=(Get-FileHash -Algorithm SHA256 '%ZIP%').Hash.ToLower(); ($h + '  %ZIP%') | Set-Content -Encoding ascii '%ZIP%.sha256.txt'; Write-Host ('SHA-256: ' + $h)"
+powershell.exe -NoLogo -NoProfile -Command "Compress-Archive -Path 'dist\ARAEMKA-Redact' -DestinationPath '%ZIP%' -CompressionLevel Optimal -Force; $h=(Get-FileHash -Algorithm SHA256 '%ZIP%').Hash.ToLower(); ($h + '  %ZIP%') | Set-Content -Encoding ascii '%ZIP%.sha256.txt'; Write-Host ('SHA-256: ' + $h)"
 if errorlevel 1 exit /b 1
 
 echo.

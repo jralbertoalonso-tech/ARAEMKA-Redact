@@ -1,4 +1,4 @@
-"""Genera los metadatos de versión que PyInstaller incrusta en AnoniPRO.exe."""
+"""Genera los metadatos de versión de ARAEMKA-Redact.exe."""
 
 import re
 from pathlib import Path
@@ -38,13 +38,13 @@ VSVersionInfo(
     StringFileInfo([
       StringTable(
         u'040904B0',
-        [StringStruct(u'CompanyName', u'Nodo Local'),
-         StringStruct(u'FileDescription', u'AnoniPRO - anonimización local de documentos'),
+        [StringStruct(u'CompanyName', u'José Ramón Alberto Alonso'),
+         StringStruct(u'FileDescription', u'ARAEMKA Redact - anonimización local de documentos'),
          StringStruct(u'FileVersion', u'{version}'),
-         StringStruct(u'InternalName', u'AnoniPRO'),
+         StringStruct(u'InternalName', u'ARAEMKA-Redact'),
          StringStruct(u'LegalCopyright', u'Copyright (c) Dr. José Ramón Alberto Alonso'),
-         StringStruct(u'OriginalFilename', u'AnoniPRO.exe'),
-         StringStruct(u'ProductName', u'AnoniPRO'),
+         StringStruct(u'OriginalFilename', u'ARAEMKA-Redact.exe'),
+         StringStruct(u'ProductName', u'ARAEMKA Redact'),
          StringStruct(u'ProductVersion', u'{version}')])
     ]),
     VarFileInfo([VarStruct(u'Translation', [1033, 1200])])

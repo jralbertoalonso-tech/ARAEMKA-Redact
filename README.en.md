@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="frontend/iconos/icono-128.png" width="104" alt="AnoniPRO">
+<img src="frontend/iconos/icono-128.png" width="104" alt="ARAEMKA Redact">
 
-# AnoniPRO
+# ARAEMKA Redact
 
 **Anonymise any document without your data ever leaving your computer.**
 
 Medical reports · Legal filings · Payroll and contracts · Invoices · Personal paperwork
 
-*Nodo Local — Dr José Ramón Alberto Alonso*
+*Local privacy — Dr José Ramón Alberto Alonso*
 
 [Versión en español](README.md)
 
@@ -18,7 +18,7 @@ Medical reports · Legal filings · Payroll and contracts · Invoices · Persona
 
 ## What it does
 
-You upload a document, AnoniPRO **shows you** every piece of personal data it
+You upload a document, ARAEMKA Redact **shows you** every piece of personal data it
 found, **you review and confirm**, and you download a copy with that data
 **genuinely deleted** from the file.
 
@@ -34,7 +34,7 @@ and wiped automatically.
 | PDF, scanned PDF, Word (.docx), Excel (.xlsx), images (JPG, PNG, TIFF) | 29 kinds of personal data, grouped into 8 profiles | Spanish and English (UK and US), with each document's language detected automatically |
 
 > **Note on languages.** The interface is fully bilingual and detection now works
-> in both languages: AnoniPRO detects each document's language and applies the
+> in both languages: ARAEMKA Redact detects each document's language and applies the
 > right engine. Spanish documents get the Spanish identifiers (national ID, social
 > security, health card…); English documents get the **UK and US** ones (NHS
 > number, National Insurance, SSN/ITIN, postcodes and phone numbers). Other
@@ -46,8 +46,9 @@ and wiped automatically.
 
 ### 🖥️ On your own computer — the simplest way
 
-1. Unzip `AnoniPRO-portable-mac.zip`.
-2. Double-click **`AnoniPRO`** (on Windows, `AnoniPRO.exe`).
+1. Unzip the portable for your system (`ARAEMKA-Redact-portable-macos-…zip`
+   or `ARAEMKA-Redact-portable-windows-x64-v…zip`).
+2. Double-click **`ARAEMKA-Redact`** (on Windows, `ARAEMKA-Redact.exe`).
 3. Your browser opens by itself. That's it.
 
 Nothing is installed and no administrator rights are needed.
@@ -78,7 +79,7 @@ on them**. Ideal for practices and offices with locked-down machines.
 3. **Review** the list on the right: every item found is highlighted on the
    document. Untick anything you want to keep, and add by hand anything missed.
 4. Press **Apply redaction** and confirm.
-5. **Download** the anonymised document. AnoniPRO checks it again and warns you
+5. **Download** the anonymised document. ARAEMKA Redact checks it again and warns you
    if anything is left.
 
 Nothing is deleted without your confirmation.
@@ -151,14 +152,25 @@ Scanned documents and images first go through optical character recognition
   addresses. Review the result and use manual marking where needed.
 - **Two languages only: Spanish and English** (UK/US), detected automatically
   per document. Other languages are not supported.
-- **Always review before sharing.** No automatic tool is infallible: AnoniPRO
+- **Always review before sharing.** No automatic tool is infallible: ARAEMKA Redact
   shows you what it found precisely so the final decision is yours.
 
 ---
 
 ## Licence and components
 
-The AnoniPRO source code is the author's work; **all rights reserved**.
+Copyright © 2026 Dr José Ramón Alberto Alonso.
+
+ARAEMKA Redact is **free software under the GNU Affero General Public License,
+version 3 only** (`AGPL-3.0-only`). You may use, study, modify and redistribute
+it under that licence. If you distribute a copy or let users interact with a
+modified version over a network, you must provide the corresponding source as
+required by the AGPL.
+
+- Full text: **[LICENSE](LICENSE)**.
+- Source access: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
+- Third-party components: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
+- Name and logo use: **[TRADEMARKS.md](TRADEMARKS.md)**.
 
 It uses third-party open-source components, owned by their respective authors:
 FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, openpyxl, Tesseract
@@ -168,5 +180,5 @@ licences.
 ---
 
 <div align="center">
-<sub>AnoniPRO · Nodo Local · 100% local processing, works offline</sub>
+<sub>ARAEMKA Redact · 100% local processing, works offline</sub>
 </div>

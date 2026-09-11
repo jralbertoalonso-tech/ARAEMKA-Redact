@@ -681,7 +681,7 @@ def _generar_auditoria(sesion, aprobadas, peticion, num_redacciones, restos, res
 
     params = sesion.ultimo_analisis
     sesion.auditoria = {
-        "aplicacion": f"AnoniPRO {VERSION}",
+        "aplicacion": f"ARAEMKA Redact {VERSION}",
         "fecha_hora": datetime.now().isoformat(timespec="seconds"),
         # El nombre original puede contener el nombre/NHC del paciente y por
         # tanto no debe quedar dentro del informe que acompaña al resultado.

@@ -1,4 +1,4 @@
-# AnoniPRO — dependencias del backend
+# ARAEMKA Redact — dependencias del backend
 # Todo se ejecuta 100% en local; ninguna librería realiza llamadas externas en tiempo de ejecución.
 fastapi>=0.115
 uvicorn[standard]>=0.30

@@ -1,4 +1,4 @@
-# AnoniPRO — Documentación técnica
+# ARAEMKA Redact — Documentación técnica
 
 Todo lo que necesitas para trabajar sobre el código: arrancarlo, probarlo,
 entender cómo detecta y generar los paquetes distribuibles.
@@ -120,7 +120,7 @@ pero no pertenecen a nadie).
 |---|---|---|
 | Portable macOS | `bash herramientas/construir_portable_mac.sh` | Se autocomprueba: verifica que no quedan enlaces simbólicos, que los módulos compilados están dentro y que **el ejecutable arranca de verdad** antes de darlo por bueno |
 | Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: incluye Tesseract OCR (es/en), hace una prueba funcional real y genera ZIP + SHA-256 |
-| Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma |
+| Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma. Se conserva el identificador técnico `anonipro` para actualizar instalaciones anteriores. |
 | Iconos | `.venv/bin/python herramientas/generar_iconos.py` | Genera `.icns`, `.ico` y PNG desde `frontend/icono.svg`. Los dos empaquetadores ya lo llaman |
 
 **Lecciones aprendidas empaquetando** (para no repetirlas):

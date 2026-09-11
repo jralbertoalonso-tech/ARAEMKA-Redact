@@ -1,4 +1,4 @@
-# AnoniPRO en tu Synology — instalación rápida
+# ARAEMKA Redact en tu Synology — instalación rápida
 
 Esta carpeta contiene la aplicación **ya construida y probada**: el NAS no
 necesita internet ni compilar nada.

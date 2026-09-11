@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="app.titulo_pagina">AnoniPRO — Anonimización local de documentos</title>
+  <title data-i18n="app.titulo_pagina">ARAEMKA Redact — Anonimización local de documentos</title>
   <link rel="stylesheet" href="styles.css?v=0.10.0">
   <link rel="icon" type="image/svg+xml" href="icono.svg">
   <link rel="apple-touch-icon" href="iconos/icono-256.png">
@@ -13,7 +13,7 @@
 <!-- ══════════ Pantalla de contraseña (solo si está configurada) ══════════ -->
 <div id="pantalla-login" class="oculto">
   <div class="tarjeta-login">
-    <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
+    <h1><img src="icono.svg" alt="" class="logo-app"> ARAEMKA Redact</h1>
     <p data-i18n="login.instruccion">Introduce la contraseña de acceso.</p>
     <form id="form-login">
       <input type="password" id="campo-password" data-i18n-ph="login.password" placeholder="Contraseña" autocomplete="current-password">
@@ -28,7 +28,7 @@
 
   <header>
     <div class="titulo">
-      <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
+      <h1><img src="icono.svg" alt="" class="logo-app"> ARAEMKA Redact</h1>
       <span class="subtitulo" data-i18n="app.subtitulo">Anonimización local de documentos — ningún dato sale de tu equipo</span>
     </div>
     <div class="acciones-cabecera">
@@ -180,10 +180,11 @@
   <!-- ── Diálogo: advertencia y condiciones de uso ── -->
   <dialog id="dialogo-aviso-legal">
     <h2 data-i18n="legal.titulo">Aviso legal y condiciones de uso</h2>
-    <p data-i18n="legal.apoyo">AnoniPRO es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.</p>
+    <p data-i18n="legal.apoyo">ARAEMKA Redact es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.</p>
     <p data-i18n="legal.limites">El OCR, los modelos lingüísticos y las reglas automáticas pueden omitir información, interpretarla incorrectamente o dejar elementos visibles o susceptibles de reidentificación.</p>
     <p data-i18n="legal.revision">La persona usuaria debe revisar el documento resultante antes de compartirlo, publicarlo o utilizarlo. Cuando corresponda, el responsable del tratamiento conserva sus obligaciones legales y debe valorar el riesgo y aplicar las medidas adecuadas.</p>
     <p data-i18n="legal.responsabilidad">En la máxima medida permitida por la ley, el autor no responde de daños indirectos derivados del uso incorrecto, de la falta de revisión o de usos no previstos. No se excluyen las responsabilidades ni los derechos que legalmente no puedan limitarse.</p>
+    <p><span data-i18n="legal.licencia">Software libre bajo GNU AGPL v3.</span> <a href="https://github.com/jralbertoalonso-tech/AnoniPRO" target="_blank" rel="noopener noreferrer" data-i18n="legal.codigo_fuente">Obtener el código fuente</a>.</p>
     <p class="texto-suave" data-i18n="legal.no_asesora">El programa y esta información no sustituyen el asesoramiento jurídico, de protección de datos o profesional.</p>
     <div class="fila-botones">
       <button id="boton-cerrar-aviso-legal" class="boton-primario" data-i18n="legal.cerrar">Entendido</button>
@@ -238,8 +239,9 @@
 
   <footer>
     <span id="version-app"></span> · <span data-i18n="app.pie">Procesamiento 100 % local · Sin conexión a internet · Los documentos nunca se guardan en disco</span><br>
-    <span class="autor">Nodo Local</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span> ·
-    <button id="boton-aviso-legal" class="boton-enlace boton-aviso-legal" data-i18n="legal.abrir">Aviso legal y condiciones de uso</button>
+    <span class="autor">ARAEMKA</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span> ·
+    <button id="boton-aviso-legal" class="boton-enlace boton-aviso-legal" data-i18n="legal.abrir">Aviso legal y condiciones de uso</button> ·
+    <a href="https://github.com/jralbertoalonso-tech/AnoniPRO" target="_blank" rel="noopener noreferrer" data-i18n="legal.codigo_fuente">Código fuente</a>
   </footer>
 </div>
 

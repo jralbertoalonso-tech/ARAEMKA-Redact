@@ -1,10 +1,10 @@
-# AnoniPRO — Aviso legal y condiciones de uso
+# ARAEMKA Redact — Aviso legal y condiciones de uso
 
-Última actualización: 10 de septiembre de 2026.
+Última actualización: 11 de septiembre de 2026.
 
 ## 1. Naturaleza y finalidad
 
-AnoniPRO es una herramienta de apoyo para localizar y redactar información en
+ARAEMKA Redact es una herramienta de apoyo para localizar y redactar información en
 documentos. No constituye una certificación de anonimización ni garantiza la
 detección o eliminación completa de todos los datos personales.
 
@@ -35,7 +35,7 @@ reidentificación, comprobar que las medidas empleadas son adecuadas para el
 caso concreto y aplicar medidas adicionales cuando sean necesarias. El
 procesamiento local no elimina esas obligaciones.
 
-AnoniPRO no debe emplearse como único control antes de divulgar información
+ARAEMKA Redact no debe emplearse como único control antes de divulgar información
 especialmente sensible, ni en procesos desatendidos que publiquen o envíen
 automáticamente el resultado.
 
@@ -72,7 +72,7 @@ consumidores y usuarios— no permita excluir o limitar.
 
 ## 5. Protección de datos y asesoramiento profesional
 
-AnoniPRO ayuda a aplicar medidas técnicas, pero no sustituye un análisis de
+ARAEMKA Redact ayuda a aplicar medidas técnicas, pero no sustituye un análisis de
 riesgos, una evaluación de impacto, las instrucciones del delegado de
 protección de datos ni el asesoramiento jurídico o profesional que pueda ser
 necesario. El usuario debe atender la legislación, las políticas internas y
@@ -80,24 +80,28 @@ las obligaciones sectoriales aplicables a cada tratamiento.
 
 ## 6. Titularidad y componentes de terceros
 
-El código de AnoniPRO es obra del autor y se mantienen reservados los derechos
-no concedidos expresamente. Los componentes y modelos de terceros conservan
-sus propias licencias y avisos. Este documento no concede por sí solo derechos
-de redistribución, modificación o sublicencia más allá de los autorizados
-expresamente por sus respectivos titulares.
+Copyright © 2026 Dr. José Ramón Alberto Alonso. ARAEMKA Redact se distribuye
+bajo la GNU Affero General Public License, versión 3 exclusivamente
+(`AGPL-3.0-only`). El texto íntegro se incluye en `LICENSE` y el acceso al
+código fuente correspondiente se explica en `CODIGO-FUENTE.md`.
 
-Antes de una distribución comercial, institucional o pública, estas
-condiciones deben adaptarse al modelo de licencia, destinatarios, jurisdicción
-y forma de prestación concretos, con revisión de un profesional jurídico
-cualificado.
+Los componentes y modelos de terceros conservan sus propias licencias, avisos,
+autoría y marcas. Se relacionan en `THIRD-PARTY-NOTICES.md`. Los nombres
+ARAEMKA y ARAEMKA Redact y sus logotipos no quedan licenciados como marcas por
+la AGPL, salvo el uso descriptivo necesario para identificar el programa.
+
+Estas condiciones y la estrategia de marca deben someterse a revisión de un
+profesional jurídico cualificado antes de una explotación comercial o
+institucional que introduzca obligaciones adicionales, soporte, garantías o
+servicios.
 
 ---
 
-# AnoniPRO — Legal notice and terms of use
+# ARAEMKA Redact — Legal notice and terms of use
 
-Last updated: 10 September 2026.
+Last updated: 11 September 2026.
 
-AnoniPRO is an assistive document-detection and redaction tool. It is not an
+ARAEMKA Redact is an assistive document-detection and redaction tool. It is not an
 anonymisation certification and does not guarantee the complete detection or
 removal of all personal data. OCR, automated rules, language models and local
 AI may omit or misinterpret information or leave visible or potentially
@@ -123,8 +127,16 @@ the checks and safeguards required for the particular context. Nothing in
 this notice excludes fraud, breach of mandatory law, consumer rights, or any
 liability that cannot legally be excluded or limited.
 
-AnoniPRO does not replace a risk assessment, data protection impact
+ARAEMKA Redact does not replace a risk assessment, data protection impact
 assessment, advice from a data protection officer, or legal or other
-professional advice. Before commercial, institutional or public distribution,
-these terms should be adapted to the particular licensing model, recipients,
+professional advice. Commercial or institutional offerings that add support,
+warranties, services or other terms should be adapted to their recipients,
 jurisdiction and delivery method and reviewed by qualified legal counsel.
+
+Copyright © 2026 Dr José Ramón Alberto Alonso. ARAEMKA Redact is distributed
+under the GNU Affero General Public License, version 3 only
+(`AGPL-3.0-only`). The full text is included in `LICENSE`; corresponding source
+access is described in `CODIGO-FUENTE.md`. Third-party components retain their
+own licences, notices, authorship and marks. The ARAEMKA and ARAEMKA Redact
+names and logos are not licensed as trademarks by the AGPL, except for the
+descriptive use needed to identify the software.

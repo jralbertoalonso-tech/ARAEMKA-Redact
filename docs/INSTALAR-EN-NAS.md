@@ -1,10 +1,11 @@
-# Instalar AnoniPRO en un NAS Synology
+# Instalar ARAEMKA Redact en un NAS Synology
 
-Con AnoniPRO en el NAS, **cualquier ordenador de la red lo usa desde el
+Con ARAEMKA Redact en el NAS, **cualquier ordenador de la red lo usa desde el
 navegador**, sin instalar nada en él. Es la mejor opción para una consulta, un
 despacho o una oficina con equipos corporativos bloqueados.
 
-Necesitas el paquete **`AnoniPRO-synology`**, que contiene:
+Necesitas la carpeta técnica heredada **`AnoniPRO-synology`**, que se conserva
+con ese nombre para poder actualizar instalaciones anteriores y contiene:
 
 ```
 AnoniPRO-synology/
@@ -101,11 +102,11 @@ de IA**: no tiene tarjeta gráfica y sería lentísimo. En su lugar puede
 **delegarlo en otro equipo de tu red** (un Mac o un PC con Ollama):
 
 1. En ese equipo, abre Ollama y activa **«Exponer a la red»** en sus ajustes.
-2. En AnoniPRO: **⚙️ Ajustes de IA** → dirección `http://IP-DEL-EQUIPO:11434` →
+2. En ARAEMKA Redact: **⚙️ Ajustes de IA** → dirección `http://IP-DEL-EQUIPO:11434` →
    elige el modelo → **Probar** → **Activar** → **Guardar**.
 
 Ese equipo debe estar encendido para que la capa 3 funcione. Si se apaga,
-AnoniPRO lo detecta, sigue con las capas 1-2 y te avisa.
+ARAEMKA Redact lo detecta, sigue con las capas 1-2 y te avisa.
 
 ---
 

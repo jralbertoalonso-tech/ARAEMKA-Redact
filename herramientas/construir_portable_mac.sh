@@ -1,6 +1,6 @@
 #!/bin/bash
-# Construye el AnoniPRO portable para macOS (Apple Silicon o Intel, según
-# dónde se ejecute). Resultado: dist/AnoniPRO/ y un ZIP versionado para esa
+# Construye el portable de ARAEMKA Redact para macOS (Apple Silicon o Intel,
+# según dónde se ejecute). Resultado: dist/ARAEMKA-Redact/ y un ZIP versionado para esa
 # arquitectura. Python y las librerías quedan incluidos; para OCR hace falta
 # Tesseract instalado en el Mac de destino (véase LÉEME PRIMERO.txt).
 #
@@ -13,7 +13,7 @@
 set -e
 cd "$(dirname "$0")/.."
 
-echo "── AnoniPRO · construcción del portable (macOS) ──"
+echo "── ARAEMKA Redact · construcción del portable (macOS) ──"
 
 VENV_DIR="${ANONIPRO_VENV:-.venv}"
 if [ ! -x "$VENV_DIR/bin/python" ]; then
@@ -22,7 +22,7 @@ fi
 
 ANONIPRO_VERSION=$(PYTHONPATH=backend "$VENV_DIR/bin/python" -c "from app.config import VERSION; print(VERSION)")
 MAC_ARCH=$(uname -m)
-ZIP="AnoniPRO-portable-macos-${MAC_ARCH}-v${ANONIPRO_VERSION}.zip"
+ZIP="ARAEMKA-Redact-portable-macos-${MAC_ARCH}-v${ANONIPRO_VERSION}.zip"
 ANONIPRO_PYINSTALLER_CONFIG="${TMPDIR:-/tmp}/anonipro-pyinstaller-cache"
 mkdir -p "$ANONIPRO_PYINSTALLER_CONFIG"
 export PYINSTALLER_CONFIG_DIR="$ANONIPRO_PYINSTALLER_CONFIG"
@@ -40,14 +40,14 @@ done
 "$VENV_DIR/bin/python" herramientas/generar_iconos.py >/dev/null
 
 # Los modelos medianos mantienen NER y evitan incluir cientos de MB de vectores
-# que AnoniPRO no necesita. Los hooks oficiales recopilan spaCy y thinc; las
+# que ARAEMKA Redact no necesita. Los hooks oficiales recopilan spaCy y thinc; las
 # extensiones compiladas restantes se fuerzan explícitamente.
 # cymem además se fuerza con --add-binary: en la práctica hemos visto que en la
 # construcción grande puede quedarse fuera aunque --collect-all lo declare.
 CYMEM_SO=$("$VENV_DIR/bin/python" -c "import cymem, glob, os; print(glob.glob(os.path.join(os.path.dirname(cymem.__file__), 'cymem.*.so'))[0])")
 
 "$VENV_DIR/bin/pyinstaller" --noconfirm --clean \
-  --name AnoniPRO \
+  --name ARAEMKA-Redact \
   --icon frontend/iconos/icono.icns \
   --onedir \
   --console \
@@ -85,20 +85,20 @@ CYMEM_SO=$("$VENV_DIR/bin/python" -c "import cymem, glob, os; print(glob.glob(os
 # discos exFAT, por la nube, etc. Se convierten todos en archivos reales:
 # la carpeta funciona entonces la copies como la copies.
 echo "Convirtiendo enlaces simbólicos en archivos reales…"
-rsync -a --copy-links dist/AnoniPRO/ dist/AnoniPRO-plano/
-rm -rf dist/AnoniPRO
-mv dist/AnoniPRO-plano dist/AnoniPRO
-RESTAN=$(find dist/AnoniPRO -type l | wc -l | tr -d ' ')
+rsync -a --copy-links dist/ARAEMKA-Redact/ dist/ARAEMKA-Redact-plano/
+rm -rf dist/ARAEMKA-Redact
+mv dist/ARAEMKA-Redact-plano dist/ARAEMKA-Redact
+RESTAN=$(find dist/ARAEMKA-Redact -type l | wc -l | tr -d ' ')
 if [ "$RESTAN" != "0" ]; then
   echo "❌ ERROR: quedan $RESTAN enlaces simbólicos. No lo distribuyas." && exit 1
 fi
 
 # ── Comprobación automática: el paquete debe contener cymem y ARRANCAR ──
-if ! find dist/AnoniPRO/_internal -name 'cymem*.so' | grep -q .; then
+if ! find dist/ARAEMKA-Redact/_internal -name 'cymem*.so' | grep -q .; then
   echo "❌ ERROR: cymem no quedó dentro del paquete. No lo distribuyas." && exit 1
 fi
 echo "Comprobando que el ejecutable arranca…"
-ANONIPRO_NO_ABRIR_NAVEGADOR=1 ANONIPRO_PUERTO=8765 ./dist/AnoniPRO/AnoniPRO &
+ANONIPRO_NO_ABRIR_NAVEGADOR=1 ANONIPRO_PUERTO=8765 ./dist/ARAEMKA-Redact/ARAEMKA-Redact &
 PID=$!
 # El primer arranque en frío puede tardar (macOS escanea el binario nuevo):
 # hasta 120 s de margen.
@@ -130,24 +130,24 @@ echo "✅ El ejecutable ${ANONIPRO_VERSION} arranca; OCR español e inglés disp
 # ── Desbloqueador de Gatekeeper para el primer arranque en otro Mac ──────
 # Sin firma de Apple, macOS marca la app copiada como «dañada» (cuarentena).
 # Este .command la desbloquea y arranca; se usa con clic derecho → Abrir.
-cat > "dist/AnoniPRO/PRIMERA VEZ — Abrir aquí.command" <<'FIN'
+cat > "dist/ARAEMKA-Redact/PRIMERA VEZ — Abrir aquí.command" <<'FIN'
 #!/bin/bash
 cd "$(dirname "$0")"
-echo "── AnoniPRO · primer arranque ──────────────────────"
+echo "── ARAEMKA Redact · primer arranque ────────────────"
 echo "Quitando el bloqueo de cuarentena de macOS…"
 xattr -dr com.apple.quarantine . 2>/dev/null || true
-echo "Hecho. Arrancando AnoniPRO…"
+echo "Hecho. Arrancando ARAEMKA Redact…"
 echo "(Deja esta ventana abierta: es la aplicación. El navegador se abre solo.)"
 echo "────────────────────────────────────────────────────"
-./AnoniPRO
+./ARAEMKA-Redact
 FIN
-chmod +x "dist/AnoniPRO/PRIMERA VEZ — Abrir aquí.command"
+chmod +x "dist/ARAEMKA-Redact/PRIMERA VEZ — Abrir aquí.command"
 
 # ── Guía de una página para quien recibe el paquete ─────────────────────
-cat > "dist/AnoniPRO/LÉEME PRIMERO.txt" <<'FIN'
+cat > "dist/ARAEMKA-Redact/LÉEME PRIMERO.txt" <<'FIN'
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AnoniPRO — Anonimiza documentos sin que los datos salgan de tu Mac  ║
-║  Nodo Local                                                          ║
+║  ARAEMKA Redact — Anonimiza documentos sin salir de tu Mac           ║
+║  Procesamiento local y privado                                       ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
 CÓMO ABRIRLO
@@ -160,13 +160,13 @@ CÓMO ABRIRLO
         baja hasta el aviso y pulsa «Abrir igualmente». Vuelve al paso 1.
 
   Las siguientes veces:
-     Doble clic en  «AnoniPRO»
+     Doble clic en  «ARAEMKA-Redact»
 
   Se abrirá una ventana negra: ESA VENTANA ES LA APLICACIÓN, déjala
   abierta mientras la uses. El navegador se abre solo en unos segundos
   (la primera vez puede tardar un minuto).
 
-  Para cerrar AnoniPRO: cierra esa ventana negra.
+  Para cerrar ARAEMKA Redact: cierra esa ventana negra.
 
 
 CÓMO SE USA
@@ -201,7 +201,7 @@ LO QUE DEBES SABER
 
 AVISO IMPORTANTE SOBRE LOS RESULTADOS
 ─────────────────────────────────────
-  AnoniPRO es una herramienta de apoyo. No garantiza la detección o
+  ARAEMKA Redact es una herramienta de apoyo. No garantiza la detección o
   eliminación completa de todos los datos personales. El OCR, los modelos
   lingüísticos y las reglas automáticas pueden omitir información,
   interpretarla incorrectamente o dejar elementos visibles o susceptibles
@@ -232,23 +232,47 @@ NO TOQUES
 ─────────
   La carpeta «_internal» contiene el motor de la aplicación.
 
+
+LICENCIA Y CÓDIGO FUENTE
+────────────────────────
+  ARAEMKA Redact es software libre bajo GNU AGPL v3 exclusivamente. El texto
+  completo está en «LICENSE.txt». El acceso al código fuente correspondiente
+  se explica en «CÓDIGO FUENTE.txt». «COMPONENTES Y LICENCIAS.txt» y la
+  carpeta «LICENCIAS-TERCEROS» conservan los avisos de terceros.
+
 ──────────────────────────────────────────────────────────────────────
-AnoniPRO · Nodo Local · Autor: Dr. José Ramón Alberto Alonso
+ARAEMKA Redact · Autor: Dr. José Ramón Alberto Alonso
 FIN
 
-cp "AVISO-LEGAL.md" "dist/AnoniPRO/AVISO LEGAL.txt"
+cp "AVISO-LEGAL.md" "dist/ARAEMKA-Redact/AVISO LEGAL.txt"
+cp "LICENSE" "dist/ARAEMKA-Redact/LICENSE.txt"
+cp "CODIGO-FUENTE.md" "dist/ARAEMKA-Redact/CÓDIGO FUENTE.txt"
+cp "THIRD-PARTY-NOTICES.md" "dist/ARAEMKA-Redact/COMPONENTES Y LICENCIAS.txt"
+cp "TRADEMARKS.md" "dist/ARAEMKA-Redact/MARCAS.txt"
+"$VENV_DIR/bin/python" herramientas/generar_avisos_terceros.py \
+  "dist/ARAEMKA-Redact/LICENCIAS-TERCEROS"
+
+REVISION_CODIGO=$(git rev-parse HEAD 2>/dev/null || printf 'sin-revision')
+ESTADO_CODIGO="limpio"
+git diff --quiet --ignore-submodules HEAD 2>/dev/null || ESTADO_CODIGO="con-cambios-locales"
+printf '%s\n' \
+  "ARAEMKA Redact ${ANONIPRO_VERSION}" \
+  "Revisión de código: ${REVISION_CODIGO}" \
+  "Estado de construcción: ${ESTADO_CODIGO}" \
+  "Código fuente: https://github.com/jralbertoalonso-tech/AnoniPRO" \
+  > "dist/ARAEMKA-Redact/REVISIÓN DE CÓDIGO.txt"
 
 # ZIP listo para distribuir (conserva permisos) y suma verificable.
 rm -f "$ZIP" "$ZIP.sha256.txt"
-ditto -c -k --keepParent dist/AnoniPRO "$ZIP"
+ditto -c -k --keepParent dist/ARAEMKA-Redact "$ZIP"
 SHA256=$(shasum -a 256 "$ZIP" | awk '{print $1}')
 printf '%s  %s\n' "$SHA256" "$ZIP" > "$ZIP.sha256.txt"
 
 echo
-echo "✅ Portable creado en: dist/AnoniPRO/"
+echo "✅ Portable creado en: dist/ARAEMKA-Redact/"
 echo "✅ ZIP de distribución: $ZIP"
 echo "✅ SHA-256: $SHA256"
-echo "   Ejecutable:          dist/AnoniPRO/AnoniPRO"
+echo "   Ejecutable:          dist/ARAEMKA-Redact/ARAEMKA-Redact"
 echo
 echo "OCR en el equipo de destino (opcional, solo para escaneados):"
 echo "   brew install tesseract tesseract-lang"

@@ -1,12 +1,12 @@
-ANONIPRO PARA WINDOWS
-=====================
+ARAEMKA REDACT PARA WINDOWS
+===========================
 
 1. Descomprime TODO el archivo ZIP en una carpeta.
-2. Haz doble clic en AnoniPRO.exe.
+2. Haz doble clic en ARAEMKA-Redact.exe.
 3. Deja abierta la ventana negra mientras utilizas la aplicación.
 
 El navegador se abrirá automáticamente. El primer arranque puede tardar hasta
-un minuto. Para cerrar AnoniPRO, cierra la ventana negra.
+un minuto. Para cerrar ARAEMKA Redact, cierra la ventana negra.
 
 OCR INCLUIDO
 ------------
@@ -29,7 +29,7 @@ usa un nombre de archivo genérico para no copiar datos del nombre original.
 
 AVISO IMPORTANTE SOBRE LOS RESULTADOS
 -------------------------------------
-AnoniPRO es una herramienta de apoyo. No garantiza la detección o eliminación
+ARAEMKA Redact es una herramienta de apoyo. No garantiza la detección o eliminación
 completa de todos los datos personales. El OCR, los modelos lingüísticos y las
 reglas automáticas pueden omitir información, interpretarla incorrectamente o
 dejar elementos visibles o susceptibles de reidentificación.
@@ -50,11 +50,11 @@ AVISO DE WINDOWS SMARTSCREEN
 Esta edición todavía no lleva una firma digital Authenticode. Por eso Windows
 puede mostrar «Windows protegió su PC» aunque el archivo sea legítimo.
 
-Antes de abrirlo, verifica que el ZIP procede del canal oficial de AnoniPRO y
+Antes de abrirlo, verifica que el ZIP procede del canal oficial de ARAEMKA y
 que su SHA-256 coincide con el archivo .sha256.txt publicado junto a él. Para
 comprobarlo desde PowerShell:
 
-  Get-FileHash .\AnoniPRO-portable-windows-x64-v*.zip -Algorithm SHA256
+  Get-FileHash .\ARAEMKA-Redact-portable-windows-x64-v*.zip -Algorithm SHA256
 
 Si el valor coincide, en el aviso de SmartScreen elige «Más información» y
 después «Ejecutar de todas formas». No continúes si el valor no coincide.
@@ -67,7 +67,14 @@ que evita de forma fiable el aviso de descarga de SmartScreen.
 
 CONTENIDO DE LA CARPETA
 -----------------------
-AnoniPRO.exe inicia la aplicación. La carpeta _internal contiene sus modelos,
+ARAEMKA-Redact.exe inicia la aplicación. La carpeta _internal contiene sus modelos,
 bibliotecas y el motor OCR; no debe borrarse ni separarse del ejecutable.
 
-AnoniPRO · Nodo Local · Dr. José Ramón Alberto Alonso
+LICENCIA Y CÓDIGO FUENTE
+------------------------
+ARAEMKA Redact es software libre bajo GNU AGPL v3 exclusivamente. El texto
+completo está en LICENSE.txt. El acceso al código fuente correspondiente se
+explica en CODIGO FUENTE.txt. COMPONENTES Y LICENCIAS.txt y la carpeta
+LICENCIAS-TERCEROS conservan la información de los componentes incluidos.
+
+ARAEMKA Redact · Dr. José Ramón Alberto Alonso

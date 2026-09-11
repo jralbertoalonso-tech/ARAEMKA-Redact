@@ -1,4 +1,4 @@
-"""Genera documentos clínicos SINTÉTICOS para probar AnoniPRO.
+"""Genera documentos clínicos SINTÉTICOS para probar ARAEMKA Redact.
 
 Todos los datos son inventados (los DNI/NUSS se generan con dígitos de control
 válidos para que la validación funcione, pero no pertenecen a nadie).

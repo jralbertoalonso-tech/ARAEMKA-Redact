@@ -31,7 +31,7 @@ ENDPOINTS_HABITUALES = [
     ("http://127.0.0.1:1234", "LM Studio"),
 ]
 
-# Tipos que el LLM puede devolver → categoría interna de AnoniPRO.
+# Tipos que el LLM puede devolver → categoría interna de ARAEMKA Redact.
 TIPO_A_CATEGORIA = {
     "persona": "persona",
     "paciente": "persona",

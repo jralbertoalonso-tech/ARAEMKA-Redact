@@ -1,11 +1,13 @@
-# AnoniPRO — imagen Docker para Synology (Container Manager) y cualquier host con Docker.
+# ARAEMKA Redact — imagen Docker para Synology (Container Manager) y cualquier host con Docker.
 # Todo el procesamiento es local; la imagen NO necesita internet una vez construida.
 
 FROM python:3.12-slim
 
 ARG ANONIPRO_VERSION=0.10.0
-LABEL org.opencontainers.image.title="AnoniPRO" \
-      org.opencontainers.image.version="${ANONIPRO_VERSION}"
+LABEL org.opencontainers.image.title="ARAEMKA Redact" \
+      org.opencontainers.image.version="${ANONIPRO_VERSION}" \
+      org.opencontainers.image.licenses="AGPL-3.0-only" \
+      org.opencontainers.image.source="https://github.com/jralbertoalonso-tech/AnoniPRO"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -35,6 +37,7 @@ RUN python -m spacy download es_core_news_lg && \
 # 3) Código de la aplicación
 COPY backend /app/backend
 COPY frontend /app/frontend
+COPY LICENSE CODIGO-FUENTE.md THIRD-PARTY-NOTICES.md TRADEMARKS.md AVISO-LEGAL.md /app/
 
 EXPOSE 8080
 

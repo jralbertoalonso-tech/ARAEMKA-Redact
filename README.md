@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="frontend/iconos/icono-128.png" width="104" alt="AnoniPRO">
+<img src="frontend/iconos/icono-128.png" width="104" alt="ARAEMKA Redact">
 
-# AnoniPRO
+# ARAEMKA Redact
 
 **Anonimiza cualquier documento sin que los datos salgan de tu ordenador.**
 
 Informes clínicos · Escritos jurídicos · Nóminas y contratos · Facturas · Papeles personales
 
-*Nodo Local — Dr. José Ramón Alberto Alonso*
+*Privacidad local — Dr. José Ramón Alberto Alonso*
 
 </div>
 
@@ -16,7 +16,7 @@ Informes clínicos · Escritos jurídicos · Nóminas y contratos · Facturas ·
 
 ## Qué hace
 
-Subes un documento, AnoniPRO **te enseña** todos los datos personales que ha
+Subes un documento, ARAEMKA Redact **te enseña** todos los datos personales que ha
 encontrado, **tú revisas y confirmas**, y descargas una copia con esos datos
 **borrados de verdad** del archivo.
 
@@ -39,9 +39,9 @@ Elige **una** forma según dónde lo vayas a usar.
 
 ### 🖥️ En tu Mac o tu PC — la más sencilla
 
-1. Descomprime el archivo portable para tu sistema (`AnoniPRO-portable-macos-…zip`
-   o `AnoniPRO-portable-windows-x64-v…zip`).
-2. Doble clic en **`AnoniPRO`** (en Windows, `AnoniPRO.exe`).
+1. Descomprime el archivo portable para tu sistema (`ARAEMKA-Redact-portable-macos-…zip`
+   o `ARAEMKA-Redact-portable-windows-x64-v…zip`).
+2. Doble clic en **`ARAEMKA-Redact`** (en Windows, `ARAEMKA-Redact.exe`).
 3. Se abre el navegador solo. Ya está.
 
 No instala nada ni pide permisos de administrador. La primera vez tarda un
@@ -75,7 +75,7 @@ Para desarrolladores o para compilar tus propios paquetes:
    sobre el documento. Desmarca lo que NO quieras borrar y añade a mano lo que
    se haya escapado.
 4. Pulsa **Aplicar redacción** y confirma.
-5. AnoniPRO realiza una segunda comprobación automática y te avisa si encuentra
+5. ARAEMKA Redact realiza una segunda comprobación automática y te avisa si encuentra
    posibles residuos. **Revisa el resultado completo** y descárgalo solo cuando
    estés conforme.
 
@@ -189,14 +189,14 @@ Dicho claramente, para que nadie se lleve sorpresas:
   los del **Reino Unido y EE. UU.** (NHS, National Insurance, SSN/ITIN, códigos
   postales y teléfonos). Otros idiomas no están soportados.
 - **Revisa siempre antes de compartir.** Ninguna herramienta automática es
-  infalible: AnoniPRO te enseña lo que ha encontrado precisamente para que la
+  infalible: ARAEMKA Redact te enseña lo que ha encontrado precisamente para que la
   decisión final sea tuya.
 
 ---
 
 ## Advertencia sobre los resultados y responsabilidad
 
-AnoniPRO es una **herramienta de apoyo**: no garantiza la detección o eliminación
+ARAEMKA Redact es una **herramienta de apoyo**: no garantiza la detección o eliminación
 completa de todos los datos personales. El OCR, los modelos lingüísticos y las
 reglas automáticas pueden omitir información, interpretarla incorrectamente o
 dejar elementos visibles o susceptibles de reidentificación.
@@ -212,14 +212,26 @@ usos no previstos. Esta limitación no excluye las responsabilidades ni los
 derechos que legalmente no puedan limitarse.
 
 Consulta las condiciones completas en **[AVISO-LEGAL.md](AVISO-LEGAL.md)**. Antes
-de una distribución comercial, institucional o pública deben adaptarse al modelo
-de licencia y revisarse por un profesional jurídico cualificado.
+de ofrecer garantías, soporte de pago o una explotación comercial o
+institucional con condiciones adicionales, conviene revisarlas con un
+profesional jurídico cualificado.
 
 ---
 
 ## Licencia y componentes
 
-El código de AnoniPRO es obra del autor; **todos los derechos reservados**.
+Copyright © 2026 Dr. José Ramón Alberto Alonso.
+
+ARAEMKA Redact es **software libre bajo GNU Affero General Public License,
+versión 3 exclusivamente** (`AGPL-3.0-only`). Puedes usarlo, estudiarlo,
+modificarlo y redistribuirlo conforme a esa licencia. Si distribuyes una copia
+o permites usar una versión modificada a través de una red, debes facilitar el
+código fuente correspondiente en los términos de la AGPL.
+
+- Texto íntegro: **[LICENSE](LICENSE)**.
+- Acceso al código: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
+- Componentes de terceros: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
+- Uso del nombre y logotipo: **[TRADEMARKS.md](TRADEMARKS.md)**.
 
 Utiliza componentes libres de terceros, cuya autoría corresponde a sus
 respectivos titulares: FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0),
@@ -229,5 +241,5 @@ distribuyen bajo sus propias licencias.
 ---
 
 <div align="center">
-<sub>AnoniPRO · Nodo Local · Procesamiento 100 % local, sin conexión a internet</sub>
+<sub>ARAEMKA Redact · Procesamiento 100 % local, sin conexión a internet</sub>
 </div>

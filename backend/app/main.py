@@ -1,4 +1,4 @@
-"""Punto de entrada de AnoniPRO.
+"""Punto de entrada de ARAEMKA Redact.
 
 Arranca el servidor web local que sirve la API y la interfaz. Ejecutar con:
     python -m app.main
@@ -30,7 +30,7 @@ if getattr(sys, "frozen", False):
 else:
     RUTA_FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
 
-app = FastAPI(title="AnoniPRO", version=VERSION, docs_url=None, redoc_url=None)
+app = FastAPI(title="ARAEMKA Redact", version=VERSION, docs_url=None, redoc_url=None)
 app.middleware("http")(middleware_password)
 
 
@@ -39,7 +39,7 @@ async def sin_cache_en_la_interfaz(request, call_next):
     """Evita que el navegador se quede con una versión antigua de la interfaz.
 
     Los archivos son pequeños y locales, así que no cachearlos no cuesta nada;
-    a cambio, al actualizar AnoniPRO (en el NAS o en el portable) el usuario ve
+    a cambio, al actualizar ARAEMKA Redact (en el NAS o en el portable) el usuario ve
     siempre la interfaz nueva sin tener que vaciar la caché a mano.
     """
     respuesta = await call_next(request)

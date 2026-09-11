@@ -1,4 +1,4 @@
-/* AnoniPRO — lógica de la interfaz.
+/* ARAEMKA Redact — lógica de la interfaz.
  * Todo el procesamiento ocurre en el servidor local; este archivo solo
  * pinta la vista previa, gestiona los interruptores y la verificación.
  */
@@ -155,7 +155,7 @@ async function iniciar() {
   $("boton-idioma").addEventListener("click", cambiarIdioma);
 
   const info = await (await fetch("/api/estado")).json();
-  $("version-app").textContent = "AnoniPRO " + info.version;
+  $("version-app").textContent = "ARAEMKA Redact " + info.version;
   $("nota-ttl").dataset.min = info.ttl_minutos;
   $("nota-ttl").textContent = t("subir.ttl", { min: info.ttl_minutos });
   $("estado-modelo").textContent = "NER: " + info.modelo_ner;

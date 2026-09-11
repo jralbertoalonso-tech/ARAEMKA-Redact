@@ -1,5 +1,5 @@
 #!/bin/bash
-# AnoniPRO — arranque en macOS (Apple Silicon o Intel).
+# ARAEMKA Redact — arranque en macOS (Apple Silicon o Intel).
 # Doble clic en este archivo desde Finder, o ejecútalo en Terminal.
 # La primera vez crea el entorno y descarga el modelo (necesita internet UNA vez).
 # Después funciona sin conexión.
@@ -7,7 +7,7 @@
 set -e
 cd "$(dirname "$0")"
 
-echo "── AnoniPRO ──────────────────────────────────────────"
+echo "── ARAEMKA Redact ────────────────────────────────────"
 
 # 1) Buscar Python 3.10+ (macOS trae 3.9, que no nos sirve)
 PY=""
@@ -52,7 +52,7 @@ if nc -z 127.0.0.1 $PUERTO 2>/dev/null; then
 fi
 
 # 4) Arrancar y abrir el navegador cuando el servidor responda de verdad
-echo "Iniciando AnoniPRO en http://localhost:$PUERTO …"
+echo "Iniciando ARAEMKA Redact en http://localhost:$PUERTO …"
 (
   for _ in $(seq 1 120); do
     sleep 1

@@ -1,6 +1,6 @@
-"""Genera la FICHA TÉCNICA de AnoniPRO: un resumen divulgativo (2 págs) para
+"""Genera la FICHA TÉCNICA de ARAEMKA Redact: un resumen divulgativo (2 págs) para
 presentar a la unidad de innovación del hospital, a un abogado o a cualquier
-interlocutor no técnico. Salida: registro/FICHA_TECNICA_AnoniPRO.docx
+interlocutor no técnico. Salida: registro/FICHA_TECNICA_ARAEMKA_Redact.docx
 """
 
 from pathlib import Path
@@ -10,7 +10,7 @@ from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 RAIZ = Path(__file__).resolve().parent.parent
-SALIDA = RAIZ / "registro" / "FICHA_TECNICA_AnoniPRO.docx"
+SALIDA = RAIZ / "registro" / "FICHA_TECNICA_ARAEMKA_Redact.docx"
 AZUL = RGBColor(0x1D, 0x5D, 0x8F)
 
 
@@ -44,7 +44,7 @@ def main():
     # ── Cabecera ──────────────────────────────────────────────────────────
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = h.add_run("AnoniPRO")
+    r = h.add_run("ARAEMKA Redact")
     r.bold = True; r.font.size = Pt(22); r.font.color.rgb = AZUL
     s = doc.add_paragraph("Ficha técnica · Herramienta de anonimización local de documentos clínicos")
     s.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -56,7 +56,7 @@ def main():
     # ── Resumen ejecutivo ─────────────────────────────────────────────────
     titulo("Resumen ejecutivo")
     doc.add_paragraph(
-        "AnoniPRO es una aplicación que elimina de forma automática y verificada los datos "
+        "ARAEMKA Redact es una aplicación que elimina de forma automática y verificada los datos "
         "personales de informes clínicos (PDF, imágenes escaneadas y Word), para poder usarlos "
         "en investigación, docencia y publicaciones cumpliendo el RGPD. Su principio innegociable "
         "es que todo el procesamiento ocurre en local: ningún dato del paciente sale del equipo o "
@@ -119,9 +119,9 @@ def main():
     titulo("Tecnología y licencias")
     doc.add_paragraph(
         "Construida con software libre de amplia difusión (Python, FastAPI, Microsoft Presidio, "
-        "spaCy, Tesseract). El código de la aplicación es de autoría propia. Una de las librerías "
-        "empleadas (PyMuPDF) tiene licencia AGPL, condición a tener en cuenta para cualquier "
-        "explotación comercial; existe alternativa mediante licencia comercial del proveedor.")
+        "spaCy, Tesseract). ARAEMKA Redact se publica como software libre bajo GNU AGPL v3 "
+        "exclusivamente, de forma compatible con PyMuPDF. La licencia permite el uso y la "
+        "distribución, también de pago, y exige facilitar el código fuente correspondiente.")
 
     # ── Propiedad intelectual ─────────────────────────────────────────────
     titulo("Propiedad intelectual")

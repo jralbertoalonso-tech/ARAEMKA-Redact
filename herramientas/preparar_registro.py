@@ -1,28 +1,34 @@
 """Prepara los materiales para el Registro de la Propiedad Intelectual (programa
 de ordenador). Genera en la carpeta `registro/`:
 
-  - MEMORIA_TECNICA_AnoniPRO.docx  (memoria editable, con huecos para tus datos)
+  - MEMORIA_TECNICA_ARAEMKA_Redact.docx  (memoria editable, con huecos para tus datos)
   - diagrama_flujo.png             (diagrama de flujo que se incrusta en la memoria)
-  - CODIGO_FUENTE_AnoniPRO.pdf     (todo TU código, legible, sin comprimir)
+  - CODIGO_FUENTE_ARAEMKA_Redact.pdf     (opcional con `--rpi`)
   - codigo-fuente/                 (los ficheros de código en bruto, copia limpia)
 
-Solo incluye código de autoría propia: excluye el entorno virtual, las librerías
-de terceros, el visor PDF.js, el modelo de lenguaje y los empaquetados.
+Solo incluye material propio del proyecto: excluye el entorno virtual, las
+librerías de terceros, el visor PDF.js, los modelos y los empaquetados. Si se
+han usado herramientas de IA, esa asistencia debe declararse con transparencia
+al efectuar el depósito.
 """
 
 import io
+import hashlib
 import shutil
+import sys
+import zipfile
 from pathlib import Path
 
 import fitz  # PyMuPDF
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from PIL import Image, ImageDraw, ImageFont
 
 RAIZ = Path(__file__).resolve().parent.parent
-SALIDA = RAIZ / "registro"
-VERSION = "0.5.0"
+sys.path.insert(0, str(RAIZ / "backend"))
+from app.config import VERSION  # noqa: E402  (fuente única de versión)
+SALIDA = RAIZ / "registro" / f"ARAEMKA-Redact-v{VERSION}"
+ZIP_SAFE_CREATIVE = RAIZ / "registro" / f"ARAEMKA-Redact-v{VERSION}-Safe-Creative.zip"
 
 # Ficheros de autoría propia (rutas relativas a la raíz del proyecto)
 FICHEROS = [
@@ -31,16 +37,21 @@ FICHEROS = [
     "backend/app/config.py",
     "backend/app/seguridad.py",
     "backend/app/almacen.py",
+    "backend/app/textos.py",
     "backend/app/portable_main.py",  # se corrige abajo si está en backend/
     "backend/portable_main.py",
     "backend/app/detection/categorias.py",
     "backend/app/detection/validators.py",
     "backend/app/detection/reconocedores_es.py",
+    "backend/app/detection/reconocedores_en.py",
+    "backend/app/detection/idioma.py",
     "backend/app/detection/motor.py",
     "backend/app/detection/diagnostico_hardware.py",
     "backend/app/detection/capa3_llm.py",
     "backend/app/documentos/pdf_doc.py",
     "backend/app/documentos/docx_doc.py",
+    "backend/app/documentos/xlsx_doc.py",
+    "backend/app/documentos/ooxml.py",
     "backend/app/documentos/ocr.py",
     "backend/app/documentos/fechas.py",
     "backend/app/__init__.py",
@@ -52,18 +63,44 @@ FICHEROS = [
     "backend/tests/test_capa3.py",
     "backend/tests/test_fase4.py",
     "backend/tests/test_fase5.py",
+    "backend/tests/test_universal.py",
+    "backend/tests/test_ingles.py",
+    "backend/tests/test_excel_metadatos_y_resaltado.py",
+    "backend/tests/test_avisos_legales.py",
+    "backend/tests/test_ocr_portable.py",
+    "backend/tests/test_correcciones.py",
     "frontend/index.html",
     "frontend/styles.css",
     "frontend/app.js",
+    "frontend/idiomas.js",
+    "frontend/icono.svg",
     "herramientas/generar_documentos_prueba.py",
     "herramientas/evaluar_deteccion.py",
     "herramientas/preparar_registro.py",
+    "herramientas/ficha_tecnica.py",
+    "herramientas/generar_iconos.py",
+    "herramientas/generar_version_windows.py",
+    "herramientas/generar_avisos_terceros.py",
+    "herramientas/probar_portable_windows.ps1",
+    "herramientas/LEEME-WINDOWS.txt",
     "herramientas/construir_portable_mac.sh",
     "herramientas/construir_portable_windows.bat",
     "Dockerfile",
     "docker-compose.yml",
     "iniciar_mac.command",
     "README.md",
+    "README.en.md",
+    "AVISO-LEGAL.md",
+    "LICENSE",
+    "CODIGO-FUENTE.md",
+    "THIRD-PARTY-NOTICES.md",
+    "TRADEMARKS.md",
+    "docs/INSTALAR-EN-NAS.md",
+    "docs/PARA-DESARROLLADORES.md",
+    "docs/PLAN-REGISTRO-MARCA-ARAEMKA.md",
+    "web/index.html",
+    ".github/workflows/construir-macos.yml",
+    ".github/workflows/construir-windows.yml",
     "AnoniPRO-synology/docker-compose.yml",
     "AnoniPRO-synology/INSTRUCCIONES.md",
 ]
@@ -72,9 +109,11 @@ TERCEROS = [
     ("FastAPI, Starlette, Uvicorn", "Framework y servidor web", "MIT / BSD-3"),
     ("Microsoft Presidio (presidio-analyzer)", "Orquestación de detección de PII (capa 1-2)", "MIT"),
     ("spaCy", "Motor de reconocimiento de entidades (capa 2)", "MIT"),
-    ("Modelo es_core_news_md (spaCy)", "Modelo NER en español", "Verificar licencia del modelo"),
+    ("Modelo es_core_news_md (spaCy)", "Modelo NER en español", "GPL-3.0"),
+    ("Modelo en_core_web_md (spaCy)", "Modelo NER en inglés", "MIT"),
     ("PyMuPDF (fitz)", "Lectura y redacción destructiva de PDF", "AGPL-3.0 / comercial (Artifex)"),
     ("python-docx", "Lectura y escritura de documentos Word", "MIT"),
+    ("openpyxl", "Lectura y escritura de libros Excel", "MIT"),
     ("pytesseract + Tesseract OCR", "OCR de escaneados e imágenes (capa Fase 2)", "Apache-2.0"),
     ("Pillow (PIL)", "Manejo de imágenes", "HPND (permisiva)"),
     ("itsdangerous", "Firma de la cookie de sesión", "BSD-3"),
@@ -84,21 +123,10 @@ TERCEROS = [
 ]
 
 
-def cargar_fuente(tam):
-    for ruta in ["/System/Library/Fonts/Helvetica.ttc",
-                 "/System/Library/Fonts/Supplemental/Arial.ttf"]:
-        if Path(ruta).exists():
-            try:
-                return ImageFont.truetype(ruta, tam)
-            except Exception:
-                pass
-    return ImageFont.load_default()
-
-
 def generar_diagrama(destino: Path):
-    """Diagrama de flujo vertical del funcionamiento de AnoniPRO."""
+    """Diagrama de flujo vertical sin depender de fuentes o librerías externas."""
     pasos = [
-        "Documento de entrada\n(PDF, imagen o Word)",
+        "Documento de entrada\n(PDF, imagen, Word o Excel)",
         "Extracción de texto\n(directa u OCR con Tesseract si es escaneado)",
         "CAPA 1 — Reglas y validación\n(DNI, NUSS, CIP, T.I.S., teléfonos, fechas…)",
         "CAPA 2 — Modelo NER en español\n(nombres, lugares, organizaciones)",
@@ -110,31 +138,43 @@ def generar_diagrama(destino: Path):
     ]
     W, alto_caja, margen_v, gap = 900, 88, 40, 34
     H = margen_v * 2 + len(pasos) * alto_caja + (len(pasos) - 1) * gap
-    img = Image.new("RGB", (W, H), "white")
-    d = ImageDraw.Draw(img)
-    ftit = cargar_fuente(19)
-    fsub = cargar_fuente(15)
+    doc = fitz.open()
+    pagina = doc.new_page(width=W, height=H)
     x0, x1 = 90, W - 90
-    azul = (29, 93, 143)
+    azul = (29 / 255, 93 / 255, 143 / 255)
     for i, texto in enumerate(pasos):
         y = margen_v + i * (alto_caja + gap)
-        relleno = (234, 243, 251) if i not in (2, 3, 4) else (226, 240, 233)
-        d.rounded_rectangle([x0, y, x1, y + alto_caja], radius=14, fill=relleno, outline=azul, width=2)
+        rgb = (234, 243, 251) if i not in (2, 3, 4) else (226, 240, 233)
+        relleno = tuple(c / 255 for c in rgb)
+        caja = fitz.Rect(x0, y, x1, y + alto_caja)
+        pagina.draw_rect(caja, color=azul, fill=relleno, width=2)
         lineas = texto.split("\n")
-        d.text(((x0 + x1) / 2, y + 22), lineas[0], font=ftit, fill=(20, 20, 20), anchor="mm")
+        pagina.insert_textbox(
+            fitz.Rect(x0 + 10, y + 15, x1 - 10, y + 43), lineas[0],
+            fontsize=15, fontname="helv", color=(0.08, 0.08, 0.08),
+            align=fitz.TEXT_ALIGN_CENTER,
+        )
         if len(lineas) > 1:
-            d.text(((x0 + x1) / 2, y + 56), lineas[1], font=fsub, fill=(90, 90, 90), anchor="mm")
+            pagina.insert_textbox(
+                fitz.Rect(x0 + 10, y + 49, x1 - 10, y + 76), lineas[1],
+                fontsize=12, fontname="helv", color=(0.35, 0.35, 0.35),
+                align=fitz.TEXT_ALIGN_CENTER,
+            )
         if i < len(pasos) - 1:
             cx = (x0 + x1) / 2
             yf = y + alto_caja
-            d.line([cx, yf, cx, yf + gap], fill=azul, width=2)
-            d.polygon([(cx - 7, yf + gap - 8), (cx + 7, yf + gap - 8), (cx, yf + gap)], fill=azul)
-    d.text((W / 2, H - 14), "AnoniPRO — Flujo de anonimización (todo el proceso ocurre en local)",
-           font=fsub, fill=(120, 120, 120), anchor="mm")
-    img.save(destino)
+            pagina.draw_line(fitz.Point(cx, yf), fitz.Point(cx, yf + gap), color=azul, width=2)
+    pagina.insert_textbox(
+        fitz.Rect(30, H - 28, W - 30, H - 8),
+        "ARAEMKA Redact — Flujo de anonimización (todo el proceso ocurre en local)",
+        fontsize=10, fontname="helv", color=(0.47, 0.47, 0.47),
+        align=fitz.TEXT_ALIGN_CENTER,
+    )
+    pagina.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False).save(destino)
+    doc.close()
 
 
-def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
+def generar_memoria(destino: Path, diagrama: Path, ficheros_info, incluye_pdf: bool = False):
     doc = Document()
     est = doc.styles["Normal"]
     est.font.name = "Calibri"
@@ -155,7 +195,7 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
     sub = doc.add_paragraph("Solicitud de inscripción en el Registro de la Propiedad Intelectual")
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     sub2 = doc.add_paragraph()
-    r = sub2.add_run("Programa de ordenador: «AnoniPRO»")
+    r = sub2.add_run("Programa de ordenador: «ARAEMKA Redact»")
     r.bold = True; r.font.size = Pt(14)
     sub2.alignment = WD_ALIGN_PARAGRAPH.CENTER
     doc.add_paragraph()
@@ -169,7 +209,7 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
     campo("Condición", "Autor y titular de los derechos de explotación")
 
     h("2. Identificación de la obra", 1)
-    campo("Título", "AnoniPRO")
+    campo("Título", "ARAEMKA Redact")
     campo("Tipo de obra", "Programa de ordenador")
     campo("Versión", VERSION)
     campo("Fecha de creación / finalización", "____ / ____ / 20____")
@@ -177,7 +217,7 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
 
     h("3. Descripción del programa", 1)
     doc.add_paragraph(
-        "AnoniPRO es una aplicación para la anonimización de documentos clínicos que "
+        "ARAEMKA Redact es una aplicación para la anonimización de documentos clínicos que "
         "funciona de forma 100 % local: ningún dato del documento sale del equipo o de "
         "la red local, sin telemetría ni conexión a servicios externos. Está diseñada "
         "para uso sanitario, con interfaz en español, y detecta y elimina de forma "
@@ -187,7 +227,7 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
         "direcciones, fechas, centros y servicios, entre otros).")
     doc.add_paragraph(
         "El programa admite documentos PDF con texto, PDF escaneados e imágenes (mediante "
-        "reconocimiento óptico de caracteres) y documentos Word. La anonimización nunca se "
+        "reconocimiento óptico de caracteres), documentos Word y libros Excel `.xlsx`. La anonimización nunca se "
         "aplica a ciegas: el usuario revisa las detecciones resaltadas por colores, acepta o "
         "descarta cada una, y el programa realiza una segunda verificación del resultado. La "
         "redacción es destructiva real (elimina el texto de la capa de contenido o los píxeles "
@@ -227,8 +267,9 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
     doc.add_paragraph(
         "El programa integra componentes de código abierto de terceros, cuya autoría "
         "corresponde a sus respectivos titulares y que se relacionan a continuación para "
-        "constancia. La autoría objeto de esta inscripción se refiere EXCLUSIVAMENTE al "
-        "código propio del solicitante (relacionado en el apartado 9), no a estos componentes.")
+        "constancia. El depósito se refiere exclusivamente al material propio del proyecto "
+        "relacionado en el apartado 9, incluida la selección, dirección, revisión e integración "
+        "realizadas por el solicitante, y no a esos componentes de terceros.")
     tabla = doc.add_table(rows=1, cols=3)
     tabla.style = "Light Grid Accent 1"
     hc = tabla.rows[0].cells
@@ -237,14 +278,19 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
         c = tabla.add_row().cells
         c[0].text, c[1].text, c[2].text = comp, func, lic
     doc.add_paragraph(
-        "Nota: PyMuPDF se distribuye bajo licencia AGPL-3.0 (con opción de licencia comercial). "
-        "Debe tenerse en cuenta esta condición para cualquier explotación futura del programa.").italic = True
+        "Nota: el titular ha autorizado la publicación de ARAEMKA Redact bajo AGPL-3.0-only, "
+        "de forma compatible con PyMuPDF. La marca y el logotipo se tratan separadamente.").italic = True
 
-    h("9. Listado de ficheros de código propio", 1)
+    h("9. Listado de ficheros propios del proyecto", 1)
+    ubicaciones = "la carpeta «codigo-fuente»"
+    if incluye_pdf:
+        ubicaciones = (
+            "el documento «CODIGO_FUENTE_ARAEMKA_Redact.pdf» y la carpeta «codigo-fuente»"
+        )
     doc.add_paragraph(
-        f"El programa consta de {len(ficheros_info)} ficheros de autoría propia, con un total "
+        f"El material depositado consta de {len(ficheros_info)} ficheros propios del proyecto, con un total "
         f"de {sum(n for _, n in ficheros_info)} líneas de código, cuyo contenido íntegro se "
-        "aporta en el documento «CODIGO_FUENTE_AnoniPRO.pdf» y en la carpeta «codigo-fuente».")
+        f"aporta en {ubicaciones}.")
     t2 = doc.add_table(rows=1, cols=2)
     t2.style = "Light List Accent 1"
     t2.rows[0].cells[0].text = "Fichero"
@@ -253,11 +299,14 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info):
         c = t2.add_row().cells
         c[0].text, c[1].text = ruta, str(n)
 
-    h("10. Declaración de autoría", 1)
+    h("10. Declaración de autoría y asistencia de IA", 1)
     doc.add_paragraph(
-        "El solicitante declara ser el autor original del código propio relacionado en esta "
-        "memoria, haberlo creado por sus propios medios y ostentar la titularidad de los "
-        "derechos de explotación sobre el mismo.")
+        "El solicitante declara que el programa ha sido desarrollado bajo su dirección y "
+        "control, con asistencia de herramientas de inteligencia artificial. Ha seleccionado, "
+        "revisado, corregido, integrado y validado el material relacionado en esta memoria. "
+        "La declaración de titularidad se limita a las aportaciones humanas y derechos que "
+        "legalmente le correspondan y no comprende componentes de terceros ni atribuye "
+        "autoría humana a contenido que la legislación no considere protegible.")
     doc.add_paragraph()
     doc.add_paragraph("En ____________________, a ____ de ________________ de 20____.")
     doc.add_paragraph()
@@ -270,44 +319,56 @@ def generar_pdf_codigo(destino: Path, ficheros_existentes):
     """Un único PDF legible con todo el código, paginado y con nº de línea."""
     doc = fitz.open()
     ancho, alto = fitz.paper_size("a4")
-    margen, tam, salto = 40, 7.2, 9.2
-    fuente, max_cols = "cour", 118
+    margen, tam = 40, 7.0
+    fuente, max_cols, lineas_por_pagina = "cour", 112, 76
 
     # Portada
     pag = doc.new_page(width=ancho, height=alto)
     pag.insert_textbox(fitz.Rect(40, 120, ancho - 40, 400),
-        "CÓDIGO FUENTE\n\nAnoniPRO\n\nPrograma de anonimización de documentos clínicos\n"
+        "CÓDIGO FUENTE\n\nARAEMKA Redact\n\nPrograma de anonimización de documentos clínicos\n"
         f"Versión {VERSION}\n\n"
         f"{len(ficheros_existentes)} ficheros · {sum(n for _, n, _ in ficheros_existentes)} líneas\n\n"
-        "Código de autoría propia (excluye librerías de terceros)\n"
+        "Material propio del proyecto (excluye librerías de terceros)\n"
         "Documento aportado al Registro de la Propiedad Intelectual",
         fontsize=15, fontname="helv", align=fitz.TEXT_ALIGN_CENTER)
 
-    def nueva_pagina():
+    def nueva_pagina(ruta: str, continuacion: bool = False):
         p = doc.new_page(width=ancho, height=alto)
-        return p, margen
+        etiqueta = f"{ruta} (continuación)" if continuacion else ruta
+        p.draw_rect(
+            fitz.Rect(margen - 4, margen - 2, ancho - margen + 4, margen + 16),
+            fill=(0.11, 0.36, 0.56),
+        )
+        p.insert_text(
+            (margen, margen + 11), etiqueta,
+            fontsize=9, fontname="helv", color=(1, 1, 1),
+        )
+        return p
 
     for ruta, _, texto in ficheros_existentes:
-        pag, y = nueva_pagina()
-        # cabecera del fichero
-        pag.draw_rect(fitz.Rect(margen - 4, y - 2, ancho - margen + 4, y + 16), fill=(0.11, 0.36, 0.56))
-        pag.insert_text((margen, y + 11), ruta, fontsize=10, fontname="helv", color=(1, 1, 1))
-        y += 26
+        lineas_render = []
         for i, linea in enumerate(texto.splitlines(), 1):
-            # troceo de líneas largas
             trozos = [linea[j:j + max_cols] for j in range(0, max(1, len(linea)), max_cols)] or [""]
             for k, trozo in enumerate(trozos):
-                if y > alto - margen:
-                    pag, y = nueva_pagina()
                 etiqueta = f"{i:4} " if k == 0 else "     "
-                pag.insert_text((margen, y), etiqueta + trozo, fontsize=tam, fontname=fuente,
-                                color=(0.15, 0.15, 0.15))
-                y += salto
+                lineas_render.append(etiqueta + trozo)
+
+        for inicio in range(0, len(lineas_render) or 1, lineas_por_pagina):
+            pag = nueva_pagina(ruta, continuacion=inicio > 0)
+            bloque = "\n".join(lineas_render[inicio:inicio + lineas_por_pagina])
+            pag.insert_textbox(
+                fitz.Rect(margen, margen + 25, ancho - margen, alto - margen),
+                bloque, fontsize=tam, fontname=fuente,
+                color=(0.15, 0.15, 0.15), lineheight=1.08,
+            )
     doc.save(str(destino), garbage=4, deflate=True)
     doc.close()
 
 
 def main():
+    generar_pdf_rpi = "--rpi" in sys.argv[1:]
+    # Cada versión vive en su propia carpeta. Nunca se borra el material histórico
+    # de AnoniPRO ni depósitos anteriores, porque también acredita anterioridad.
     if SALIDA.exists():
         shutil.rmtree(SALIDA)
     (SALIDA / "codigo-fuente").mkdir(parents=True)
@@ -330,14 +391,52 @@ def main():
 
     diagrama = SALIDA / "diagrama_flujo.png"
     generar_diagrama(diagrama)
-    generar_memoria(SALIDA / "MEMORIA_TECNICA_AnoniPRO.docx", diagrama, info_docx)
-    generar_pdf_codigo(SALIDA / "CODIGO_FUENTE_AnoniPRO.pdf", info_pdf)
+    generar_memoria(
+        SALIDA / "MEMORIA_TECNICA_ARAEMKA_Redact.docx",
+        diagrama,
+        info_docx,
+        incluye_pdf=generar_pdf_rpi,
+    )
+    if generar_pdf_rpi:
+        generar_pdf_codigo(SALIDA / "CODIGO_FUENTE_ARAEMKA_Redact.pdf", info_pdf)
+
+    (SALIDA / "LEEME-SAFE-CREATIVE.txt").write_text(
+        f"ARAEMKA Redact v{VERSION}\n"
+        "Depósito de autoría de software y documentación.\n\n"
+        "El paquete contiene únicamente una selección explícita de código y documentos "
+        "propios. No contiene historiales clínicos, documentos de pacientes, credenciales, "
+        "claves, entornos virtuales, modelos ni librerías de terceros.\n\n"
+        "Declaración de creatividad recomendada: obra asistida por IA. El autor ha dirigido, "
+        "seleccionado, revisado, corregido, integrado y validado el resultado.\n\n"
+        "El depósito acredita contenido y fecha; no sustituye el registro oficial de la "
+        "marca ARAEMKA ante la OEPM o la EUIPO.\n",
+        encoding="utf-8",
+    )
+
+    manifestables = sorted(
+        p for p in SALIDA.rglob("*")
+        if p.is_file() and p.name != "MANIFEST.sha256"
+    )
+    lineas_manifest = []
+    for fichero in manifestables:
+        huella = hashlib.sha256(fichero.read_bytes()).hexdigest()
+        lineas_manifest.append(f"{huella}  {fichero.relative_to(SALIDA).as_posix()}")
+    (SALIDA / "MANIFEST.sha256").write_text(
+        "\n".join(lineas_manifest) + "\n", encoding="ascii"
+    )
+
+    with zipfile.ZipFile(ZIP_SAFE_CREATIVE, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for fichero in sorted(p for p in SALIDA.rglob("*") if p.is_file()):
+            zf.write(fichero, Path(SALIDA.name) / fichero.relative_to(SALIDA))
 
     print(f"Materiales generados en: {SALIDA}")
     print(f"  · {len(info_docx)} ficheros · {sum(n for _, n in info_docx)} líneas")
-    for nombre in ["MEMORIA_TECNICA_AnoniPRO.docx", "CODIGO_FUENTE_AnoniPRO.pdf",
-                   "diagrama_flujo.png", "codigo-fuente/"]:
+    nombres = ["MEMORIA_TECNICA_ARAEMKA_Redact.docx", "diagrama_flujo.png", "codigo-fuente/"]
+    if generar_pdf_rpi:
+        nombres.insert(1, "CODIGO_FUENTE_ARAEMKA_Redact.pdf")
+    for nombre in nombres:
         print("  -", nombre)
+    print(f"  - {ZIP_SAFE_CREATIVE.name}")
 
 
 if __name__ == "__main__":

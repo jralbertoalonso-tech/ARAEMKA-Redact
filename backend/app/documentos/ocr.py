@@ -55,7 +55,7 @@ def _localizar_tesseract():
         return True
 
     # PyInstaller expone los recursos añadidos dentro de sys._MEIPASS. En modo
-    # --onedir será normalmente dist/AnoniPRO/_internal.
+    # --onedir será normalmente dist/ARAEMKA-Redact/_internal.
     base_empaquetada = getattr(sys, "_MEIPASS", "")
     if base_empaquetada:
         incluido = os.path.join(base_empaquetada, "tesseract", "tesseract.exe")

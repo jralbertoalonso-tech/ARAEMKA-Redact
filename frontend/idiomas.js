@@ -1,4 +1,4 @@
-/* AnoniPRO — textos de la interfaz en español e inglés.
+/* ARAEMKA Redact — textos de la interfaz en español e inglés.
  *
  * Una sola aplicación bilingüe: aquí están TODOS los textos visibles. Para
  * añadir un idioma nuevo basta con copiar el bloque y traducirlo; no hay que
@@ -12,16 +12,18 @@
 const TEXTOS = {
   es: {
     // ── Cabecera y pie ──────────────────────────────────────────────────
-    "app.titulo_pagina": "AnoniPRO — Anonimización local de documentos",
+    "app.titulo_pagina": "ARAEMKA Redact — Anonimización local de documentos",
     "app.subtitulo": "Anonimización local de documentos — ningún dato sale de tu equipo",
     "app.pie": "Procesamiento 100 % local · Sin conexión a internet · Los documentos nunca se guardan en disco",
     "app.autor": "Autor: Dr. José Ramón Alberto Alonso",
     "legal.abrir": "Aviso legal y condiciones de uso",
     "legal.titulo": "Aviso legal y condiciones de uso",
-    "legal.apoyo": "AnoniPRO es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.",
+    "legal.apoyo": "ARAEMKA Redact es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.",
     "legal.limites": "El OCR, los modelos lingüísticos y las reglas automáticas pueden omitir información, interpretarla incorrectamente o dejar elementos visibles o susceptibles de reidentificación.",
     "legal.revision": "La persona usuaria debe revisar el documento resultante antes de compartirlo, publicarlo o utilizarlo. Cuando corresponda, el responsable del tratamiento conserva sus obligaciones legales y debe valorar el riesgo y aplicar las medidas adecuadas.",
     "legal.responsabilidad": "En la máxima medida permitida por la ley, el autor no responde de daños indirectos derivados del uso incorrecto, de la falta de revisión o de usos no previstos. No se excluyen las responsabilidades ni los derechos que legalmente no puedan limitarse.",
+    "legal.licencia": "Software libre bajo GNU AGPL v3.",
+    "legal.codigo_fuente": "Obtener el código fuente",
     "legal.no_asesora": "El programa y esta información no sustituyen el asesoramiento jurídico, de protección de datos o profesional.",
     "legal.cerrar": "Entendido",
     "cabecera.detector": "Modelo de detección de nombres",
@@ -172,16 +174,18 @@ const TEXTOS = {
 
   en: {
     // ── Header and footer ───────────────────────────────────────────────
-    "app.titulo_pagina": "AnoniPRO — Local document anonymisation",
+    "app.titulo_pagina": "ARAEMKA Redact — Local document anonymisation",
     "app.subtitulo": "Local document anonymisation — no data ever leaves your computer",
     "app.pie": "100% local processing · Works offline · Documents are never written to disk",
     "app.autor": "Author: Dr José Ramón Alberto Alonso",
     "legal.abrir": "Legal notice and terms of use",
     "legal.titulo": "Legal notice and terms of use",
-    "legal.apoyo": "AnoniPRO is an assistive tool. It does not guarantee the complete detection or removal of all personal data.",
+    "legal.apoyo": "ARAEMKA Redact is an assistive tool. It does not guarantee the complete detection or removal of all personal data.",
     "legal.limites": "OCR, language models and automated rules may omit information, interpret it incorrectly, or leave visible or potentially re-identifiable elements.",
     "legal.revision": "The user must review the resulting document before sharing, publishing or using it. Where applicable, the controller retains its legal obligations and must assess risk and apply appropriate measures.",
     "legal.responsabilidad": "To the maximum extent permitted by law, the author is not liable for indirect loss arising from misuse, failure to review, or unintended uses. This does not exclude liabilities or rights that cannot legally be limited.",
+    "legal.licencia": "Free software under GNU AGPL v3.",
+    "legal.codigo_fuente": "Get the source code",
     "legal.no_asesora": "The software and this information are not a substitute for legal, data-protection or other professional advice.",
     "legal.cerrar": "Understood",
     "cabecera.detector": "Name detection model",

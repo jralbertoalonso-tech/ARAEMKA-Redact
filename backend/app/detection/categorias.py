@@ -1,6 +1,6 @@
 """Catálogo de datos personales que la aplicación detecta.
 
-AnoniPRO es de uso general: sirve para documentos clínicos, jurídicos,
+ARAEMKA Redact es de uso general: sirve para documentos clínicos, jurídicos,
 laborales, facturas y papeles personales. Cada categoría tiene un identificador
 estable (se usa en la API y en los perfiles), su nombre visible en español e
 inglés, un grupo (para el panel de interruptores) y un color (para el resaltado).

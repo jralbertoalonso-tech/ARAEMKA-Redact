@@ -37,7 +37,7 @@ def main():
     puerto = _puerto_libre(AJUSTES.puerto)
     url = f"http://127.0.0.1:{puerto}"
     print("──────────────────────────────────────────────")
-    print("  AnoniPRO (modo portable)")
+    print("  ARAEMKA Redact (modo portable)")
     print(f"  Abriendo {url} en tu navegador…")
     print("  Cierra esta ventana para parar la aplicación.")
     print("──────────────────────────────────────────────")
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         # Sin esto, en Windows la consola se cierra al instante y el usuario no
         # llega a leer el error.
         print("\n──────────────────────────────────────────────")
-        print("  ERROR: AnoniPRO no ha podido arrancar.")
+        print("  ERROR: ARAEMKA Redact no ha podido arrancar.")
         print("──────────────────────────────────────────────")
         traceback.print_exc()
         print("\nCopia este mensaje si necesitas ayuda para resolverlo.")

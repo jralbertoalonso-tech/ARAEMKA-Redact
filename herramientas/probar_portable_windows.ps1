@@ -1,8 +1,8 @@
 $ErrorActionPreference = "Stop"
 
 $raiz = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$carpeta = Join-Path $raiz "dist\AnoniPRO"
-$ejecutable = Join-Path $carpeta "AnoniPRO.exe"
+$carpeta = Join-Path $raiz "dist\ARAEMKA-Redact"
+$ejecutable = Join-Path $carpeta "ARAEMKA-Redact.exe"
 $puerto = 8765
 $url = "http://127.0.0.1:$puerto"
 $temporal = Join-Path $env:TEMP "anonipro-smoke"
@@ -41,7 +41,7 @@ try {
     for ($i = 0; $i -lt 180; $i++) {
         Start-Sleep -Seconds 1
         if ($proceso.HasExited) {
-            throw "AnoniPRO terminó durante el arranque (código $($proceso.ExitCode))."
+            throw "ARAEMKA Redact terminó durante el arranque (código $($proceso.ExitCode))."
         }
         try {
             $estado = Invoke-RestMethod -Uri "$url/api/estado" -TimeoutSec 2
@@ -52,7 +52,7 @@ try {
         }
     }
     if ($null -eq $estado) {
-        throw "AnoniPRO no respondió en 180 segundos."
+        throw "ARAEMKA Redact no respondió en 180 segundos."
     }
     if (-not $estado.ocr_disponible -or -not $estado.ocr_espanol -or -not $estado.ocr_ingles) {
         throw "El ejecutable arrancó, pero no detectó el OCR español e inglés incluido."
