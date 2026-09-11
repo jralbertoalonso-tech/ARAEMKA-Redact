@@ -156,3 +156,111 @@ def es_pasaporte_es(texto: str) -> bool:
     """Pasaporte español: 3 letras + 6 dígitos (actual) o 2 letras + 6 dígitos."""
     limpio = re.sub(r"[\s\-]", "", texto).upper()
     return bool(re.fullmatch(r"[A-Z]{2,3}\d{6}", limpio))
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Identificadores en inglés — Reino Unido y Estados Unidos
+# ══════════════════════════════════════════════════════════════════════════
+# Se usan en el motor de detección inglés (documentos en inglés). Igual que los
+# españoles, los que llevan dígito de control se validan matemáticamente para
+# descartar falsos positivos.
+
+def validar_nhs(texto: str) -> bool:
+    """Número del NHS británico: 10 dígitos con dígito de control módulo 11.
+
+    Los 9 primeros dígitos se ponderan 10, 9, 8… 2; el control es
+    11 − (suma ponderada mód 11). Un resto de 0 → control 0; un resto de 1 hace
+    el número inválido (no existe control «10»).
+    """
+    limpio = re.sub(r"[\s\-]", "", texto)
+    if not re.fullmatch(r"\d{10}", limpio):
+        return False
+    suma = sum(int(limpio[i]) * (10 - i) for i in range(9))
+    control = 11 - (suma % 11)
+    if control == 11:
+        control = 0
+    elif control == 10:
+        return False
+    return control == int(limpio[9])
+
+
+def es_nino(texto: str) -> bool:
+    """National Insurance Number británico: 2 letras + 6 dígitos + 1 letra (A-D).
+
+    No lleva dígito de control, pero sí reglas de formato estrictas: ciertas
+    letras y prefijos no se emiten nunca, lo que descarta la mayoría de códigos
+    ajenos con la misma forma.
+    """
+    limpio = re.sub(r"[\s\-]", "", texto).upper()
+    if not re.fullmatch(r"[A-Z]{2}\d{6}[A-D]", limpio):
+        return False
+    primera, segunda = limpio[0], limpio[1]
+    # Letras que nunca se usan en cada posición
+    if primera in "DFIQUV" or segunda in "DFIOQUV":
+        return False
+    # Prefijos administrativos no asignables
+    if limpio[:2] in {"BG", "GB", "NK", "KN", "TN", "NT", "ZZ"}:
+        return False
+    return True
+
+
+def es_ssn(texto: str) -> bool:
+    """Número de la Seguridad Social de EE. UU. (SSN): AAA-GG-SSSS.
+
+    No tiene dígito de control; se validan los rangos que la SSA nunca emite:
+    área 000, 666 o 900-999; grupo 00; serie 0000.
+    """
+    limpio = re.sub(r"[\s\-]", "", texto)
+    if not re.fullmatch(r"\d{9}", limpio):
+        return False
+    area, grupo, serie = int(limpio[:3]), int(limpio[3:5]), int(limpio[5:])
+    if area == 0 or area == 666 or area >= 900:
+        return False
+    if grupo == 0 or serie == 0:
+        return False
+    return True
+
+
+def es_itin(texto: str) -> bool:
+    """ITIN estadounidense: empieza por 9 y el grupo cae en rangos reservados.
+
+    Formato 9XX-GG-XXXX con GG en 50-65, 70-88, 90-92 o 94-99. Distingue el ITIN
+    (contribuyentes sin SSN) de un SSN normal.
+    """
+    limpio = re.sub(r"[\s\-]", "", texto)
+    if not re.fullmatch(r"9\d{8}", limpio):
+        return False
+    grupo = int(limpio[3:5])
+    return 50 <= grupo <= 65 or 70 <= grupo <= 88 or 90 <= grupo <= 92 or 94 <= grupo <= 99
+
+
+def es_codigo_postal_uk(texto: str) -> bool:
+    """Código postal británico (p. ej. «SW1A 1AA», «M1 1AE», «CR2 6XH»)."""
+    limpio = texto.strip().upper()
+    return bool(re.fullmatch(
+        r"[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}", limpio))
+
+
+def es_zip_us(texto: str) -> bool:
+    """Código postal estadounidense: 5 dígitos, opcionalmente +4 (ZIP+4)."""
+    return bool(re.fullmatch(r"\d{5}(?:-\d{4})?", texto.strip()))
+
+
+def es_telefono_uk(texto: str) -> bool:
+    """Teléfono británico: +44 o 0 inicial y 10 dígitos nacionales."""
+    limpio = re.sub(r"[\s.\-()]", "", texto)
+    limpio = limpio.removeprefix("+44").removeprefix("0044")
+    if not limpio.startswith("0"):
+        limpio = "0" + limpio
+    return bool(re.fullmatch(r"0\d{9,10}", limpio))
+
+
+def es_telefono_us(texto: str) -> bool:
+    """Teléfono norteamericano (NANP): 10 dígitos, con +1 opcional.
+
+    Área y central empiezan por 2-9 (regla del plan de numeración), lo que
+    descarta muchos números de serie que solo se parecen a un teléfono.
+    """
+    limpio = re.sub(r"[\s.\-()]", "", texto)
+    limpio = limpio.removeprefix("+1").removeprefix("001")
+    return bool(re.fullmatch(r"[2-9]\d{2}[2-9]\d{6}", limpio))

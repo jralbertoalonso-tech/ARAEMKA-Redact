@@ -19,6 +19,8 @@ from docx import Document
 from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
 
+from .ooxml import buscar_textos_en_paquete, limpiar_metadatos_ooxml
+
 CARACTER_REDACCION = "█"
 
 
@@ -77,7 +79,11 @@ class DocumentoDocx:
     """Un .docx cargado en memoria, listo para analizar y redactar."""
 
     def __init__(self, contenido: bytes):
-        self.contenido = contenido
+        # Se trabaja sobre una copia saneada en RAM. Así las inserciones
+        # controladas pasan a ser texto normal, las eliminaciones antiguas no
+        # se analizan como si siguieran visibles y comentarios/propiedades no
+        # viajan siquiera hasta la copia resultante.
+        self.contenido = limpiar_metadatos_ooxml(contenido)
         self.bloques: list[BloqueDocx] = []
         self._extraer()
 
@@ -153,9 +159,14 @@ class DocumentoDocx:
 
         salida = io.BytesIO()
         doc.save(salida)
-        return salida.getvalue()
+        # python-docx vuelve a crear algunas propiedades del paquete al
+        # guardar. Se sanea una segunda vez para cubrir también propiedades
+        # personalizadas, revisiones, comentarios y enlaces externos.
+        return limpiar_metadatos_ooxml(salida.getvalue())
 
     def contiene_texto_oculto(self, textos: list[str]) -> list[str]:
-        """Comprueba si alguno de los textos sigue presente (verificación)."""
-        restante = "\n".join(b.texto for b in self.bloques).lower()
-        return [t for t in textos if t.strip() and t.strip().lower() in restante]
+        """Comprueba texto visible y también partes internas del paquete."""
+        restante = "\n".join(b.texto for b in self.bloques).casefold()
+        visibles = [t for t in textos if t.strip() and t.strip().casefold() in restante]
+        internos = buscar_textos_en_paquete(self.contenido, textos)
+        return list(dict.fromkeys(visibles + internos))

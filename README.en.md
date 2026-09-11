@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="frontend/iconos/icono-128.png" width="104" alt="AnoniPRO">
+<img src="frontend/iconos/icono-128.png" width="104" alt="ARAEMKA Redact">
 
-# AnoniPRO
+# ARAEMKA Redact
 
 **Anonymise any document without your data ever leaving your computer.**
 
 Medical reports · Legal filings · Payroll and contracts · Invoices · Personal paperwork
 
-*Nodo Local — Dr José Ramón Alberto Alonso*
+*Local privacy — Dr José Ramón Alberto Alonso*
 
 [Versión en español](README.md)
 
@@ -18,7 +18,7 @@ Medical reports · Legal filings · Payroll and contracts · Invoices · Persona
 
 ## What it does
 
-You upload a document, AnoniPRO **shows you** every piece of personal data it
+You upload a document, ARAEMKA Redact **shows you** every piece of personal data it
 found, **you review and confirm**, and you download a copy with that data
 **genuinely deleted** from the file.
 
@@ -31,12 +31,14 @@ and wiped automatically.
 
 | Accepts | Detects | Languages |
 |---|---|---|
-| PDF, scanned PDF, Word (.docx), images (JPG, PNG, TIFF) | 26 kinds of personal data, grouped into 8 profiles | Spanish and English (ES/EN button) |
+| PDF, scanned PDF, Word (.docx), Excel (.xlsx), images (JPG, PNG, TIFF) | 29 kinds of personal data, grouped into 8 profiles | Spanish and English (UK and US), with each document's language detected automatically |
 
-> **Note on languages.** The interface is fully bilingual. **Detection is tuned
-> for documents written in Spanish**: in an English document it reliably finds
-> internationally formatted data (IBAN, payment cards, e-mail addresses) but is
-> weaker on names and country-specific identifiers.
+> **Note on languages.** The interface is fully bilingual and detection now works
+> in both languages: ARAEMKA Redact detects each document's language and applies the
+> right engine. Spanish documents get the Spanish identifiers (national ID, social
+> security, health card…); English documents get the **UK and US** ones (NHS
+> number, National Insurance, SSN/ITIN, postcodes and phone numbers). Other
+> languages are not supported.
 
 ---
 
@@ -44,8 +46,9 @@ and wiped automatically.
 
 ### 🖥️ On your own computer — the simplest way
 
-1. Unzip `AnoniPRO-portable-mac.zip`.
-2. Double-click **`AnoniPRO`** (on Windows, `AnoniPRO.exe`).
+1. Unzip the portable for your system (`ARAEMKA-Redact-portable-macos-…zip`
+   or `ARAEMKA-Redact-portable-windows-x64-v…zip`).
+2. Double-click **`ARAEMKA-Redact`** (on Windows, `ARAEMKA-Redact.exe`).
 3. Your browser opens by itself. That's it.
 
 Nothing is installed and no administrator rights are needed.
@@ -76,7 +79,7 @@ on them**. Ideal for practices and offices with locked-down machines.
 3. **Review** the list on the right: every item found is highlighted on the
    document. Untick anything you want to keep, and add by hand anything missed.
 4. Press **Apply redaction** and confirm.
-5. **Download** the anonymised document. AnoniPRO checks it again and warns you
+5. **Download** the anonymised document. ARAEMKA Redact checks it again and warns you
    if anything is left.
 
 Nothing is deleted without your confirmation.
@@ -87,7 +90,7 @@ Nothing is deleted without your confirmation.
 
 | Profile | For | Protects, on top of names, ID, address, phone and e-mail |
 |---|---|---|
-| **Clinical document** | Records and reports | Health card, medical record and episode numbers, social security |
+| **Clinical document** | Records and reports | Health card, medical record and episode numbers, social security and dates (including specimen collection date) |
 | **Scientific publication** | Papers, conferences | The above **plus** hospital, department, doctors, registration numbers and dates |
 | **Teaching** | Teaching material | As above, keeping the structure of the case |
 | **Legal** | Contracts, filings, notary | Case files, court records, deeds, land registry, number plates, IBAN, company tax ID |
@@ -115,7 +118,10 @@ settings — never including the original data.
   30 minutes, or when you press *Finish*.
 - **Deletion is real.** In PDFs the text is removed from the content layer; in
   scans and images the pixels are erased; in Word it is replaced inside the
-  file. Hidden metadata (author, title…) is cleaned too.
+  file; in Excel the relevant cell values are replaced. Compatible hidden
+  properties, comments, deleted revisions, external links and metadata are
+  removed too. Downloads use a generic filename so a patient name or record
+  number in the original filename is not copied to the result.
 - **It is checked twice.** After redacting, the resulting document is analysed
   again to make sure nothing survived.
 
@@ -137,25 +143,42 @@ Scanned documents and images first go through optical character recognition
 ## Current limitations
 
 - **Old `.doc` files** (Word 97-2003) are not supported — save them as `.docx`.
+- **Excel support is `.xlsx` without macros.** Save old `.xls` and macro-enabled
+  `.xlsm` files as `.xlsx`. Hidden sheets/cells, tab names and print headers and
+  footers are reviewed; comments and links are removed. Formulae, embedded
+  objects and complex formatting may change, so review the resulting workbook
+  both visually and functionally.
 - **OCR is not perfect.** On scans it can misread data, especially e-mail
   addresses. Review the result and use manual marking where needed.
-- **Detection is tuned for Spanish** (see the note above).
-- **Always review before sharing.** No automatic tool is infallible: AnoniPRO
+- **Two languages only: Spanish and English** (UK/US), detected automatically
+  per document. Other languages are not supported.
+- **Always review before sharing.** No automatic tool is infallible: ARAEMKA Redact
   shows you what it found precisely so the final decision is yours.
 
 ---
 
 ## Licence and components
 
-The AnoniPRO source code is the author's work; **all rights reserved**.
+Copyright © 2026 Dr José Ramón Alberto Alonso.
+
+ARAEMKA Redact is **free software under the GNU Affero General Public License,
+version 3 only** (`AGPL-3.0-only`). You may use, study, modify and redistribute
+it under that licence. If you distribute a copy or let users interact with a
+modified version over a network, you must provide the corresponding source as
+required by the AGPL.
+
+- Full text: **[LICENSE](LICENSE)**.
+- Source access: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
+- Third-party components: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
+- Name and logo use: **[TRADEMARKS.md](TRADEMARKS.md)**.
 
 It uses third-party open-source components, owned by their respective authors:
-FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, Tesseract
+FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, openpyxl, Tesseract
 OCR, Pillow and PDF.js. Language and AI models are distributed under their own
 licences.
 
 ---
 
 <div align="center">
-<sub>AnoniPRO · Nodo Local · 100% local processing, works offline</sub>
+<sub>ARAEMKA Redact · 100% local processing, works offline</sub>
 </div>

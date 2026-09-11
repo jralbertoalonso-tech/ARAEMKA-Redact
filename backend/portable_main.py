@@ -5,6 +5,7 @@ abre el navegador automáticamente. Sin instalación y sin permisos de
 administrador: basta con descomprimir la carpeta y hacer doble clic.
 """
 
+import os
 import socket
 import sys
 import threading
@@ -36,7 +37,7 @@ def main():
     puerto = _puerto_libre(AJUSTES.puerto)
     url = f"http://127.0.0.1:{puerto}"
     print("──────────────────────────────────────────────")
-    print("  AnoniPRO (modo portable)")
+    print("  ARAEMKA Redact (modo portable)")
     print(f"  Abriendo {url} en tu navegador…")
     print("  Cierra esta ventana para parar la aplicación.")
     print("──────────────────────────────────────────────")
@@ -56,7 +57,10 @@ def main():
                 continue
         webbrowser.open(url)
 
-    threading.Thread(target=abrir_navegador, daemon=True).start()
+    # Las pruebas automáticas arrancan el ejecutable sin abrir una ventana del
+    # navegador dentro de la máquina de compilación.
+    if os.environ.get("ANONIPRO_NO_ABRIR_NAVEGADOR") != "1":
+        threading.Thread(target=abrir_navegador, daemon=True).start()
     # Solo escucha en 127.0.0.1: el modo portable es de uso personal, no servidor
     uvicorn.run(app, host="127.0.0.1", port=puerto, log_level="warning")
 
@@ -70,7 +74,7 @@ if __name__ == "__main__":
         # Sin esto, en Windows la consola se cierra al instante y el usuario no
         # llega a leer el error.
         print("\n──────────────────────────────────────────────")
-        print("  ERROR: AnoniPRO no ha podido arrancar.")
+        print("  ERROR: ARAEMKA Redact no ha podido arrancar.")
         print("──────────────────────────────────────────────")
         traceback.print_exc()
         print("\nCopia este mensaje si necesitas ayuda para resolverlo.")

@@ -1,0 +1,55 @@
+PRUEBA DE AUTORÍA Y FECHA — AnoniPRO (Nodo Local)
+=================================================
+Autor: Dr. José Ramón Alberto Alonso
+
+QUÉ ES ESTA CARPETA
+Un "sello de tiempo" que acredita, ante un tercero de confianza, que el código
+fuente de AnoniPRO —tal y como estaba en el commit da97106— YA EXISTÍA en una
+fecha concreta. Sirve como prueba de fecha y existencia por si algún día hay que
+demostrar prioridad o autoría.
+
+  Fecha certificada por la autoridad: 7 de agosto de 2026, 22:42:38 GMT
+  Autoridad de sellado: FreeTSA (freetsa.org), norma RFC 3161
+  Commit sellado: da97106b6d6b...
+  Archivos del código: 64
+
+ARCHIVOS
+  HUELLA.txt          Resumen legible: huella global, commit, fecha.
+  MANIFEST.sha256     Huella SHA-256 de cada archivo del código (64 líneas).
+  huella.tsq          Petición de sellado (solo contiene un hash; sin código).
+  huella.tsr          EL SELLO firmado por la autoridad. Es la prueba.
+  freetsa-cacert.pem  Certificado raíz de FreeTSA (para verificar).
+  freetsa-tsa.crt     Certificado del sellador (para verificar).
+  verificar.sh        Script que lo comprueba todo de una vez.
+
+IMPORTANTE: el CÓDIGO NUNCA SALIÓ del ordenador. A la autoridad solo viajó un
+número (el hash de HUELLA.txt), que no revela nada del contenido.
+
+CÓMO VERIFICARLO EN EL FUTURO (en un Mac o Linux)
+  1) Abre la app Terminal.
+  2) Entra en esta carpeta:  cd <ruta>/prueba-autoria
+  3) Ejecuta:                bash verificar.sh
+  Debe mostrar "Verification: OK" y la fecha certificada.
+
+  Verificación manual equivalente:
+    openssl ts -verify -data HUELLA.txt -in huella.tsr \
+      -CAfile freetsa-cacert.pem -untrusted freetsa-tsa.crt
+
+CÓMO PROBAR QUE EL SELLO CORRESPONDE A ESTE CÓDIGO
+  Regenera el manifiesto sobre el código del commit da97106 y comprueba que la
+  huella global coincide con la de HUELLA.txt:
+    git ls-files | LC_ALL=C sort | while read -r f; do shasum -a 256 "$f"; done
+    # su SHA-256 debe coincidir con el de MANIFEST.sha256
+
+CONSERVACIÓN (recomendado)
+  - Guarda una copia de esta carpeta FUERA del ordenador (correo a ti mismo,
+    disco externo, nube personal). Cuantas más copias fechadas, mejor.
+  - Opcional, gratis y "para siempre": ancla también HUELLA.txt en la cadena de
+    bloques con OpenTimestamps -> https://opentimestamps.org (arrastras el
+    archivo; solo se envía su hash). Da una segunda prueba independiente por si
+    FreeTSA dejara de existir.
+
+AVISO (no es asesoramiento jurídico)
+  Esto acredita EXISTENCIA y FECHA. NO resuelve la cuestión de la titularidad
+  siendo empleado público (Ley 53/1984). Antes de formalizar autoría o publicar,
+  consulta con la unidad de innovación / OTRI o con un abogado de PI.

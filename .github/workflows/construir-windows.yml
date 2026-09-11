@@ -1,0 +1,114 @@
+name: Construir portable Windows
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: construir-portable-windows
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    name: Windows x64 con OCR
+    runs-on: windows-2025
+    timeout-minutes: 90
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Preparar Python 3.12 x64
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar Tesseract 5
+        shell: pwsh
+        run: |
+          choco install tesseract --version=5.5.3.20260724 --yes --no-progress
+          if ($LASTEXITCODE -notin @(0, 1605, 1614, 1641, 3010)) {
+            throw "Chocolatey no pudo instalar Tesseract (código $LASTEXITCODE)."
+          }
+
+          $tesseract = Join-Path $env:ProgramFiles "Tesseract-OCR"
+          if (-not (Test-Path (Join-Path $tesseract "tesseract.exe"))) {
+            throw "No se encontró Tesseract en $tesseract."
+          }
+          $licencia = Join-Path $env:ChocolateyInstall "lib\tesseract\legal\LICENSE.txt"
+          if (-not (Test-Path $licencia)) {
+            throw "No se encontró la licencia de Tesseract instalada por Chocolatey."
+          }
+          Copy-Item $licencia (Join-Path $tesseract "LICENSE.txt") -Force
+          "ANONIPRO_TESSERACT_DIR=$tesseract" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Instalar modelos OCR oficiales español e inglés
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $commit = "87416418657359cb625c412a48b6e1d6d41c29bd"
+          $tessdata = Join-Path $env:ANONIPRO_TESSERACT_DIR "tessdata"
+          New-Item -ItemType Directory -Force -Path $tessdata | Out-Null
+
+          foreach ($modelo in @("spa.traineddata", "eng.traineddata", "osd.traineddata")) {
+            $url = "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$commit/$modelo"
+            $destino = Join-Path $tessdata $modelo
+            Invoke-WebRequest -Uri $url -OutFile $destino
+            if ((Get-Item $destino).Length -lt 1000000) {
+              throw "El modelo $modelo no se descargó correctamente."
+            }
+            Write-Host "$modelo  $((Get-FileHash -Algorithm SHA256 $destino).Hash.ToLower())"
+          }
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$commit/LICENSE" `
+            -OutFile (Join-Path $env:ANONIPRO_TESSERACT_DIR "TESSDATA-LICENSE.txt")
+
+          $idiomas = & (Join-Path $env:ANONIPRO_TESSERACT_DIR "tesseract.exe") --list-langs
+          if ($idiomas -notcontains "spa" -or $idiomas -notcontains "eng") {
+            throw "Tesseract no reconoce los modelos español e inglés."
+          }
+
+      - name: Crear entorno e instalar dependencias
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python -m pip install --upgrade pip
+          .venv\Scripts\python -m pip install -r backend\requirements.txt pyinstaller pytest
+          # Los modelos medianos mantienen NER es/en y evitan añadir ~1 GB de
+          # vectores estáticos al portable. En desarrollo se pueden usar los lg.
+          .venv\Scripts\python -m spacy download es_core_news_md
+          .venv\Scripts\python -m spacy download en_core_web_md
+
+      - name: Ejecutar pruebas
+        shell: pwsh
+        working-directory: backend
+        run: ..\.venv\Scripts\python -m pytest tests -q
+
+      - name: Construir y probar el portable
+        shell: cmd
+        run: herramientas\construir_portable_windows.bat
+
+      - name: Mostrar artefactos y sumas
+        shell: pwsh
+        run: |
+          Get-ChildItem ARAEMKA-Redact-portable-windows-x64-v*.zip* | Format-Table Name, Length
+          Get-Content ARAEMKA-Redact-portable-windows-x64-v*.zip.sha256.txt
+
+      - name: Guardar el portable
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ARAEMKA-Redact-portable-windows-x64-v0.10.0
+          path: |
+            ARAEMKA-Redact-portable-windows-x64-v0.10.0.zip
+            ARAEMKA-Redact-portable-windows-x64-v0.10.0.zip.sha256.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

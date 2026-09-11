@@ -18,8 +18,8 @@ class SesionDocumento:
     def __init__(self, nombre: str, tipo: str, doc):
         self.id = uuid.uuid4().hex
         self.nombre = nombre                  # nombre original del archivo
-        self.tipo = tipo                      # "pdf" | "docx"
-        self.doc = doc                        # DocumentoPdf | DocumentoDocx
+        self.tipo = tipo                      # "pdf" | "docx" | "xlsx"
+        self.doc = doc                        # DocumentoPdf | DocumentoDocx | DocumentoXlsx
         self.creado_en = time.monotonic()
         self.detecciones: dict[str, dict] = {}   # id_detección → detección
         self.resultado: bytes | None = None      # archivo ya redactado
@@ -29,6 +29,7 @@ class SesionDocumento:
         self.ultimo_analisis: dict = {"categorias": [], "lista_personalizada": [], "lista_blanca": []}
         self.auditoria: dict | None = None       # informe de auditoría (sin datos originales)
         self.delta_dias: int | None = None       # desplazamiento de fechas (consistente por documento)
+        self.idioma_doc: str = "es"               # idioma detectado del documento ("es" | "en")
 
     def tocar(self):
         """Renueva el TTL (se llama en cada acceso)."""

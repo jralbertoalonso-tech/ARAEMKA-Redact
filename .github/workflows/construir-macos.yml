@@ -1,0 +1,68 @@
+name: Construir portable macOS
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: construir-portable-macos
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    name: macOS Apple Silicon con OCR
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Preparar Python 3.12 arm64
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+          architecture: arm64
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar OCR local español e inglés
+        run: |
+          brew install tesseract tesseract-lang
+          tesseract --list-langs | grep -Fx spa
+          tesseract --list-langs | grep -Fx eng
+
+      - name: Crear entorno e instalar dependencias
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install -r backend/requirements.txt pyinstaller pytest httpx
+          .venv/bin/python -m spacy download es_core_news_md
+          .venv/bin/python -m spacy download en_core_web_md
+
+      - name: Ejecutar pruebas
+        run: PYTHONPATH=backend .venv/bin/python -m pytest backend/tests -q
+
+      - name: Construir y probar el portable
+        run: bash herramientas/construir_portable_mac.sh
+
+      - name: Mostrar artefactos y sumas
+        run: |
+          ls -lh ARAEMKA-Redact-portable-macos-arm64-v0.10.0.zip*
+          cat ARAEMKA-Redact-portable-macos-arm64-v0.10.0.zip.sha256.txt
+
+      - name: Guardar el portable
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ARAEMKA-Redact-portable-macos-arm64-v0.10.0
+          path: |
+            ARAEMKA-Redact-portable-macos-arm64-v0.10.0.zip
+            ARAEMKA-Redact-portable-macos-arm64-v0.10.0.zip.sha256.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

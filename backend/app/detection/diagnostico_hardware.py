@@ -252,7 +252,7 @@ def _pasos_delegar_en_red() -> list[dict]:
             "# Windows (PowerShell):",
             '$env:OLLAMA_HOST="0.0.0.0:11434"; ollama serve',
             "# Averigua la IP de ese equipo (macOS): ipconfig getifaddr en0",
-            "# Luego, en «Ajustes de la capa 3» de AnoniPRO, pon:",
+            "# Luego, en «Ajustes de la capa 3» de ARAEMKA Redact, pon:",
             "#   http://ESA-IP:11434     (Ollama)",
             "#   http://ESA-IP:1234      (LM Studio)",
         ],

@@ -13,10 +13,13 @@ dist/
 build/
 *.spec
 *.zip
+*.zip.sha256.txt
 AnoniPRO-synology/anonipro-imagen.tar.gz
 
 # Documentos de prueba (se regeneran con herramientas/generar_documentos_prueba.py)
 documentos_prueba/
+# Nunca empaquetar documentos usados durante pruebas manuales del frontend.
+frontend/__prueba_tmp.pdf
 
 # Materiales de registro (se regeneran; además la memoria lleva datos personales)
 registro/

@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="frontend/iconos/icono-128.png" width="104" alt="AnoniPRO">
+<img src="frontend/iconos/icono-128.png" width="104" alt="ARAEMKA Redact">
 
-# AnoniPRO
+# ARAEMKA Redact
 
 **Anonimiza cualquier documento sin que los datos salgan de tu ordenador.**
 
 Informes clínicos · Escritos jurídicos · Nóminas y contratos · Facturas · Papeles personales
 
-*Nodo Local — Dr. José Ramón Alberto Alonso*
+*Privacidad local — Dr. José Ramón Alberto Alonso*
 
 </div>
 
@@ -16,7 +16,7 @@ Informes clínicos · Escritos jurídicos · Nóminas y contratos · Facturas ·
 
 ## Qué hace
 
-Subes un documento, AnoniPRO **te enseña** todos los datos personales que ha
+Subes un documento, ARAEMKA Redact **te enseña** todos los datos personales que ha
 encontrado, **tú revisas y confirmas**, y descargas una copia con esos datos
 **borrados de verdad** del archivo.
 
@@ -29,7 +29,7 @@ memoria y se borran solos.
 
 | Admite | Detecta | Idiomas |
 |---|---|---|
-| PDF, PDF escaneado, Word (.docx), imágenes (JPG, PNG, TIFF) | 26 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (botón ES/EN) |
+| PDF, PDF escaneado, Word (.docx), Excel (.xlsx), imágenes (JPG, PNG, TIFF) | 29 tipos de datos personales, agrupados en 8 perfiles | Español e inglés (Reino Unido y EE. UU.), con el idioma del documento detectado automáticamente |
 
 ---
 
@@ -39,8 +39,9 @@ Elige **una** forma según dónde lo vayas a usar.
 
 ### 🖥️ En tu Mac o tu PC — la más sencilla
 
-1. Descomprime el archivo `AnoniPRO-portable-mac.zip`.
-2. Doble clic en **`AnoniPRO`** (en Windows, `AnoniPRO.exe`).
+1. Descomprime el archivo portable para tu sistema (`ARAEMKA-Redact-portable-macos-…zip`
+   o `ARAEMKA-Redact-portable-windows-x64-v…zip`).
+2. Doble clic en **`ARAEMKA-Redact`** (en Windows, `ARAEMKA-Redact.exe`).
 3. Se abre el navegador solo. Ya está.
 
 No instala nada ni pide permisos de administrador. La primera vez tarda un
@@ -74,8 +75,9 @@ Para desarrolladores o para compilar tus propios paquetes:
    sobre el documento. Desmarca lo que NO quieras borrar y añade a mano lo que
    se haya escapado.
 4. Pulsa **Aplicar redacción** y confirma.
-5. **Descarga** el documento anonimizado. AnoniPRO lo revisa otra vez y te avisa
-   si detecta algún resto.
+5. ARAEMKA Redact realiza una segunda comprobación automática y te avisa si encuentra
+   posibles residuos. **Revisa el resultado completo** y descárgalo solo cuando
+   estés conforme.
 
 Nada se borra sin que tú lo confirmes.
 
@@ -88,7 +90,7 @@ retocarlos y guardar los tuyos.
 
 | Perfil | Para qué | Qué protege, además de nombres, DNI, dirección, teléfono y correo |
 |---|---|---|
-| **Documento clínico** | Historias, informes | Tarjeta sanitaria, nº de historia y episodio, nº de la Seguridad Social |
+| **Documento clínico** | Historias, informes | Tarjeta sanitaria, nº de historia y episodio, nº de la Seguridad Social y fechas (incluida la fecha de la toma) |
 | **Publicación científica** | Artículos, congresos | Lo anterior **más** hospital, servicio, médicos, nº de colegiado y fechas |
 | **Docencia** | Sesiones y material docente | Como el anterior, conservando la estructura del caso |
 | **Jurídico** | Contratos, escritos, notaría | Expedientes y autos, protocolo, catastro y fincas, matrículas, IBAN, CIF, juzgados |
@@ -125,12 +127,16 @@ se marcan. Así no se señalan números que solo se parecen.
 - **Nada sale de tu equipo.** Ninguna parte del programa se conecta a internet.
   Puedes desconectar la red y sigue funcionando igual.
 - **Nada se guarda en disco.** Los documentos viven en la memoria y se borran
-  solos a a los 30 minutos, o cuando pulsas *Terminar*.
+  solos a los 30 minutos, o cuando pulsas *Terminar*.
 - **El borrado es real.** En PDF se elimina el texto de la capa de contenido; en
   escaneados e imágenes se borran los píxeles; en Word se sustituye dentro del
-  archivo. También se limpian los metadatos ocultos (autor, título…).
-- **Se revisa dos veces.** Tras borrar, el documento resultante se vuelve a
-  analizar para comprobar que no queda nada.
+  archivo; en Excel se sustituyen los valores de las celdas. También se limpian
+  propiedades ocultas, comentarios, revisiones eliminadas, enlaces externos y
+  otros metadatos compatibles. El nombre descargado es genérico para no copiar
+  un posible nombre o NHC presente en el nombre del archivo original.
+- **Se realiza una segunda comprobación automática.** Tras borrar, el resultado
+  se vuelve a analizar para buscar coincidencias y posibles datos residuales.
+  Esta comprobación ayuda a revisar, pero no certifica que no quede ningún dato.
 
 ---
 
@@ -154,8 +160,9 @@ reconocimiento óptico (OCR) en tu propio equipo.
 | Qué ocurre | Qué hacer |
 |---|---|
 | macOS dice que la app «está dañada» | No lo está. Usa «PRIMERA VEZ — Abrir aquí» (arriba lo explica) |
+| Windows muestra «Windows protegió su PC» | Comprueba el SHA-256 publicado con el ZIP; si coincide, pulsa «Más información» → «Ejecutar de todas formas» |
 | La ventana negra se cierra sola | Es la aplicación: déjala abierta mientras la uses |
-| Un PDF escaneado no se lee | Falta el OCR. En Mac: `brew install tesseract tesseract-lang`. En el NAS ya viene incluido |
+| Un PDF escaneado no se lee | En Windows y NAS el OCR ya viene incluido. En Mac: `brew install tesseract tesseract-lang` |
 | Marca cosas que no son datos | Escríbelas en «No redactar nunca estos términos» del panel izquierdo |
 | No detecta un dato tuyo | Añádelo a mano en el panel derecho, o a «Redactar siempre estos términos» |
 | Sale «El documento caducó» | Ha pasado el tiempo de seguridad y se borró de la memoria: vuelve a subirlo |
@@ -168,29 +175,71 @@ Dicho claramente, para que nadie se lleve sorpresas:
 
 - **No abre archivos `.doc` antiguos** (Word 97-2003). Ábrelos en Word y
   guárdalos como `.docx`.
+- **Excel admite `.xlsx`, sin macros.** Los `.xls` antiguos y `.xlsm` deben
+  guardarse como `.xlsx`. Se revisan también hojas y celdas ocultas, nombres de
+  pestañas y cabeceras/pies; se eliminan comentarios y enlaces. Fórmulas,
+  objetos incrustados o formatos complejos pueden alterarse y exigen una
+  revisión visual y funcional del libro resultante.
 - **El OCR no es perfecto.** En documentos escaneados puede leer mal algún dato,
   sobre todo los correos electrónicos (la `@` se le resiste). Por eso conviene
   revisar y usar el marcado a mano.
-- **La detección está afinada para documentos en español.** La interfaz está en
-  inglés también, pero en un documento escrito en inglés reconocería bien los
-  IBAN, tarjetas y correos, y peor los nombres.
+- **Idiomas: español e inglés.** El programa detecta solo el idioma de cada
+  documento y aplica el motor adecuado. En español reconoce los identificadores
+  españoles (DNI, Seguridad Social, tarjeta sanitaria, catastro…); en inglés,
+  los del **Reino Unido y EE. UU.** (NHS, National Insurance, SSN/ITIN, códigos
+  postales y teléfonos). Otros idiomas no están soportados.
 - **Revisa siempre antes de compartir.** Ninguna herramienta automática es
-  infalible: AnoniPRO te enseña lo que ha encontrado precisamente para que la
+  infalible: ARAEMKA Redact te enseña lo que ha encontrado precisamente para que la
   decisión final sea tuya.
+
+---
+
+## Advertencia sobre los resultados y responsabilidad
+
+ARAEMKA Redact es una **herramienta de apoyo**: no garantiza la detección o eliminación
+completa de todos los datos personales. El OCR, los modelos lingüísticos y las
+reglas automáticas pueden omitir información, interpretarla incorrectamente o
+dejar elementos visibles o susceptibles de reidentificación.
+
+El resultado debe revisarse íntegramente antes de compartirlo, publicarlo o
+utilizarlo. Cuando corresponda, la persona u organización responsable del
+tratamiento conserva sus obligaciones legales y debe valorar el riesgo y
+aplicar las medidas adicionales adecuadas al caso concreto.
+
+En la máxima medida permitida por la legislación aplicable, el autor no responde
+de daños indirectos derivados de un uso incorrecto, de la falta de revisión o de
+usos no previstos. Esta limitación no excluye las responsabilidades ni los
+derechos que legalmente no puedan limitarse.
+
+Consulta las condiciones completas en **[AVISO-LEGAL.md](AVISO-LEGAL.md)**. Antes
+de ofrecer garantías, soporte de pago o una explotación comercial o
+institucional con condiciones adicionales, conviene revisarlas con un
+profesional jurídico cualificado.
 
 ---
 
 ## Licencia y componentes
 
-El código de AnoniPRO es obra del autor; **todos los derechos reservados**.
+Copyright © 2026 Dr. José Ramón Alberto Alonso.
+
+ARAEMKA Redact es **software libre bajo GNU Affero General Public License,
+versión 3 exclusivamente** (`AGPL-3.0-only`). Puedes usarlo, estudiarlo,
+modificarlo y redistribuirlo conforme a esa licencia. Si distribuyes una copia
+o permites usar una versión modificada a través de una red, debes facilitar el
+código fuente correspondiente en los términos de la AGPL.
+
+- Texto íntegro: **[LICENSE](LICENSE)**.
+- Acceso al código: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
+- Componentes de terceros: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
+- Uso del nombre y logotipo: **[TRADEMARKS.md](TRADEMARKS.md)**.
 
 Utiliza componentes libres de terceros, cuya autoría corresponde a sus
 respectivos titulares: FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0),
-python-docx, Tesseract OCR, Pillow y PDF.js. Los modelos de lenguaje y de IA se
+python-docx, openpyxl, Tesseract OCR, Pillow y PDF.js. Los modelos de lenguaje y de IA se
 distribuyen bajo sus propias licencias.
 
 ---
 
 <div align="center">
-<sub>AnoniPRO · Nodo Local · Procesamiento 100 % local, sin conexión a internet</sub>
+<sub>ARAEMKA Redact · Procesamiento 100 % local, sin conexión a internet</sub>
 </div>

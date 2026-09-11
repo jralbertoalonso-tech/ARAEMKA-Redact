@@ -9,8 +9,6 @@ Uso:
     .venv/bin/python herramientas/generar_iconos.py
 """
 
-import shutil
-import subprocess
 import tempfile
 from pathlib import Path
 
@@ -21,7 +19,6 @@ RAIZ = Path(__file__).resolve().parent.parent
 SVG = RAIZ / "frontend" / "icono.svg"
 SALIDA = RAIZ / "frontend" / "iconos"
 
-# Tamaños que pide macOS para un .icns completo (normal y @2x para pantallas Retina)
 TAMANOS_ICNS = [16, 32, 64, 128, 256, 512, 1024]
 TAMANOS_ICO = [16, 24, 32, 48, 64, 128, 256]
 
@@ -36,18 +33,12 @@ def render(tam: int, destino: Path):
 
 
 def crear_icns(tmp: Path) -> bool:
-    """Crea el .icns con iconutil (solo disponible en macOS)."""
-    if not shutil.which("iconutil"):
-        return False
-    iconset = tmp / "icono.iconset"
-    iconset.mkdir()
-    for tam in TAMANOS_ICNS:
-        if tam <= 512:
-            render(tam, iconset / f"icon_{tam}x{tam}.png")
-        if tam >= 32:                      # versiones @2x
-            render(tam, iconset / f"icon_{tam // 2}x{tam // 2}@2x.png")
-    subprocess.run(["iconutil", "-c", "icns", str(iconset), "-o", str(SALIDA / "icono.icns")],
-                   check=True)
+    """Crea el .icns directamente; evita diferencias entre versiones de iconutil."""
+    base = tmp / "base-icns.png"
+    render(1024, base)
+    imagen = Image.open(base).convert("RGBA")
+    imagen.save(SALIDA / "icono.icns", format="ICNS",
+                sizes=[(t, t) for t in TAMANOS_ICNS])
     return True
 
 
@@ -72,7 +63,7 @@ def main():
     for f in sorted(SALIDA.iterdir()):
         print(f"  · {f.name}  ({f.stat().st_size // 1024} KB)")
     if not hay_icns:
-        print("  (el .icns solo puede generarse en macOS; en Windows no hace falta)")
+        print("  (no se pudo generar el .icns; en Windows no hace falta)")
 
 
 if __name__ == "__main__":

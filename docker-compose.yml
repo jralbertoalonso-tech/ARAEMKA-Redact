@@ -1,4 +1,4 @@
-# AnoniPRO — despliegue en Synology DS923+ (Container Manager) o cualquier Docker.
+# ARAEMKA Redact — despliegue en Synology DS923+ (Container Manager) o cualquier Docker.
 #
 # En Synology:
 #   1. Copia toda la carpeta del proyecto a una carpeta compartida (p. ej. /volume1/docker/anonipro).

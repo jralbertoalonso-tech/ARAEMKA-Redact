@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="es" data-site-lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARAEMKA Redact · Anonimización local de documentos</title>
+<meta name="description" content="ARAEMKA Redact anonimiza cualquier documento sin que los datos salgan de tu ordenador. 100% local, sin conexión, sin telemetría. Español e inglés.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='114' fill='%231d5d8f'/%3E%3Crect x='150' y='150' width='212' height='40' rx='14' fill='%2312324c'/%3E%3Crect x='150' y='230' width='150' height='40' rx='14' fill='%23c3d0dc'/%3E%3Cpath d='M256 330 L188 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Cpath d='M256 330 L324 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='330' r='30' fill='%23f2a03d'/%3E%3Ccircle cx='186' cy='392' r='18' fill='%23f2a03d'/%3E%3Ccircle cx='326' cy='392' r='18' fill='%23f2a03d'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#e9eff4; --surface:#ffffff; --surface-2:#f4f8fb;
+  --ink:#0f2231; --ink-soft:#4a687c; --ink-faint:#7891a3;
+  --line:#d2dee7; --line-strong:#bcccd8;
+  --brand:#1d5d8f; --brand-2:#2b78b3; --redact:#12324c;
+  --accent:#e2871c; --accent-soft:#f2a03d;
+  --good:#1c8a5c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"SF Mono","JetBrains Mono","Cascadia Code",ui-monospace,Menlo,Consolas,monospace;
+  --wrap:1120px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0a1620; --surface:#0f202c; --surface-2:#0c1a24;
+    --ink:#e7eff5; --ink-soft:#9db3c2; --ink-faint:#6f8798;
+    --line:#20384a; --line-strong:#2c4a60;
+    --brand:#4a9fd6; --brand-2:#68b2e0; --redact:#081521;
+    --accent:#f2a851; --accent-soft:#f2a851;
+    --good:#43bd88;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0a1620; --surface:#0f202c; --surface-2:#0c1a24;
+  --ink:#e7eff5; --ink-soft:#9db3c2; --ink-faint:#6f8798;
+  --line:#20384a; --line-strong:#2c4a60;
+  --brand:#4a9fd6; --brand-2:#68b2e0; --redact:#081521;
+  --accent:#f2a851; --accent-soft:#f2a851; --good:#43bd88;
+}
+:root[data-theme="light"]{
+  --paper:#e9eff4; --surface:#ffffff; --surface-2:#f4f8fb;
+  --ink:#0f2231; --ink-soft:#4a687c; --ink-faint:#7891a3;
+  --line:#d2dee7; --line-strong:#bcccd8;
+  --brand:#1d5d8f; --brand-2:#2b78b3; --redact:#12324c;
+  --accent:#e2871c; --accent-soft:#f2a03d; --good:#1c8a5c;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:1.0625rem; line-height:1.65;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+h1,h2,h3{font-family:var(--serif); font-weight:600; line-height:1.15; text-wrap:balance; letter-spacing:-.01em}
+a{color:inherit}
+.wrap{max-width:var(--wrap); margin:0 auto; padding:0 24px}
+
+/* language visibility */
+[data-site-lang="es"] .lang-en{display:none}
+[data-site-lang="en"] .lang-es{display:none}
+
+/* eyebrow / labels */
+.eyebrow{font-family:var(--mono); font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--brand); font-weight:600}
+:root[data-theme="dark"] .eyebrow,@media (prefers-color-scheme:dark){.eyebrow{color:var(--brand-2)}}
+
+/* ---------- header ---------- */
+header.site{position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.nav{display:flex; align-items:center; gap:20px; height:64px}
+.brand{display:flex; align-items:center; gap:11px; text-decoration:none; font-weight:700; letter-spacing:-.01em; margin-right:auto}
+.brand .mark{width:32px; height:32px; border-radius:8px; display:block}
+.brand b{font-family:var(--serif); font-size:1.18rem; color:var(--ink)}
+.brand small{display:block; font-family:var(--mono); font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin-top:-2px}
+.nav-links{display:flex; gap:22px}
+.nav-links a{text-decoration:none; color:var(--ink-soft); font-size:.94rem; font-weight:500}
+.nav-links a:hover{color:var(--brand)}
+.nav-tools{display:flex; gap:8px; align-items:center}
+.tbtn{font-family:var(--mono); font-size:.78rem; font-weight:600; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); border-radius:8px; padding:7px 10px; cursor:pointer; line-height:1}
+.tbtn:hover{border-color:var(--brand); color:var(--brand)}
+@media (max-width:860px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:76px 0 40px}
+.hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:48px; align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr; gap:36px}}
+.hero h1{font-size:clamp(2.1rem,4.6vw,3.35rem); margin:.5rem 0 0}
+.hero .lede{font-size:1.2rem; color:var(--ink-soft); margin:20px 0 0; max-width:34ch}
+.cta-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:30px}
+.btn{display:inline-flex; align-items:center; gap:9px; text-decoration:none; font-weight:600; font-size:1rem; border-radius:11px; padding:13px 22px; border:1px solid transparent; cursor:pointer}
+.btn-primary{background:var(--brand); color:#fff}
+.btn-primary:hover{background:var(--brand-2)}
+.btn-ghost{background:transparent; color:var(--ink); border-color:var(--line-strong)}
+.btn-ghost:hover{border-color:var(--brand); color:var(--brand)}
+.hero-note{margin-top:16px; font-size:.86rem; color:var(--ink-faint); display:flex; align-items:center; gap:8px}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 22%,transparent)}
+
+/* document demo */
+.doc{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 26px 30px; box-shadow:0 24px 60px -32px rgba(12,40,64,.5); position:relative}
+.doc::before{content:""; position:absolute; inset:0; border-radius:16px; box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+:root[data-theme="dark"] .doc::before,@media (prefers-color-scheme:dark){.doc::before{box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}}
+.doc .docbar{display:flex; align-items:center; gap:7px; margin-bottom:18px}
+.doc .docbar i{width:11px; height:11px; border-radius:50%; background:var(--line-strong); display:block}
+.doc .doctag{margin-left:auto; font-family:var(--mono); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint)}
+.doc h4{font-family:var(--serif); margin:0 0 14px; font-size:1.05rem; color:var(--ink)}
+.field{display:flex; gap:10px; padding:8px 0; border-bottom:1px dashed var(--line); font-size:.92rem}
+.field:last-child{border-bottom:0}
+.field .k{font-family:var(--mono); font-size:.74rem; letter-spacing:.03em; text-transform:uppercase; color:var(--ink-faint); min-width:104px; padding-top:2px}
+.field .v{color:var(--ink); font-weight:500}
+.redact{position:relative; display:inline-block; border-radius:4px}
+.redact span{transition:opacity .35s ease}
+.redact::after{content:""; position:absolute; left:-4px; right:-4px; top:-2px; bottom:-2px; background:var(--redact); border-radius:4px; transform:scaleX(0); transform-origin:left; transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.redact.on::after{transform:scaleX(1)}
+.redact.on span{opacity:0}
+@media (prefers-reduced-motion:reduce){.redact::after{transition:none}.redact span{transition:none}}
+
+/* ---------- trust strip ---------- */
+.trust{border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--surface-2)}
+.trust .wrap{display:flex; flex-wrap:wrap; gap:10px 30px; padding:16px 24px; align-items:center; justify-content:center}
+.trust .wrap>span{font-family:var(--mono); font-size:.78rem; letter-spacing:.04em; color:var(--ink-soft); display:inline-flex; align-items:center; gap:9px}
+.trust .wrap>span::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto}
+
+/* ---------- sections ---------- */
+section{padding:78px 0}
+.sec-head{max-width:60ch; margin-bottom:40px}
+.sec-head h2{font-size:clamp(1.7rem,3.2vw,2.3rem); margin:12px 0 0}
+.sec-head p{color:var(--ink-soft); font-size:1.08rem; margin:14px 0 0}
+
+.cards{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:24px}
+.card h3{font-size:1.16rem; margin:0 0 8px}
+.card p{margin:0; color:var(--ink-soft); font-size:.96rem}
+.card .ic{width:30px; height:30px; margin-bottom:14px; color:var(--brand)}
+
+/* privacy — the spine */
+.privacy{background:var(--redact); color:#eaf1f6; position:relative; overflow:hidden}
+.privacy .eyebrow{color:var(--accent-soft)}
+.privacy h2{color:#fff; font-size:clamp(1.8rem,3.4vw,2.5rem)}
+.privacy .sec-head p{color:#b9cad6}
+.privacy .plist{display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-top:8px; border:1px solid rgba(255,255,255,.1); border-radius:14px; overflow:hidden}
+@media (max-width:760px){.privacy .plist{grid-template-columns:1fr}}
+.pitem{background:rgba(255,255,255,.03); padding:22px 22px; display:flex; gap:15px}
+.pitem .node{flex:0 0 auto; margin-top:3px}
+.pitem h3{color:#fff; font-size:1.06rem; margin:0 0 5px; font-family:var(--sans); font-weight:650; letter-spacing:0}
+.pitem p{margin:0; color:#adc0cd; font-size:.92rem; line-height:1.55}
+.node{width:22px; height:22px; display:block}
+
+/* detection list */
+.detect{display:grid; grid-template-columns:1fr 1fr; gap:30px 46px}
+@media (max-width:820px){.detect{grid-template-columns:1fr; gap:24px}}
+.dgroup h3{font-size:1.1rem; margin:0 0 12px; display:flex; align-items:center; gap:10px}
+.dgroup h3 .flag{font-family:var(--mono); font-size:.62rem; letter-spacing:.12em; padding:3px 7px; border-radius:5px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft); text-transform:uppercase}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{font-family:var(--mono); font-size:.78rem; background:var(--surface); border:1px solid var(--line); color:var(--ink-soft); border-radius:7px; padding:6px 11px}
+.chip b{color:var(--ink); font-weight:600}
+
+/* download */
+.dl-grid{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+@media (max-width:820px){.dl-grid{grid-template-columns:1fr}}
+.dl{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:28px; display:flex; flex-direction:column}
+.dl .plat{font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--brand); font-weight:600}
+.dl h3{font-size:1.35rem; margin:8px 0 4px}
+.dl .size{font-family:var(--mono); font-size:.8rem; color:var(--ink-faint)}
+.dl ul{list-style:none; padding:0; margin:16px 0 22px; display:flex; flex-direction:column; gap:9px}
+.dl li{position:relative; padding-left:24px; font-size:.93rem; color:var(--ink-soft)}
+.dl li::before{content:""; position:absolute; left:2px; top:8px; width:9px; height:9px; border-radius:2px; background:var(--redact); opacity:.7}
+.dl .foot{margin-top:auto}
+.dl .btn{width:100%; justify-content:center}
+.gk{margin-top:12px; font-size:.82rem; color:var(--ink-faint); line-height:1.5}
+.dcount{font-family:var(--mono); font-size:.74rem; color:var(--ink-faint); margin-top:10px; text-align:center}
+
+/* legal-model callout */
+.legalmodel{background:var(--surface-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+.lm-grid{display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:8px}
+@media (max-width:820px){.lm-grid{grid-template-columns:1fr}}
+.lm{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:0 12px 12px 0; padding:20px 22px}
+.lm h3{font-family:var(--sans); font-weight:650; font-size:1.02rem; margin:0 0 6px; letter-spacing:0}
+.lm p{margin:0; color:var(--ink-soft); font-size:.93rem}
+
+/* support */
+.support .card{border-style:dashed; text-align:center; max-width:640px; margin:0 auto}
+.support .btn{margin-top:8px}
+
+/* footer */
+footer.site{background:var(--redact); color:#c7d6e0; padding:56px 0 40px; margin-top:20px}
+footer .fgrid{display:flex; flex-wrap:wrap; gap:30px; justify-content:space-between; align-items:flex-start}
+footer .brand b{color:#fff}
+footer .brand small{color:#7f9bad}
+footer nav{display:flex; flex-wrap:wrap; gap:18px}
+footer nav a{color:#c7d6e0; text-decoration:none; font-size:.9rem}
+footer nav a:hover{color:#fff; text-decoration:underline}
+footer .fnote{width:100%; border-top:1px solid rgba(255,255,255,.1); margin-top:28px; padding-top:22px; font-size:.82rem; color:#8ba6b6; display:flex; flex-wrap:wrap; gap:6px 18px; justify-content:space-between}
+footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
+
+/* legal pages */
+.legal-view{display:none; padding:70px 0 40px}
+[data-view="avisolegal"] #main, [data-view="avisolegal"] #trust,
+[data-view="privacidad"] #main, [data-view="privacidad"] #trust,
+[data-view="cookies"] #main, [data-view="cookies"] #trust{display:none}
+[data-view="avisolegal"] #v-avisolegal,
+[data-view="privacidad"] #v-privacidad,
+[data-view="cookies"] #v-cookies{display:block}
+.legal-view .doc-prose{max-width:74ch}
+.legal-view h1{font-size:2.1rem; margin:6px 0 6px}
+.legal-view h2{font-size:1.25rem; margin:34px 0 8px}
+.legal-view p,.legal-view li{color:var(--ink-soft); font-size:1rem}
+.legal-view .back{display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:.8rem; text-decoration:none; color:var(--brand); margin-bottom:12px}
+.legal-view .updated{font-family:var(--mono); font-size:.76rem; color:var(--ink-faint); margin-top:4px}
+.ph{background:color-mix(in srgb,var(--accent) 16%,transparent); border-bottom:1px dashed var(--accent); padding:0 3px; border-radius:3px; font-style:normal}
+
+:focus-visible{outline:2.5px solid var(--brand); outline-offset:2px; border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="#top" data-goto="home">
+      <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
+      <span><b>ARAEMKA Redact</b><small><span class="lang-es">Privacidad local</span><span class="lang-en">Local privacy</span></small></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#que-hace"><span class="lang-es">Qué hace</span><span class="lang-en">What it does</span></a>
+      <a href="#privacidad"><span class="lang-es">Privacidad</span><span class="lang-en">Privacy</span></a>
+      <a href="#deteccion"><span class="lang-es">Qué detecta</span><span class="lang-en">What it detects</span></a>
+      <a href="#descargar"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></a>
+    </nav>
+    <div class="nav-tools">
+      <button class="tbtn" id="lang" type="button" aria-label="Cambiar idioma">EN</button>
+      <button class="tbtn" id="theme" type="button" aria-label="Modo claro / oscuro">◐</button>
+    </div>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ================= MAIN ================= -->
+<div id="main">
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="lang-es">Anonimización 100% local</span><span class="lang-en">100% local anonymisation</span></span>
+      <h1>
+        <span class="lang-es">Anonimiza cualquier documento sin que los datos salgan de tu ordenador.</span>
+        <span class="lang-en">Anonymise any document without your data ever leaving your computer.</span>
+      </h1>
+      <p class="lede">
+        <span class="lang-es">Informes clínicos, escritos jurídicos, nóminas, facturas y papeles personales. Los datos se borran de verdad del archivo — no se tapan.</span>
+        <span class="lang-en">Medical reports, legal filings, payroll, invoices and personal paperwork. The data is genuinely deleted from the file — not just covered.</span>
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#descargar">
+          <span class="lang-es">Descargar gratis</span><span class="lang-en">Download free</span>
+        </a>
+        <a class="btn btn-ghost" href="#privacidad">
+          <span class="lang-es">Cómo protege tu privacidad</span><span class="lang-en">How it protects you</span>
+        </a>
+      </div>
+      <div class="hero-note">
+        <span class="dot"></span>
+        <span class="lang-es">Sin conexión · sin cuentas · sin telemetría · código auditable</span>
+        <span class="lang-en">Offline · no accounts · no telemetry · auditable source</span>
+      </div>
+    </div>
+
+    <div class="doc" aria-hidden="true">
+      <div class="docbar"><i></i><i></i><i></i><span class="doctag">informe.pdf → anon.pdf</span></div>
+      <h4><span class="lang-es">Informe de alta</span><span class="lang-en">Discharge summary</span></h4>
+      <div class="field"><span class="k">Paciente</span><span class="v"><span class="redact" data-d><span>Ana Herrera Gil</span></span></span></div>
+      <div class="field"><span class="k">DNI</span><span class="v"><span class="redact" data-d><span>48 291 337-K</span></span></span></div>
+      <div class="field"><span class="k">NHS No.</span><span class="v"><span class="redact" data-d><span>943 476 5919</span></span></span></div>
+      <div class="field"><span class="k"><span class="lang-es">Domicilio</span><span class="lang-en">Address</span></span><span class="v"><span class="redact" data-d><span>C/ Mayor 14, Madrid</span></span></span></div>
+      <div class="field"><span class="k"><span class="lang-es">Fecha</span><span class="lang-en">Date</span></span><span class="v"><span class="redact" data-d><span>03/06/2024</span></span></span></div>
+      <div class="field"><span class="k"><span class="lang-es">Médico</span><span class="lang-en">Clinician</span></span><span class="v"><span class="redact" data-d><span>Dr. L. Morera</span></span></span></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust" id="trust"><div class="wrap">
+  <span><span class="lang-es">Nada sale de tu equipo</span><span class="lang-en">Nothing leaves your device</span></span>
+  <span><span class="lang-es">Funciona sin internet</span><span class="lang-en">Works offline</span></span>
+  <span><span class="lang-es">Sin telemetría</span><span class="lang-en">No telemetry</span></span>
+  <span><span class="lang-es">Borrado destructivo</span><span class="lang-en">Destructive redaction</span></span>
+  <span>Español · English (UK/US)</span>
+</div></div>
+
+<!-- QUÉ HACE -->
+<section id="que-hace">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">Qué hace</span><span class="lang-en">What it does</span></span>
+      <h2><span class="lang-es">Tú revisas, tú confirmas, tú descargas.</span><span class="lang-en">You review, you confirm, you download.</span></h2>
+      <p><span class="lang-es">ARAEMKA Redact te muestra cada dato personal que encuentra sobre el propio documento. Nada se borra sin que tú lo apruebes.</span><span class="lang-en">ARAEMKA Redact shows you every piece of personal data it finds, right on the document. Nothing is deleted without your approval.</span></p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M14 4v5h5"/><rect x="6.5" y="12.5" width="7" height="2.2" rx="1" fill="currentColor" stroke="none"/></svg>
+        <h3><span class="lang-es">Detecta</span><span class="lang-en">Detects</span></h3>
+        <p><span class="lang-es">Nombres, identificadores, cuentas, direcciones, fechas y más — 29 tipos de datos, validados matemáticamente cuando llevan dígito de control.</span><span class="lang-en">Names, identifiers, accounts, addresses, dates and more — 29 kinds of data, checked mathematically when they carry a check digit.</span></p>
+      </div>
+      <div class="card">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        <h3><span class="lang-es">Revisas</span><span class="lang-en">You review</span></h3>
+        <p><span class="lang-es">Cada hallazgo aparece resaltado. Desmarcas lo que no quieras borrar y añades a mano lo que se haya escapado.</span><span class="lang-en">Every finding is highlighted. Untick anything you want to keep and add by hand anything missed.</span></p>
+      </div>
+      <div class="card">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="10" width="16" height="6" rx="1.4" fill="currentColor" stroke="none"/><path d="M4 6h16M4 20h10"/></svg>
+        <h3><span class="lang-es">Borra de verdad</span><span class="lang-en">Truly removes</span></h3>
+        <p><span class="lang-es">En PDF se elimina el texto; en escaneados, los píxeles; en Word y Excel (.xlsx), dentro del archivo. También se limpian metadatos compatibles.</span><span class="lang-en">In PDFs the text is removed; in scans, the pixels; in Word and Excel (.xlsx), inside the file. Supported metadata is cleaned too.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACIDAD -->
+<section class="privacy" id="privacidad">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">El modelo de privacidad</span><span class="lang-en">The privacy model</span></span>
+      <h2><span class="lang-es">Diseñado para que tus datos nunca tengan que confiar en nadie.</span><span class="lang-en">Built so your data never has to trust anyone.</span></h2>
+      <p><span class="lang-es">No es una promesa comercial: es cómo está construido. Puedes desconectar la red y sigue funcionando igual.</span><span class="lang-en">Not a marketing promise — it's how it's built. Unplug the network and it still works.</span></p>
+    </div>
+    <div class="plist">
+      <div class="pitem">
+        <svg class="node" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11 L6 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><path d="M12 11 L18 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="10.5" r="3" fill="#f2a03d"/><circle cx="6" cy="17.5" r="2" fill="#f2a03d"/><circle cx="18" cy="17.5" r="2" fill="#f2a03d"/></svg>
+        <div><h3><span class="lang-es">Nada sale de tu equipo</span><span class="lang-en">Nothing leaves your device</span></h3><p><span class="lang-es">Ninguna parte del programa se conecta a internet. Tus documentos no viajan a ningún servidor, ni al del autor.</span><span class="lang-en">No part of the program connects to the internet. Your documents never travel to any server, not even the author's.</span></p></div>
+      </div>
+      <div class="pitem">
+        <svg class="node" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11 L6 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><path d="M12 11 L18 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="10.5" r="3" fill="#f2a03d"/><circle cx="6" cy="17.5" r="2" fill="#f2a03d"/><circle cx="18" cy="17.5" r="2" fill="#f2a03d"/></svg>
+        <div><h3><span class="lang-es">Nada se guarda en disco</span><span class="lang-en">Nothing is written to disk</span></h3><p><span class="lang-es">Los documentos se procesan en memoria y se borran solos a los 30 minutos o cuando pulsas «Terminar».</span><span class="lang-en">Documents are processed in memory and wiped after 30 minutes, or when you press "Finish".</span></p></div>
+      </div>
+      <div class="pitem">
+        <svg class="node" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11 L6 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><path d="M12 11 L18 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="10.5" r="3" fill="#f2a03d"/><circle cx="6" cy="17.5" r="2" fill="#f2a03d"/><circle cx="18" cy="17.5" r="2" fill="#f2a03d"/></svg>
+        <div><h3><span class="lang-es">Sin cuentas ni telemetría</span><span class="lang-en">No accounts, no telemetry</span></h3><p><span class="lang-es">No hay registro, ni inicio de sesión en la nube, ni estadísticas de uso. No se recoge absolutamente nada.</span><span class="lang-en">No sign-up, no cloud login, no usage stats. Absolutely nothing is collected.</span></p></div>
+      </div>
+      <div class="pitem">
+        <svg class="node" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11 L6 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><path d="M12 11 L18 17" stroke="#f2a03d" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="10.5" r="3" fill="#f2a03d"/><circle cx="6" cy="17.5" r="2" fill="#f2a03d"/><circle cx="18" cy="17.5" r="2" fill="#f2a03d"/></svg>
+        <div><h3><span class="lang-es">Esta web tampoco te rastrea</span><span class="lang-en">This site doesn't track you either</span></h3><p><span class="lang-es">Sin cookies, sin analítica, sin rastreadores. Por eso no verás ningún banner de consentimiento: no hay nada que consentir.</span><span class="lang-en">No cookies, no analytics, no trackers. That's why you'll see no consent banner: there's nothing to consent to.</span></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DETECCIÓN -->
+<section id="deteccion">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">Qué detecta</span><span class="lang-en">What it detects</span></span>
+      <h2><span class="lang-es">Español e inglés, con los identificadores de cada país.</span><span class="lang-en">Spanish and English, with each country's identifiers.</span></h2>
+      <p><span class="lang-es">Detecta automáticamente el idioma de cada documento y aplica el motor adecuado. Ocho perfiles listos: clínico, jurídico, empresa, facturas, personal y más.</span><span class="lang-en">It auto-detects each document's language and applies the right engine. Eight ready-made profiles: clinical, legal, company, invoices, personal and more.</span></p>
+    </div>
+    <div class="detect">
+      <div class="dgroup">
+        <h3><span class="lang-es">España</span><span class="lang-en">Spain</span> <span class="flag">ES</span></h3>
+        <div class="chips">
+          <span class="chip"><b>DNI</b> / NIE</span><span class="chip"><b>NUSS</b></span><span class="chip lang-es"><b>Tarjeta sanitaria</b></span><span class="chip lang-en"><b>Health card</b></span><span class="chip"><b>CIF</b> / NIF</span><span class="chip"><b>IBAN</b></span><span class="chip lang-es"><b>Catastro</b></span><span class="chip lang-en"><b>Land registry</b></span><span class="chip lang-es"><b>Matrículas</b></span><span class="chip lang-en"><b>Number plates</b></span>
+        </div>
+      </div>
+      <div class="dgroup">
+        <h3><span class="lang-es">Reino Unido y EE. UU.</span><span class="lang-en">UK &amp; US</span> <span class="flag">EN</span></h3>
+        <div class="chips">
+          <span class="chip"><b>NHS No.</b></span><span class="chip"><b>National Insurance</b></span><span class="chip"><b>SSN</b> / ITIN</span><span class="chip"><b>IBAN</b></span><span class="chip lang-es"><b>Tarjetas</b> (Luhn)</span><span class="chip lang-en"><b>Cards</b> (Luhn)</span><span class="chip lang-es"><b>Códigos postales</b></span><span class="chip lang-en"><b>Postcodes / ZIP</b></span>
+        </div>
+      </div>
+      <div class="dgroup">
+        <h3><span class="lang-es">Comunes a ambos</span><span class="lang-en">Common to both</span></h3>
+        <div class="chips">
+          <span class="chip lang-es"><b>Nombres</b></span><span class="chip lang-en"><b>Names</b></span><span class="chip lang-es"><b>Direcciones</b></span><span class="chip lang-en"><b>Addresses</b></span><span class="chip lang-es"><b>Teléfonos</b></span><span class="chip lang-en"><b>Phones</b></span><span class="chip lang-es"><b>Correos</b></span><span class="chip lang-en"><b>E-mail</b></span><span class="chip lang-es"><b>Fechas</b> y edades</span><span class="chip lang-en"><b>Dates</b> &amp; ages</span>
+        </div>
+      </div>
+      <div class="dgroup">
+        <h3><span class="lang-es">Además</span><span class="lang-en">Plus</span></h3>
+        <div class="chips">
+          <span class="chip lang-es"><b>OCR</b> de escaneados</span><span class="chip lang-en"><b>OCR</b> of scans</span><span class="chip lang-es"><b>Logos y membretes</b></span><span class="chip lang-en"><b>Logos &amp; letterheads</b></span><span class="chip lang-es"><b>Desplazar fechas</b></span><span class="chip lang-en"><b>Date shifting</b></span><span class="chip lang-es"><b>Rangos de edad</b></span><span class="chip lang-en"><b>Age bands</b></span><span class="chip lang-es"><b>IA local</b> opcional</span><span class="chip lang-en"><b>Local AI</b> optional</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESCARGA -->
+<section id="descargar" style="background:var(--surface-2); border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></span>
+      <h2><span class="lang-es">Gratuito. Sin instalación complicada.</span><span class="lang-en">Free. No complicated install.</span></h2>
+      <p><span class="lang-es">Elige según dónde lo vayas a usar. No instala nada en el sistema ni pide permisos de administrador.</span><span class="lang-en">Choose where you'll use it. It installs nothing system-wide and needs no administrator rights.</span></p>
+    </div>
+    <div class="dl-grid">
+      <div class="dl">
+        <span class="plat"><span class="lang-es">Tu ordenador</span><span class="lang-en">Your computer</span></span>
+        <h3><span class="lang-es">Portátil para Mac y Windows</span><span class="lang-en">Portable for Mac &amp; Windows</span></h3>
+        <span class="size">≈ 1 GB · macOS 11+ / Windows 10+</span>
+        <ul>
+          <li><span class="lang-es">Descomprime y doble clic. Se abre el navegador solo.</span><span class="lang-en">Unzip and double-click. The browser opens by itself.</span></li>
+          <li><span class="lang-es">No necesita internet ni cuenta.</span><span class="lang-en">No internet or account needed.</span></li>
+        </ul>
+        <div class="foot">
+          <!-- TODO: sustituye "#" por el enlace real (recomendado: GitHub Releases) -->
+          <a class="btn btn-primary" href="#"><span class="lang-es">Descargar para Mac / Windows</span><span class="lang-en">Download for Mac / Windows</span></a>
+          <p class="gk"><span class="lang-es"><b>Primera vez en un Mac:</b> clic derecho en «PRIMERA VEZ — Abrir aquí» → Abrir. macOS avisa de que «está dañada» solo porque no lleva firma de Apple; no lo está.</span><span class="lang-en"><b>First time on a Mac:</b> right-click "PRIMERA VEZ — Abrir aquí" → Open. macOS warns it "is damaged" only because it isn't Apple-signed; it isn't.</span></p>
+          <p class="dcount"><span class="lang-es">Descargas contadas por GitHub — sin rastrearte</span><span class="lang-en">Downloads counted by GitHub — no tracking</span></p>
+        </div>
+      </div>
+      <div class="dl">
+        <span class="plat"><span class="lang-es">Servidor o NAS</span><span class="lang-en">Server or NAS</span></span>
+        <h3><span class="lang-es">Para todo un equipo de trabajo</span><span class="lang-en">For a whole team</span></h3>
+        <span class="size">≈ 2 GB · Docker / Synology</span>
+        <ul>
+          <li><span class="lang-es">Todos lo usan desde el navegador, sin instalar nada.</span><span class="lang-en">Everyone uses it from the browser, nothing installed.</span></li>
+          <li><span class="lang-es">Ideal para consultas, despachos y oficinas.</span><span class="lang-en">Ideal for clinics, practices and offices.</span></li>
+        </ul>
+        <div class="foot">
+          <!-- TODO: sustituye "#" por el enlace real -->
+          <a class="btn btn-ghost" href="#"><span class="lang-es">Descargar imagen para servidor</span><span class="lang-en">Download server image</span></a>
+          <p class="gk"><span class="lang-es">Incluye guía de instalación paso a paso para Synology (Container Manager).</span><span class="lang-en">Includes a step-by-step Synology install guide (Container Manager).</span></p>
+          <p class="dcount"><span class="lang-es">Descargas contadas por GitHub — sin rastrearte</span><span class="lang-en">Downloads counted by GitHub — no tracking</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELO LEGAL -->
+<section class="legalmodel" id="responsabilidad">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">Uso responsable</span><span class="lang-en">Responsible use</span></span>
+      <h2><span class="lang-es">Una herramienta de apoyo, no un sustituto de tu criterio.</span><span class="lang-en">A tool that assists you — not a replacement for your judgement.</span></h2>
+      <p><span class="lang-es">Honestidad por delante: esto es lo que ARAEMKA Redact hace y lo que no.</span><span class="lang-en">Honesty first: here's what ARAEMKA Redact does and doesn't do.</span></p>
+    </div>
+    <div class="lm-grid">
+      <div class="lm"><h3><span class="lang-es">Revisa siempre antes de compartir</span><span class="lang-en">Always review before sharing</span></h3><p><span class="lang-es">Ninguna herramienta automática es infalible. ARAEMKA Redact te enseña lo que encuentra precisamente para que la decisión final sea tuya.</span><span class="lang-en">No automatic tool is infallible. ARAEMKA Redact shows you what it finds precisely so the final call is yours.</span></p></div>
+      <div class="lm"><h3><span class="lang-es">El responsable del tratamiento eres tú</span><span class="lang-en">You remain the data controller</span></h3><p><span class="lang-es">ARAEMKA Redact te ayuda a cumplir el RGPD, pero la responsabilidad sobre los datos que tratas sigue siendo del usuario o de su organización.</span><span class="lang-en">ARAEMKA Redact helps you comply with the GDPR, but responsibility for the data you process stays with you or your organisation.</span></p></div>
+      <div class="lm"><h3><span class="lang-es">Se entrega «tal cual»</span><span class="lang-en">Provided "as is"</span></h3><p><span class="lang-es">El software se ofrece sin garantías. No sustituye el asesoramiento legal, médico ni de protección de datos.</span><span class="lang-en">The software is provided without warranties. It is not a substitute for legal, medical or data-protection advice.</span></p></div>
+      <div class="lm"><h3><span class="lang-es">Afinado para español e inglés</span><span class="lang-en">Tuned for Spanish and English</span></h3><p><span class="lang-es">La detección está pensada para documentos en español e inglés (Reino Unido y EE. UU.). Otros idiomas no están soportados.</span><span class="lang-en">Detection is designed for Spanish and English (UK and US) documents. Other languages are not supported.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOPORTE -->
+<section class="support" id="apoyar">
+  <div class="wrap">
+    <div class="card">
+      <span class="eyebrow"><span class="lang-es">Proyecto independiente</span><span class="lang-en">Independent project</span></span>
+      <h3 style="margin-top:8px"><span class="lang-es">ARAEMKA Redact es gratuito y sin ánimo de lucro</span><span class="lang-en">ARAEMKA Redact is free and non-profit</span></h3>
+      <p style="color:var(--ink-soft); max-width:52ch; margin:8px auto 0"><span class="lang-es">Hecho por un médico para proteger la privacidad de las personas. Es de uso libre y no recoge ningún dato — su única finalidad es que compartir documentos sea más seguro.</span><span class="lang-en">Made by a physician to protect people's privacy. It's free to use and collects no data — its only aim is to make sharing documents safer.</span></p>
+    </div>
+  </div>
+</section>
+
+</div><!-- /main -->
+
+<!-- ================= LEGAL: AVISO LEGAL ================= -->
+<div class="legal-view" id="v-avisolegal"><div class="wrap doc-prose">
+  <a class="back" href="#top" data-goto="home">← <span class="lang-es">Volver</span><span class="lang-en">Back</span></a>
+  <div class="lang-es">
+    <span class="eyebrow">Aviso legal</span>
+    <h1>Aviso legal</h1>
+    <p class="updated">Última actualización: 11 de septiembre de 2026</p>
+    <h2>1. Titular del sitio</h2>
+    <p>Este sitio web es un proyecto informativo para la descarga del software <strong>ARAEMKA Redact</strong>, cuyo autor y responsable es <strong>Dr. José Ramón Alberto Alonso</strong>. Contacto: <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>.</p>
+    <h2>2. Objeto</h2>
+    <p>El sitio tiene una finalidad exclusivamente informativa y de distribución del software ARAEMKA Redact, de carácter gratuito y sin ánimo de lucro. ARAEMKA Redact es una herramienta de anonimización de documentos que se ejecuta íntegramente en el equipo del usuario.</p>
+    <h2>3. Propiedad intelectual</h2>
+    <p>Copyright © 2026 Dr. José Ramón Alberto Alonso. ARAEMKA Redact es software libre bajo GNU AGPL v3 exclusivamente (<code>AGPL-3.0-only</code>). El <a href="https://github.com/jralbertoalonso-tech/AnoniPRO">código fuente correspondiente</a> y el texto íntegro de la licencia están disponibles sin coste. Los componentes de terceros conservan sus respectivas licencias, autoría y marcas.</p>
+    <p>ARAEMKA y ARAEMKA Redact y sus logotipos son signos distintivos reivindicados por el autor. La AGPL no concede derechos sobre ellos como marcas, salvo el uso descriptivo necesario para identificar el programa.</p>
+    <h2>4. Condiciones de uso del software</h2>
+    <p>El software se proporciona «tal cual», sin garantías de ningún tipo. ARAEMKA Redact es una herramienta de apoyo que no sustituye el criterio profesional del usuario ni garantiza por sí sola el cumplimiento de ninguna obligación legal. La persona usuaria y, cuando proceda, el responsable del tratamiento deben revisar íntegramente el resultado y aplicar las medidas adicionales necesarias antes de compartirlo.</p>
+    <h2>5. Limitación de responsabilidad</h2>
+    <p>El autor no será responsable de los daños o perjuicios de cualquier naturaleza derivados del uso o la imposibilidad de uso del software o de este sitio. El usuario asume la responsabilidad del tratamiento de los datos personales que maneje.</p>
+    <h2>6. Enlaces externos</h2>
+    <p>Este sitio puede enlazar a servicios de terceros (por ejemplo, la plataforma de descarga). Dichos servicios se rigen por sus propias condiciones y políticas, ajenas a este sitio.</p>
+    <h2>7. Legislación aplicable</h2>
+    <p>Estas condiciones se rigen por la legislación española. Para cualquier controversia, las partes se someten a los juzgados y tribunales españoles que resulten competentes, salvo que la normativa de consumo disponga otro fuero.</p>
+  </div>
+  <div class="lang-en">
+    <span class="eyebrow">Legal notice</span>
+    <h1>Legal notice</h1>
+    <p class="updated">Last updated: 11 September 2026</p>
+    <h2>1. Site owner</h2>
+    <p>This website is an informational project for distributing the <strong>ARAEMKA Redact</strong> software, whose author and owner is <strong>Dr José Ramón Alberto Alonso</strong>. Contact: <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>.</p>
+    <h2>2. Purpose</h2>
+    <p>The site is purely informational and for distributing the ARAEMKA Redact software, which is free and non-profit. ARAEMKA Redact is a document-anonymisation tool that runs entirely on the user's own device.</p>
+    <h2>3. Intellectual property</h2>
+    <p>Copyright © 2026 Dr José Ramón Alberto Alonso. ARAEMKA Redact is free software under GNU AGPL v3 only (<code>AGPL-3.0-only</code>). The <a href="https://github.com/jralbertoalonso-tech/AnoniPRO">corresponding source code</a> and full licence text are available at no charge. Third-party components retain their own licences, authorship and marks.</p>
+    <p>ARAEMKA and ARAEMKA Redact and their logos are marks claimed by the author. The AGPL does not grant trademark rights in them, except for descriptive use needed to identify the software.</p>
+    <h2>4. Software terms of use</h2>
+    <p>The software is provided "as is", without warranties of any kind. ARAEMKA Redact is a supporting tool that does not replace professional judgement and does not by itself guarantee compliance with any legal obligation. The user and, where applicable, the data controller must review the complete result and apply any additional safeguards required before sharing it.</p>
+    <h2>5. Limitation of liability</h2>
+    <p>The author shall not be liable for any damages arising from the use of or inability to use the software or this site. The user assumes responsibility for the processing of any personal data they handle.</p>
+    <h2>6. External links</h2>
+    <p>This site may link to third-party services (e.g. the download platform), which are governed by their own terms and policies, independent of this site.</p>
+    <h2>7. Governing law</h2>
+    <p>These terms are governed by Spanish law. Any dispute shall be submitted to the competent Spanish courts, unless consumer law provides otherwise.</p>
+  </div>
+</div></div>
+
+<!-- ================= LEGAL: PRIVACIDAD ================= -->
+<div class="legal-view" id="v-privacidad"><div class="wrap doc-prose">
+  <a class="back" href="#top" data-goto="home">← <span class="lang-es">Volver</span><span class="lang-en">Back</span></a>
+  <div class="lang-es">
+    <span class="eyebrow">Privacidad</span>
+    <h1>Política de privacidad</h1>
+    <p class="updated">Última actualización: 8 de agosto de 2026</p>
+    <h2>1. Este sitio web no recoge datos personales</h2>
+    <p>Este sitio <strong>no utiliza cookies, ni analítica, ni formularios, ni rastreadores</strong> de ningún tipo. No se registran las visitas de forma que permita identificar a nadie. No se elaboran perfiles ni se comparte información con terceros.</p>
+    <h2>2. El software se ejecuta en tu equipo</h2>
+    <p>ARAEMKA Redact funciona <strong>100% en local</strong>. Ni el software ni el autor reciben tus documentos ni ningún dato que trates con él. No existe telemetría ni comunicación con servidores externos.</p>
+    <h2>3. Descargas</h2>
+    <p>Los archivos de descarga se alojan en GitHub. Al descargarlos, se aplica la política de privacidad de dicho proveedor, ajena a este sitio.</p>
+    <h2>4. Si nos escribes</h2>
+    <p>Si contactas por correo a <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>, tus datos (tu dirección y el contenido del mensaje) se utilizarán únicamente para responderte y no se cederán a terceros. Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a esa misma dirección; también puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
+    <h2>5. Responsable del tratamiento de tus documentos</h2>
+    <p>Respecto a los datos personales contenidos en los documentos que anonimizas, <strong>el responsable del tratamiento eres tú o tu organización</strong>. ARAEMKA Redact es una herramienta que te ayuda a cumplir el RGPD, pero no asume esa responsabilidad en tu lugar.</p>
+  </div>
+  <div class="lang-en">
+    <span class="eyebrow">Privacy</span>
+    <h1>Privacy policy</h1>
+    <p class="updated">Last updated: 8 August 2026</p>
+    <h2>1. This website collects no personal data</h2>
+    <p>This site uses <strong>no cookies, no analytics, no forms and no trackers</strong> of any kind. Visits are not logged in any way that could identify anyone. No profiling is done and no information is shared with third parties.</p>
+    <h2>2. The software runs on your device</h2>
+    <p>ARAEMKA Redact runs <strong>100% locally</strong>. Neither the software nor the author receives your documents or any data you process with it. There is no telemetry and no communication with external servers.</p>
+    <h2>3. Downloads</h2>
+    <p>Download files are hosted on GitHub. When downloading, that provider's privacy policy applies, independently of this site.</p>
+    <h2>4. If you contact us</h2>
+    <p>If you e-mail <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>, your data (your address and the message) will be used only to reply to you and will not be shared with third parties. You may exercise your rights of access, rectification, erasure, objection, restriction and portability at that same address; you may also lodge a complaint with the Spanish Data Protection Agency (www.aepd.es).</p>
+    <h2>5. Controller of your documents' data</h2>
+    <p>For the personal data contained in the documents you anonymise, <strong>you or your organisation are the data controller</strong>. ARAEMKA Redact is a tool that helps you comply with the GDPR, but it does not take on that responsibility for you.</p>
+  </div>
+</div></div>
+
+<!-- ================= LEGAL: COOKIES ================= -->
+<div class="legal-view" id="v-cookies"><div class="wrap doc-prose">
+  <a class="back" href="#top" data-goto="home">← <span class="lang-es">Volver</span><span class="lang-en">Back</span></a>
+  <div class="lang-es">
+    <span class="eyebrow">Cookies</span>
+    <h1>Política de cookies</h1>
+    <p class="updated">Última actualización: 8 de agosto de 2026</p>
+    <p><strong>Este sitio no utiliza cookies</strong>, ni propias ni de terceros: ni técnicas de sesión, ni analíticas, ni de publicidad. Por eso no se muestra ningún banner de consentimiento — no hay nada que consentir.</p>
+    <h2>Enlaces a terceros</h2>
+    <p>Al pulsar un enlace de descarga o externo, abandonas este sitio y accedes a un servicio de terceros (por ejemplo GitHub) que puede utilizar sus propias cookies, sujeto a su propia política.</p>
+    <h2>Cambios</h2>
+    <p>Si en el futuro se incorporara alguna cookie, se actualizaría esta política y se solicitaría tu consentimiento previo cuando la ley lo exija.</p>
+  </div>
+  <div class="lang-en">
+    <span class="eyebrow">Cookies</span>
+    <h1>Cookie policy</h1>
+    <p class="updated">Last updated: 8 August 2026</p>
+    <p><strong>This site uses no cookies</strong>, first- or third-party: no session, analytics or advertising cookies. That's why no consent banner is shown — there's nothing to consent to.</p>
+    <h2>Third-party links</h2>
+    <p>When you click a download or external link, you leave this site for a third-party service (e.g. GitHub) that may use its own cookies, subject to its own policy.</p>
+    <h2>Changes</h2>
+    <p>If any cookie were added in the future, this policy would be updated and your prior consent requested where the law requires it.</p>
+  </div>
+</div></div>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="fgrid">
+      <a class="brand" href="#top" data-goto="home" style="text-decoration:none">
+        <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
+        <span><b>ARAEMKA Redact</b><small><span class="lang-es">Privacidad local</span><span class="lang-en">Local privacy</span></small></span>
+      </a>
+      <nav>
+        <a href="#top" data-goto="avisolegal"><span class="lang-es">Aviso legal</span><span class="lang-en">Legal notice</span></a>
+        <a href="https://github.com/jralbertoalonso-tech/AnoniPRO"><span class="lang-es">Código fuente</span><span class="lang-en">Source code</span></a>
+        <a href="#top" data-goto="privacidad"><span class="lang-es">Política de privacidad</span><span class="lang-en">Privacy policy</span></a>
+        <a href="#top" data-goto="cookies"><span class="lang-es">Política de cookies</span><span class="lang-en">Cookie policy</span></a>
+      </nav>
+    </div>
+    <div class="fnote">
+      <span><span class="lang-es">Dr. José Ramón Alberto Alonso · Procesamiento 100% local</span><span class="lang-en">Dr José Ramón Alberto Alonso · 100% local processing</span></span>
+      <span class="nocookie">🔒 <span class="lang-es">Esta web no usa cookies ni te rastrea</span><span class="lang-en">This site uses no cookies and does not track you</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement;
+
+  // ----- theme -----
+  try{var st=localStorage.getItem("nl_theme"); if(st) root.setAttribute("data-theme",st);}catch(e){}
+  document.getElementById("theme").addEventListener("click",function(){
+    var cur=root.getAttribute("data-theme");
+    if(!cur){cur=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}
+    var next=cur==="dark"?"light":"dark";
+    root.setAttribute("data-theme",next);
+    try{localStorage.setItem("nl_theme",next);}catch(e){}
+  });
+
+  // ----- language -----
+  function setLang(l){
+    root.setAttribute("data-site-lang",l);
+    root.setAttribute("lang",l);
+    document.getElementById("lang").textContent = l==="es"?"EN":"ES";
+    try{localStorage.setItem("nl_lang",l);}catch(e){}
+  }
+  var initial="es";
+  try{var sl=localStorage.getItem("nl_lang"); if(sl==="es"||sl==="en") initial=sl;
+      else if((navigator.language||"es").toLowerCase().indexOf("en")===0) initial="en";}catch(e){}
+  setLang(initial);
+  document.getElementById("lang").addEventListener("click",function(){
+    setLang(root.getAttribute("data-site-lang")==="es"?"en":"es");
+  });
+
+  // ----- legal view routing (single self-contained file) -----
+  function goto(view){
+    if(view==="home"){root.removeAttribute("data-view");}
+    else{root.setAttribute("data-view",view);}
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll("[data-goto]").forEach(function(a){
+    a.addEventListener("click",function(e){e.preventDefault(); goto(a.getAttribute("data-goto"));});
+  });
+
+  // ----- hero redaction animation -----
+  var bars=[].slice.call(document.querySelectorAll(".doc .redact"));
+  var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if(reduce){ bars.forEach(function(b){b.classList.add("on");}); }
+  else{
+    function play(){ bars.forEach(function(b,i){ setTimeout(function(){b.classList.add("on");}, 500+i*260); }); }
+    function reset(){ bars.forEach(function(b){b.classList.remove("on");}); }
+    play();
+    setInterval(function(){ reset(); setTimeout(play,900); }, 7000);
+  }
+})();
+</script>
+</body>
+</html>

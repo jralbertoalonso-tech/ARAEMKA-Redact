@@ -1,6 +1,6 @@
 """Catálogo de datos personales que la aplicación detecta.
 
-AnoniPRO es de uso general: sirve para documentos clínicos, jurídicos,
+ARAEMKA Redact es de uso general: sirve para documentos clínicos, jurídicos,
 laborales, facturas y papeles personales. Cada categoría tiene un identificador
 estable (se usa en la API y en los perfiles), su nombre visible en español e
 inglés, un grupo (para el panel de interruptores) y un color (para el resaltado).
@@ -93,6 +93,14 @@ CATEGORIAS: list[Categoria] = [
               "Identificación fiscal de empresas y entidades, con control verificado.",
               "Company tax number (CIF/NIF)",
               "Tax identification of companies and bodies, with its check character verified."),
+    Categoria("nino", "National Insurance (Reino Unido)", "economico", "#e8a317",
+              "Número de la Seguridad Social británica (NINO), en documentos en inglés.",
+              "National Insurance number (UK)",
+              "UK National Insurance number, with its format rules verified."),
+    Categoria("ssn", "Social Security / ITIN (EE. UU.)", "economico", "#d98324",
+              "Número de la Seguridad Social o ITIN estadounidense, en documentos en inglés.",
+              "Social Security number / ITIN (US)",
+              "US Social Security number or ITIN, with its valid ranges verified."),
 
     # ── Datos de salud ────────────────────────────────────────────────────
     Categoria("cip", "CIP / Tarjeta sanitaria", "salud", "#30a46c",
@@ -107,6 +115,10 @@ CATEGORIAS: list[Categoria] = [
               "Número de afiliación de 12 dígitos, con dígitos de control verificados.",
               "Social security number",
               "12-digit Spanish social security number, with its check digits verified."),
+    Categoria("nhs", "Nº del NHS (Reino Unido)", "salud", "#009e74",
+              "Número del NHS británico (10 dígitos con control), en documentos en inglés.",
+              "NHS number (UK)",
+              "UK NHS number (10 digits with a check digit), in English documents."),
     Categoria("sanitario", "Nombres del personal sanitario", "salud", "#0d8a5f",
               "Nombres precedidos de Dr./Dra./Fdo./Enf. o cercanos a un nº de colegiado.",
               "Healthcare staff names",

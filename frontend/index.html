@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="app.titulo_pagina">AnoniPRO — Anonimización local de documentos</title>
-  <link rel="stylesheet" href="styles.css?v=0.8">
+  <title data-i18n="app.titulo_pagina">ARAEMKA Redact — Anonimización local de documentos</title>
+  <link rel="stylesheet" href="styles.css?v=0.10.0">
   <link rel="icon" type="image/svg+xml" href="icono.svg">
   <link rel="apple-touch-icon" href="iconos/icono-256.png">
 </head>
@@ -13,7 +13,7 @@
 <!-- ══════════ Pantalla de contraseña (solo si está configurada) ══════════ -->
 <div id="pantalla-login" class="oculto">
   <div class="tarjeta-login">
-    <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
+    <h1><img src="icono.svg" alt="" class="logo-app"> ARAEMKA Redact</h1>
     <p data-i18n="login.instruccion">Introduce la contraseña de acceso.</p>
     <form id="form-login">
       <input type="password" id="campo-password" data-i18n-ph="login.password" placeholder="Contraseña" autocomplete="current-password">
@@ -28,7 +28,7 @@
 
   <header>
     <div class="titulo">
-      <h1><img src="icono.svg" alt="" class="logo-app"> AnoniPRO</h1>
+      <h1><img src="icono.svg" alt="" class="logo-app"> ARAEMKA Redact</h1>
       <span class="subtitulo" data-i18n="app.subtitulo">Anonimización local de documentos — ningún dato sale de tu equipo</span>
     </div>
     <div class="acciones-cabecera">
@@ -103,9 +103,9 @@
           <div class="icono-soltar">📄</div>
           <p><strong data-i18n="subir.arrastra">Arrastra aquí un documento</strong> <span data-i18n="subir.o">o</span></p>
           <button id="boton-elegir" class="boton-primario" data-i18n="subir.elegir">Elegir archivo…</button>
-          <input type="file" id="entrada-archivo" accept=".pdf,.docx,.jpg,.jpeg,.png,.tif,.tiff,.bmp,.webp" multiple hidden>
+          <input type="file" id="entrada-archivo" accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.jpg,.jpeg,.png,.tif,.tiff,.bmp,.webp" multiple hidden>
           <p class="texto-suave">
-            <span data-i18n="subir.formatos">PDF (con texto o escaneado), Word (.docx) o imagen (JPG, PNG, TIFF)</span><br>
+            <span data-i18n="subir.formatos">PDF, Word (.docx), Excel (.xlsx) o imagen (JPG, PNG, TIFF)</span><br>
             <span data-i18n="subir.ocr_nota">Los escaneados e imágenes se leen con OCR en este mismo equipo.</span><br>
             <span id="nota-ttl"></span>
           </p>
@@ -127,7 +127,7 @@
           </div>
         </div>
         <div id="banner-ocr" class="banner-ocr oculto"></div>
-        <div id="contenedor-paginas"><!-- páginas PDF o bloques docx --></div>
+        <div id="contenedor-paginas"><!-- páginas PDF o bloques DOCX/XLSX --></div>
       </div>
 
     </main>
@@ -163,14 +163,31 @@
       </div>
     </div>
     <div id="contenido-resultado" class="oculto">
-      <h2 data-i18n="res.titulo">✅ Documento anonimizado</h2>
+      <h2 data-i18n="res.titulo">✅ Procesamiento completado</h2>
       <div id="avisos-verificacion"></div>
       <div id="residuales-verificacion"></div>
+      <div id="advertencia-resultado" class="advertencia-resultado" data-i18n="res.advertencia_general">
+        Las verificaciones automáticas no garantizan la ausencia total de datos personales. Revisa el resultado completo antes de descargarlo, compartirlo o publicarlo.
+      </div>
       <div class="fila-botones">
         <button id="boton-cerrar-dialogo" class="boton-secundario" data-i18n="res.cerrar">Cerrar</button>
         <a id="enlace-auditoria" class="boton-secundario boton-enlace-descarga" download data-i18n="res.auditoria" data-i18n-titulo="res.auditoria_ayuda" title="Informe de qué se redactó">📋 Informe de auditoría</a>
-        <a id="enlace-descarga" class="boton-primario boton-enlace-descarga" download data-i18n="res.descargar">⬇ Descargar documento anonimizado</a>
+        <a id="enlace-descarga" class="boton-primario boton-enlace-descarga" download data-i18n="res.descargar">⬇ Descargar resultado</a>
       </div>
+    </div>
+  </dialog>
+
+  <!-- ── Diálogo: advertencia y condiciones de uso ── -->
+  <dialog id="dialogo-aviso-legal">
+    <h2 data-i18n="legal.titulo">Aviso legal y condiciones de uso</h2>
+    <p data-i18n="legal.apoyo">ARAEMKA Redact es una herramienta de apoyo. No garantiza la detección o eliminación completa de todos los datos personales.</p>
+    <p data-i18n="legal.limites">El OCR, los modelos lingüísticos y las reglas automáticas pueden omitir información, interpretarla incorrectamente o dejar elementos visibles o susceptibles de reidentificación.</p>
+    <p data-i18n="legal.revision">La persona usuaria debe revisar el documento resultante antes de compartirlo, publicarlo o utilizarlo. Cuando corresponda, el responsable del tratamiento conserva sus obligaciones legales y debe valorar el riesgo y aplicar las medidas adecuadas.</p>
+    <p data-i18n="legal.responsabilidad">En la máxima medida permitida por la ley, el autor no responde de daños indirectos derivados del uso incorrecto, de la falta de revisión o de usos no previstos. No se excluyen las responsabilidades ni los derechos que legalmente no puedan limitarse.</p>
+    <p><span data-i18n="legal.licencia">Software libre bajo GNU AGPL v3.</span> <a href="https://github.com/jralbertoalonso-tech/AnoniPRO" target="_blank" rel="noopener noreferrer" data-i18n="legal.codigo_fuente">Obtener el código fuente</a>.</p>
+    <p class="texto-suave" data-i18n="legal.no_asesora">El programa y esta información no sustituyen el asesoramiento jurídico, de protección de datos o profesional.</p>
+    <div class="fila-botones">
+      <button id="boton-cerrar-aviso-legal" class="boton-primario" data-i18n="legal.cerrar">Entendido</button>
     </div>
   </dialog>
 
@@ -222,12 +239,14 @@
 
   <footer>
     <span id="version-app"></span> · <span data-i18n="app.pie">Procesamiento 100 % local · Sin conexión a internet · Los documentos nunca se guardan en disco</span><br>
-    <span class="autor">Nodo Local</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span>
+    <span class="autor">ARAEMKA</span> · <span data-i18n="app.autor">Autor: Dr. José Ramón Alberto Alonso</span> ·
+    <button id="boton-aviso-legal" class="boton-enlace boton-aviso-legal" data-i18n="legal.abrir">Aviso legal y condiciones de uso</button> ·
+    <a href="https://github.com/jralbertoalonso-tech/AnoniPRO" target="_blank" rel="noopener noreferrer" data-i18n="legal.codigo_fuente">Código fuente</a>
   </footer>
 </div>
 
 <script src="vendor/pdfjs/pdf.min.js"></script>
-<script src="idiomas.js?v=0.8"></script>
-<script src="app.js?v=0.8"></script>
+<script src="idiomas.js?v=0.10.0"></script>
+<script src="app.js?v=0.10.0"></script>
 </body>
 </html>

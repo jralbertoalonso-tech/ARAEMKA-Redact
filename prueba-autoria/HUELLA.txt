@@ -1,0 +1,22 @@
+PRUEBA DE AUTORÍA Y FECHA — AnoniPRO (marca «Nodo Local»)
+=========================================================
+Autor declarado : Dr. José Ramón Alberto Alonso
+Generado (reloj local, NO probatorio) : 2026-08-07 23:42:19 WEST
+Commit git      : da97106b6d6bcffdbacf3feea4663b2256c03bed
+Archivos incluidos : 64
+Huella SHA-256 del código (del fichero MANIFEST.sha256):
+92b822f27269d85910ddaa306543343ce4345ee24ae7fb6f17d1cd231ad4010e
+
+QUÉ PRUEBA ESTO
+- MANIFEST.sha256 contiene la huella de cada archivo del código. Si una sola
+  línea del código cambiara, su huella —y esta huella global— cambiarían.
+- El SELLO DE TIEMPO (archivo .tsr y/o .ots, adjunto) es lo que da fe, ante un
+  tercero de confianza, de que esta huella ya existía en una fecha. El reloj de
+  este ordenador NO sirve como prueba por sí solo.
+
+CÓMO VERIFICAR EN EL FUTURO
+1) Regenerar el manifiesto sobre el código y comprobar que la huella coincide.
+2) Verificar el sello de tiempo contra la autoridad que lo emitió.
+
+IMPORTANTE (no jurídico): esto acredita EXISTENCIA y FECHA, no resuelve la
+titularidad como empleado público. Ver la consulta pendiente con innovación/OTRI.

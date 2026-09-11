@@ -1,4 +1,4 @@
-# AnoniPRO — Documentación técnica
+# ARAEMKA Redact — Documentación técnica
 
 Todo lo que necesitas para trabajar sobre el código: arrancarlo, probarlo,
 entender cómo detecta y generar los paquetes distribuibles.
@@ -40,14 +40,18 @@ backend/
     textos.py        mensajes del servidor en español e inglés
     detection/
       categorias.py            catálogo de datos (una sola fuente de verdad)
-      validators.py            dígitos de control: DNI, NUSS, IBAN, CIF, Luhn…
-      reconocedores_es.py      capa 1: reglas y expresiones regulares
-      motor.py                 orquesta capas 1-2 y resuelve solapamientos
+      validators.py            control: DNI, NUSS, IBAN, CIF, Luhn, NHS, NINO, SSN…
+      reconocedores_es.py      capa 1: reglas españolas
+      reconocedores_en.py      capa 1: reglas inglesas (Reino Unido y EE. UU.)
+      idioma.py                detección automática del idioma del documento
+      motor.py                 orquesta capas 1-2 (dos motores: es/en) y solapamientos
       capa3_llm.py             capa 3: LLM local opcional
       diagnostico_hardware.py  recomendación de modelo según el equipo
     documentos/
       pdf_doc.py       PDF: extracción posicionada y redacción destructiva
       docx_doc.py      Word: extracción y sustitución dentro del XML
+      xlsx_doc.py      Excel: extracción contextual y sustitución de celdas
+      ooxml.py         Saneado de propiedades y contenido oculto Office
       ocr.py           Tesseract
       fechas.py        desplazamiento de fechas y rangos etarios
   tests/             63 pruebas
@@ -83,6 +87,7 @@ cd backend && ../.venv/bin/python -m pytest tests/ -v
 | `test_fase4.py` | Segunda pasada y auditoría (que no contenga datos originales) |
 | `test_fase5.py` | Desplazamiento de fechas y rangos etarios |
 | `test_universal.py` | IBAN, CIF, tarjetas, matrículas, catastro y perfiles |
+| `test_ingles.py` | NHS, NINO, SSN/ITIN, detección de idioma y enrutado es/en |
 
 ### Métricas de detección
 
@@ -114,14 +119,19 @@ pero no pertenecen a nadie).
 | Paquete | Comando | Notas |
 |---|---|---|
 | Portable macOS | `bash herramientas/construir_portable_mac.sh` | Se autocomprueba: verifica que no quedan enlaces simbólicos, que los módulos compilados están dentro y que **el ejecutable arranca de verdad** antes de darlo por bueno |
-| Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: PyInstaller no compila para otra plataforma |
-| Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma |
+| Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: incluye Tesseract OCR (es/en), hace una prueba funcional real y genera ZIP + SHA-256 |
+| Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma. Se conserva el identificador técnico `anonipro` para actualizar instalaciones anteriores. |
 | Iconos | `.venv/bin/python herramientas/generar_iconos.py` | Genera `.icns`, `.ico` y PNG desde `frontend/icono.svg`. Los dos empaquetadores ya lo llaman |
 
 **Lecciones aprendidas empaquetando** (para no repetirlas):
 
 - PyInstaller puede dejar fuera módulos compilados de spaCy (`cymem`, `thinc`…)
   aunque estén declarados: por eso se fuerzan y se comprueban.
+- El paquete de Windows incluye una copia mínima de Tesseract y los modelos
+  `spa`, `eng` y `osd`; la máquina de construcción debe tenerlos instalados.
+- El portable de Windows incluye `es_core_news_md` y `en_core_web_md`: conservan
+  NER en ambos idiomas sin añadir cerca de 1 GB de vectores estáticos. Para el
+  desarrollo local se siguen recomendando los modelos `lg`.
 - Los enlaces simbólicos internos se rompen al copiar la carpeta entre discos:
   el script los convierte en archivos reales.
 - Distribuye siempre el **.zip**, nunca la carpeta suelta.
@@ -132,13 +142,25 @@ pero no pertenecen a nadie).
 
 ## Cómo funciona la detección
 
+> **Dos motores, uno por idioma.** `idioma.detectar_idioma()` mira una muestra
+> del texto del documento (heurístico de palabras funcionales, sin dependencias
+> ni red) y decide «es» o «en». `motor.py` mantiene dos `AnalyzerEngine`
+> independientes: el español (siempre) y el inglés (carga perezosa la primera
+> vez que llega un documento en inglés). Cada uno tiene sus reconocedores, su
+> modelo spaCy y su lista de ruido. Ante la duda, el detector devuelve «es»
+> (opción conservadora). Los conjuntos de ruido se mantienen SEPARADOS por
+> idioma: «Hospital» es parte legítima de un centro español pero etiqueta en un
+> documento inglés.
+
 ### Capa 1 — Reglas
 
-`reconocedores_es.py`. Cada identificador con dígito de control se valida
-matemáticamente en `validators.py`; si no cuadra, **se descarta**. Los que no
-tienen formato público estable (nº de historia, expedientes, colegiado…) se
-detectan por su **etiqueta** («NHC:», «Expediente nº», «Cliente:»), que es lo
-más fiable cuando el formato varía entre organizaciones.
+`reconocedores_es.py` (español) y `reconocedores_en.py` (inglés: Reino Unido y
+EE. UU.). Cada identificador con dígito de control se valida matemáticamente en
+`validators.py` —DNI/NIE, NUSS, IBAN, CIF, Luhn, **NHS (mód. 11)**, **NINO**,
+**SSN/ITIN** (rangos)—; si no cuadra, **se descarta**. Los que no tienen formato
+público estable (nº de historia, expedientes…) se detectan por su **etiqueta**
+(«NHC:», «MRN:», «Case No.», «Cliente:», «Claimant:»), que es lo más fiable
+cuando el formato varía entre organizaciones.
 
 > ⚠️ **Presidio aplica `re.IGNORECASE` por defecto.** Para los patrones donde
 > las mayúsculas son la señal (nombres de sociedad, IBAN, catastro) hay que
@@ -179,12 +201,21 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.5 | Desplazamiento consistente de fechas y rangos etarios |
 | 0.6 | Revisión de calidad: correcciones de fugas, concurrencia y seguridad |
 | 0.7 | **Universal**: perfiles jurídico, empresa, facturas y personal; IBAN, CIF, tarjetas, catastro, matrículas; identidad Nodo Local |
-| 0.8 | **Bilingüe** español / inglés |
+| 0.8 | **Interfaz bilingüe** español / inglés |
+| 0.9 | **Detección en inglés** (Reino Unido y EE. UU.): NHS, NINO, SSN/ITIN, códigos postales y teléfonos; segundo motor spaCy `en_core_web_lg` con carga perezosa; idioma del documento detectado automáticamente |
+| 0.9.2 | Avisos de riesgo y responsabilidad en la interfaz y los portables; resultado presentado como verificación automática, sin afirmar infalibilidad; condiciones de uso bilingües |
+| 0.10.0 | Excel `.xlsx`; resaltado inmediato de términos manuales; fechas en el perfil clínico; saneado reforzado de PDF/Word/Excel y nombres de descarga genéricos |
 
 ## Ideas pendientes
 
-- Motor de detección para documentos **en inglés** (modelo NER inglés,
-  identificadores SSN/NHS/NI, formato de fecha americano).
+- **Fechas numéricas inglesas ambiguas**: `fechas.py` ya desplaza las fechas
+  inglesas con el mes escrito («March 3, 2024»), las numéricas que se delatan
+  solas (algún número > 12) y las edades («47 years old» → «45-49 years»). Lo que
+  queda: las numéricas con ambos números ≤ 12 (p. ej. `03/04/2024`), genuinamente
+  ambiguas entre el formato británico (día/mes) y el estadounidense (mes/día). Se
+  **tachan** en vez de desplazarse (nunca se adivina el orden). Mejora posible:
+  deducir el país por los identificadores del documento (NHS → UK, SSN → EE. UU.)
+  y aplicarlo solo a esas fechas, marcado como «mejor esfuerzo».
 - Conversión automática de `.doc` antiguos en el servidor.
 - Procesamiento en paralelo para lotes muy grandes.
 - Sustituir por etiquetas («[PACIENTE]») en lugar de bloques negros.

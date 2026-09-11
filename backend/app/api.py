@@ -28,9 +28,11 @@ from .detection import capa3_llm as capa3
 from .detection import categorias as cat
 from .detection import diagnostico_hardware
 from .detection.motor import MOTOR, resolver_solapamientos
+from .detection.idioma import detectar_idioma
 from .documentos import fechas, ocr
 from .documentos.docx_doc import CARACTER_REDACCION, DocumentoDocx
 from .documentos.pdf_doc import DocumentoPdf, pdf_desde_imagen
+from .documentos.xlsx_doc import DocumentoXlsx
 from .seguridad import comprobar_password, crear_cookie_sesion, registrar_intento_login
 from .textos import idioma_de, t
 
@@ -81,6 +83,7 @@ def estado(request: Request):
         "modelo_ner": MOTOR.modelo_cargado or "(se carga con el primer documento)",
         "ocr_disponible": diag_ocr["disponible"],
         "ocr_espanol": diag_ocr["tiene_espanol"],
+        "ocr_ingles": diag_ocr["tiene_ingles"],
         "requiere_password": AJUSTES.requiere_password,
         "autenticado": getattr(request.state, "autenticado", not AJUSTES.requiere_password),
         "ttl_minutos": AJUSTES.ttl_minutos,
@@ -181,6 +184,15 @@ def _analizar_sesion(
     detecciones: list[dict] = []
     contador = 0
 
+    # Idioma del DOCUMENTO (no el de la interfaz): se detecta automáticamente a
+    # partir de una muestra de su texto y decide qué motor se usa (español o
+    # inglés). Se guarda en la sesión para que la segunda pasada lo reutilice.
+    if sesion.tipo == "pdf":
+        muestra = " ".join(p.texto for p in sesion.doc.paginas[:6])
+    else:
+        muestra = " ".join(b.texto for b in sesion.doc.bloques[:60])
+    sesion.idioma_doc = detectar_idioma(muestra)
+
     activas = set(ids_categorias)
     # Guarda los parámetros para reutilizarlos en la segunda pasada de verificación
     sesion.ultimo_analisis = {
@@ -202,7 +214,8 @@ def _analizar_sesion(
 
     if sesion.tipo == "pdf":
         for pagina in sesion.doc.paginas:
-            base = MOTOR.detectar(pagina.texto, ids_categorias, lista_personalizada, lista_blanca)
+            base = MOTOR.detectar(pagina.texto, ids_categorias, lista_personalizada,
+                                  lista_blanca, sesion.idioma_doc)
             # Capa 3 (LLM local opcional): caza lo que las capas 1-2 no vieron
             extra = _revisar_llm(pagina.texto)
             for d in resolver_solapamientos(base + extra, pagina.texto):
@@ -230,11 +243,19 @@ def _analizar_sesion(
                     "detector": "membrete",
                 })
                 contador += 1
-    else:  # docx
+    else:  # documentos por bloques: docx / xlsx
         for bloque in sesion.doc.bloques:
-            base = MOTOR.detectar(bloque.texto, ids_categorias, lista_personalizada, lista_blanca)
+            base = MOTOR.detectar(bloque.texto, ids_categorias, lista_personalizada,
+                                  lista_blanca, sesion.idioma_doc)
             extra = _revisar_llm(bloque.texto)
             for d in resolver_solapamientos(base + extra, bloque.texto):
+                # Excel añade etiquetas de columna como contexto para detectar
+                # códigos numéricos. Solo se acepta la parte que corresponde al
+                # valor real de la celda.
+                if hasattr(sesion.doc, "ajustar_deteccion"):
+                    d = sesion.doc.ajustar_deteccion(bloque, d)
+                    if d is None:
+                        continue
                 d["id"] = f"d{contador}"
                 d["bloque"] = bloque.indice
                 detecciones.append(d)
@@ -304,8 +325,16 @@ def subir_documento(
         except Exception as e:
             raise HTTPException(422, t("word_ilegible", idioma, error=e))
         sesion = SesionDocumento(nombre, "docx", doc)
+    elif extension == "xlsx":
+        try:
+            doc = DocumentoXlsx(contenido)
+        except Exception as e:
+            raise HTTPException(422, t("excel_ilegible", idioma, error=e))
+        sesion = SesionDocumento(nombre, "xlsx", doc)
     elif extension == "doc":
         raise HTTPException(422, t("doc_antiguo", idioma))
+    elif extension in ("xls", "xlsm"):
+        raise HTTPException(422, t("excel_antiguo", idioma))
     else:
         raise HTTPException(422, t("formato_no_compatible", idioma, extension=extension))
 
@@ -333,7 +362,13 @@ def subir_documento(
         ]
     else:
         respuesta["bloques"] = [
-            {"indice": b.indice, "texto": b.texto, "origen": b.origen} for b in doc.bloques
+            {
+                "indice": b.indice,
+                "texto": b.texto,
+                "origen": b.origen,
+                "referencia": getattr(b, "referencia", ""),
+            }
+            for b in doc.bloques
         ]
     return respuesta
 
@@ -361,8 +396,7 @@ def descargar_original(id_doc: str, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion:
         raise HTTPException(404, t("doc_caducado", idioma_de(request)))
-    tipo_mime = "application/pdf" if sesion.tipo == "pdf" else \
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    tipo_mime = _mime_de_tipo(sesion.tipo)
     return Response(content=sesion.doc.contenido, media_type=tipo_mime)
 
 
@@ -407,6 +441,51 @@ def _spans_de_texto(texto: str, termino: str) -> list[tuple[int, int]]:
     return [m.span() for m in re.finditer(re.escape(termino.strip()), texto, re.IGNORECASE)]
 
 
+class PeticionBusquedaTextos(BaseModel):
+    textos: list[str] = Field(default_factory=list)
+
+
+@router.post("/documentos/{id_doc}/buscar-textos")
+def buscar_textos(id_doc: str, peticion: PeticionBusquedaTextos, request: Request):
+    """Localiza inmediatamente los términos añadidos a mano para resaltarlos."""
+    sesion = ALMACEN.obtener(id_doc)
+    if not sesion:
+        raise HTTPException(404, t("doc_caducado", idioma_de(request)))
+    terminos = list(dict.fromkeys(
+        texto.strip() for texto in peticion.textos
+        if texto and texto.strip()
+    ))[:100]
+    coincidencias: list[dict] = []
+    if sesion.tipo == "pdf":
+        for termino in terminos:
+            for pagina in sesion.doc.paginas:
+                for inicio, fin in _spans_de_texto(pagina.texto, termino):
+                    rects = sesion.doc.rects_para_span(pagina.numero, inicio, fin)
+                    if rects:
+                        coincidencias.append({
+                            "termino": termino,
+                            "pagina": pagina.numero,
+                            "inicio": inicio,
+                            "fin": fin,
+                            "rects": [[r.x0, r.y0, r.x1, r.y1] for r in rects],
+                        })
+    else:
+        for termino in terminos:
+            for bloque in sesion.doc.bloques:
+                if hasattr(sesion.doc, "spans_de_texto"):
+                    spans = sesion.doc.spans_de_texto(bloque, termino)
+                else:
+                    spans = _spans_de_texto(bloque.texto, termino)
+                for inicio, fin in spans:
+                    coincidencias.append({
+                        "termino": termino,
+                        "bloque": bloque.indice,
+                        "inicio": inicio,
+                        "fin": fin,
+                    })
+    return {"coincidencias": coincidencias}
+
+
 def _delta_de_sesion(sesion: SesionDocumento) -> int:
     """Desplazamiento de días del documento: aleatorio, distinto de cero y
     CONSISTENTE (si se re-aplica la redacción, se usa el mismo)."""
@@ -416,13 +495,14 @@ def _delta_de_sesion(sesion: SesionDocumento) -> int:
     return sesion.delta_dias
 
 
-def _texto_reemplazo(d: dict, opciones: OpcionesRedaccion, delta: int) -> str | None:
+def _texto_reemplazo(d: dict, opciones: OpcionesRedaccion, delta: int,
+                     idioma: str = "es") -> str | None:
     """Texto de sustitución para una detección, o None si debe taparse en negro."""
     if d["categoria"] == "fecha" and opciones.fechas == "desplazar":
-        return fechas.desplazar_fecha(d["texto"], delta)
+        return fechas.desplazar_fecha(d["texto"], delta, idioma)
     if d["categoria"] == "fecha_nacimiento" and opciones.edad == "rango" \
-            and fechas.es_edad(d["texto"]):
-        return fechas.rango_etario(d["texto"])
+            and fechas.es_edad(d["texto"], idioma):
+        return fechas.rango_etario(d["texto"], idioma)
     return None
 
 
@@ -441,7 +521,7 @@ def redactar(id_doc: str, peticion: PeticionRedaccion, request: Request):
         zonas: list[tuple[int, fitz.Rect]] = []
         reemplazos: list[tuple[int, fitz.Rect, str]] = []
         for d in aprobadas:
-            nuevo = _texto_reemplazo(d, peticion.opciones, delta)
+            nuevo = _texto_reemplazo(d, peticion.opciones, delta, sesion.idioma_doc)
             # La sustitución solo es viable si la detección ocupa un único
             # rectángulo (una línea); si no, se tapa en negro (conservador).
             if nuevo is not None and len(d["rects"]) == 1:
@@ -464,12 +544,16 @@ def redactar(id_doc: str, peticion: PeticionRedaccion, request: Request):
     else:
         spans_por_bloque: dict[int, list[tuple]] = {}
         for d in aprobadas:
-            nuevo = _texto_reemplazo(d, peticion.opciones, delta)
+            nuevo = _texto_reemplazo(d, peticion.opciones, delta, sesion.idioma_doc)
             span = (d["inicio"], d["fin"]) if nuevo is None else (d["inicio"], d["fin"], nuevo)
             spans_por_bloque.setdefault(d["bloque"], []).append(span)
         for termino in peticion.textos_manuales:
             for bloque in sesion.doc.bloques:
-                for span in _spans_de_texto(bloque.texto, termino):
+                if hasattr(sesion.doc, "spans_de_texto"):
+                    spans = sesion.doc.spans_de_texto(bloque, termino)
+                else:
+                    spans = _spans_de_texto(bloque.texto, termino)
+                for span in spans:
                     spans_por_bloque.setdefault(bloque.indice, []).append(span)
         if not spans_por_bloque:
             raise HTTPException(400, "No hay nada marcado para redactar.")
@@ -523,12 +607,19 @@ def _segunda_pasada(
         if getattr(sesion.doc, "ocr_aplicado", False) and ocr.diagnostico()["disponible"]:
             doc_final.aplicar_ocr()
         textos_finales = [p.texto for p in doc_final.paginas]
-    else:
+    elif sesion.tipo == "docx":
         doc_final = DocumentoDocx(resultado)
+        textos_finales = [b.texto for b in doc_final.bloques]
+    else:
+        doc_final = DocumentoXlsx(resultado)
         textos_finales = [b.texto for b in doc_final.bloques]
 
     todo = " ".join(textos_finales).lower()
-    restos = [t for t in textos_redactados if t.strip() and t.strip().lower() in todo]
+    restos_visibles = [
+        t for t in textos_redactados if t.strip() and t.strip().lower() in todo
+    ]
+    restos_internos = doc_final.contiene_texto_oculto(textos_redactados)
+    restos = list(dict.fromkeys(restos_visibles + restos_internos))
 
     # Re-detección completa con la misma configuración del último análisis
     params = sesion.ultimo_analisis
@@ -538,7 +629,8 @@ def _segunda_pasada(
         if not texto.strip():
             continue
         for d in MOTOR.detectar(
-            texto, params["categorias"], params["lista_personalizada"], params["lista_blanca"]
+            texto, params["categorias"], params["lista_personalizada"],
+            params["lista_blanca"], sesion.idioma_doc
         ):
             clave = d["texto"].strip().lower()
             if not clave or clave in vistos or clave in textos_rechazados:
@@ -552,7 +644,7 @@ def _segunda_pasada(
             if d["categoria"] == "fecha" and opciones.fechas == "desplazar":
                 continue
             if d["categoria"] == "fecha_nacimiento" and opciones.edad == "rango" \
-                    and fechas.es_edad(d["texto"]):
+                    and fechas.es_edad(d["texto"], sesion.idioma_doc):
                 continue
             vistos.add(clave)
             residuales.append({"texto": d["texto"], "categoria": d["categoria"]})
@@ -589,12 +681,19 @@ def _generar_auditoria(sesion, aprobadas, peticion, num_redacciones, restos, res
 
     params = sesion.ultimo_analisis
     sesion.auditoria = {
-        "aplicacion": f"AnoniPRO {VERSION}",
+        "aplicacion": f"ARAEMKA Redact {VERSION}",
         "fecha_hora": datetime.now().isoformat(timespec="seconds"),
-        "documento": sesion.nombre,
+        # El nombre original puede contener el nombre/NHC del paciente y por
+        # tanto no debe quedar dentro del informe que acompaña al resultado.
+        "documento": "nombre original omitido por privacidad",
         "tipo": sesion.tipo,
-        "extension_salida": "pdf" if sesion.tipo == "pdf" else "docx",
+        "extension_salida": _extension_de_tipo(sesion.tipo),
         "ocr_aplicado": bool(getattr(sesion.doc, "ocr_aplicado", False)),
+        "saneado_privacidad": {
+            "metadatos": True,
+            "contenido_oculto_compatible": True,
+            "nombre_original_omitido": True,
+        },
         "motor": {
             "modelo_ner": MOTOR.modelo_cargado,
             "capa3_activa": capa3.CONFIG.activa,
@@ -643,12 +742,11 @@ def descargar_auditoria(id_doc: str, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion or sesion.auditoria is None:
         raise HTTPException(404, t("sin_auditoria", idioma_de(request)))
-    base = sesion.nombre.rsplit(".", 1)[0]
     contenido = json.dumps(sesion.auditoria, ensure_ascii=False, indent=2)
     return Response(
         content=contenido,
         media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="{base}_auditoria.json"'},
+        headers={"Content-Disposition": 'attachment; filename="auditoria_anonimizacion.json"'},
     )
 
 
@@ -657,17 +755,27 @@ def descargar_resultado(id_doc: str, request: Request):
     sesion = ALMACEN.obtener(id_doc)
     if not sesion or sesion.resultado is None:
         raise HTTPException(404, t("sin_resultado", idioma_de(request)))
-    base = sesion.nombre.rsplit(".", 1)[0]
-    extension = "pdf" if sesion.tipo == "pdf" else "docx"
-    tipo_mime = "application/pdf" if sesion.tipo == "pdf" else \
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    extension = _extension_de_tipo(sesion.tipo)
+    tipo_mime = _mime_de_tipo(sesion.tipo)
     return StreamingResponse(
         io.BytesIO(sesion.resultado),
         media_type=tipo_mime,
         headers={
-            "Content-Disposition": f'attachment; filename="{base}_anonimizado.{extension}"'
+            "Content-Disposition": f'attachment; filename="documento_anonimizado.{extension}"'
         },
     )
+
+
+def _extension_de_tipo(tipo: str) -> str:
+    return {"pdf": "pdf", "docx": "docx", "xlsx": "xlsx"}.get(tipo, tipo)
+
+
+def _mime_de_tipo(tipo: str) -> str:
+    return {
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }.get(tipo, "application/octet-stream")
 
 
 @router.delete("/documentos/{id_doc}")

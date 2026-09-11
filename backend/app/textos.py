@@ -9,12 +9,13 @@ término, el español.
 MENSAJES: dict[str, dict[str, str]] = {
     "ocr_no_instalado": {
         "es": "Este documento necesita OCR (está escaneado o es una imagen) y "
-              "Tesseract no está instalado en este equipo. En la versión del NAS "
-              "ya viene incluido; en macOS instálalo con «brew install tesseract "
-              "tesseract-lang».",
+              "Tesseract no está disponible en este equipo. En las versiones de "
+              "Windows y NAS ya viene incluido; en macOS instálalo con "
+              "«brew install tesseract tesseract-lang».",
         "en": "This document needs OCR (it is scanned or an image) and Tesseract is "
-              "not installed on this computer. The NAS version already includes it; "
-              "on macOS install it with «brew install tesseract tesseract-lang».",
+              "not available on this computer. The Windows and NAS versions already "
+              "include it; on macOS install it with «brew install tesseract "
+              "tesseract-lang».",
     },
     "login_bloqueado": {
         "es": "Demasiados intentos fallidos. Espera {espera} segundos e inténtalo de nuevo.",
@@ -55,17 +56,27 @@ MENSAJES: dict[str, dict[str, str]] = {
         "es": "No se pudo leer el documento Word: {error}",
         "en": "The Word document could not be read: {error}",
     },
+    "excel_ilegible": {
+        "es": "No se pudo leer el libro Excel: {error}",
+        "en": "The Excel workbook could not be read: {error}",
+    },
     "doc_antiguo": {
         "es": "Los .doc antiguos (Word 97-2003) no son compatibles. Ábrelo en Word y "
               "guárdalo como .docx.",
         "en": "Old .doc files (Word 97-2003) are not supported. Open it in Word and "
               "save it as .docx.",
     },
+    "excel_antiguo": {
+        "es": "Los archivos .xls antiguos y los .xlsm con macros no son compatibles. "
+              "Ábrelo en Excel y guarda una copia como .xlsx.",
+        "en": "Old .xls files and macro-enabled .xlsm workbooks are not supported. "
+              "Open it in Excel and save a copy as .xlsx.",
+    },
     "formato_no_compatible": {
-        "es": "Formato no compatible: .{extension}. Usa PDF, Word (.docx) o una imagen "
-              "(JPG, PNG, TIFF).",
-        "en": "Unsupported format: .{extension}. Use PDF, Word (.docx) or an image "
-              "(JPG, PNG, TIFF).",
+        "es": "Formato no compatible: .{extension}. Usa PDF, Word (.docx), Excel (.xlsx) "
+              "o una imagen (JPG, PNG, TIFF).",
+        "en": "Unsupported format: .{extension}. Use PDF, Word (.docx), Excel (.xlsx) "
+              "or an image (JPG, PNG, TIFF).",
     },
     "doc_caducado": {
         "es": "El documento ya no está en memoria (caducó o se eliminó). Vuelve a subirlo.",

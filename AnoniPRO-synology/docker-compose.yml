@@ -1,10 +1,10 @@
-# AnoniPRO — despliegue en Synology DS923+ usando la imagen YA CONSTRUIDA
+# ARAEMKA Redact — despliegue en Synology DS923+ usando la imagen YA CONSTRUIDA
 # (anonipro-imagen.tar.gz). No necesita internet ni compilar nada en el NAS.
 # Ver INSTRUCCIONES.md, están pensadas para seguirlas paso a paso.
 
 services:
   anonipro:
-    image: anonipro:latest        # la imagen importada desde anonipro-imagen.tar.gz
+    image: anonipro:0.10.0        # la imagen importada desde anonipro-imagen.tar.gz
     container_name: anonipro
     restart: unless-stopped
     ports:

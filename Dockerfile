@@ -1,7 +1,13 @@
-# AnoniPRO — imagen Docker para Synology (Container Manager) y cualquier host con Docker.
+# ARAEMKA Redact — imagen Docker para Synology (Container Manager) y cualquier host con Docker.
 # Todo el procesamiento es local; la imagen NO necesita internet una vez construida.
 
 FROM python:3.12-slim
+
+ARG ANONIPRO_VERSION=0.10.0
+LABEL org.opencontainers.image.title="ARAEMKA Redact" \
+      org.opencontainers.image.version="${ANONIPRO_VERSION}" \
+      org.opencontainers.image.licenses="AGPL-3.0-only" \
+      org.opencontainers.image.source="https://github.com/jralbertoalonso-tech/AnoniPRO"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -10,7 +16,7 @@ ENV PYTHONUNBUFFERED=1 \
 # OCR local (Fase 2): Tesseract + modelo español. Se instala del repositorio de
 # Debian en tiempo de BUILD, así el contenedor funciona sin internet.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tesseract-ocr tesseract-ocr-spa \
+        tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -19,14 +25,19 @@ WORKDIR /app
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# 2) Modelo NER en español (se descarga en tiempo de BUILD, no en ejecución,
-#    para que el contenedor funcione sin internet). Grande porque el NAS del
-#    usuario tiene 32 GB de RAM; cambia a _md o _sm si necesitas menos memoria.
-RUN python -m spacy download es_core_news_lg
+# 2) Modelos NER (se descargan en tiempo de BUILD, no en ejecución, para que el
+#    contenedor funcione sin internet). Grandes porque el NAS del usuario tiene
+#    32 GB de RAM; cambia a _md o _sm si necesitas menos memoria.
+#    - español: motor por defecto (siempre cargado).
+#    - inglés: para documentos en inglés (Reino Unido y EE. UU.); se carga solo
+#      si llega un documento en ese idioma.
+RUN python -m spacy download es_core_news_lg && \
+    python -m spacy download en_core_web_lg
 
 # 3) Código de la aplicación
 COPY backend /app/backend
 COPY frontend /app/frontend
+COPY LICENSE CODIGO-FUENTE.md THIRD-PARTY-NOTICES.md TRADEMARKS.md AVISO-LEGAL.md /app/
 
 EXPOSE 8080
 
