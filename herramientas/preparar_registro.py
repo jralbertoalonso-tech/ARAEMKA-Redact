@@ -101,6 +101,7 @@ FICHEROS = [
     "web/index.html",
     ".github/workflows/construir-macos.yml",
     ".github/workflows/construir-windows.yml",
+    ".github/workflows/publicar-sitio.yml",
     "AnoniPRO-synology/docker-compose.yml",
     "AnoniPRO-synology/INSTRUCCIONES.md",
 ]
