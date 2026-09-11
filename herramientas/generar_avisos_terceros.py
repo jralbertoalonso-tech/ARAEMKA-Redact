@@ -46,13 +46,18 @@ def generar(destino: Path) -> None:
         filas.append((nombre, version, licencia, origen))
 
         copiados: set[str] = set()
-        for archivo in dist.files or ():
-            partes = [p.casefold() for p in Path(str(archivo)).parts]
-            base = Path(str(archivo)).name
+        carpeta_metadatos = Path(getattr(dist, "_path", ""))
+        if not carpeta_metadatos.is_dir():
+            continue
+        for fuente in carpeta_metadatos.rglob("*"):
+            if not fuente.is_file():
+                continue
+            relativa = fuente.relative_to(carpeta_metadatos)
+            partes = [p.casefold() for p in relativa.parts]
+            base = fuente.name
             if "licenses" not in partes and not NOMBRES_LICENCIA.match(base):
                 continue
-            fuente = Path(dist.locate_file(archivo))
-            if not fuente.is_file() or fuente.stat().st_size > 2_000_000:
+            if fuente.stat().st_size > 2_000_000:
                 continue
             nombre_seguro = re.sub(r"[^A-Za-z0-9._-]+", "_", nombre)
             carpeta = destino / f"{nombre_seguro}-{version}"

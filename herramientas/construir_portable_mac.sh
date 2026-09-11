@@ -237,7 +237,7 @@ LICENCIA Y CÓDIGO FUENTE
 ────────────────────────
   ARAEMKA Redact es software libre bajo GNU AGPL v3 exclusivamente. El texto
   completo está en «LICENSE.txt». El acceso al código fuente correspondiente
-  se explica en «CÓDIGO FUENTE.txt». «COMPONENTES Y LICENCIAS.txt» y la
+  se explica en «CODIGO FUENTE.txt». «COMPONENTES Y LICENCIAS.txt» y la
   carpeta «LICENCIAS-TERCEROS» conservan los avisos de terceros.
 
 ──────────────────────────────────────────────────────────────────────
@@ -246,7 +246,7 @@ FIN
 
 cp "AVISO-LEGAL.md" "dist/ARAEMKA-Redact/AVISO LEGAL.txt"
 cp "LICENSE" "dist/ARAEMKA-Redact/LICENSE.txt"
-cp "CODIGO-FUENTE.md" "dist/ARAEMKA-Redact/CÓDIGO FUENTE.txt"
+cp "CODIGO-FUENTE.md" "dist/ARAEMKA-Redact/CODIGO FUENTE.txt"
 cp "THIRD-PARTY-NOTICES.md" "dist/ARAEMKA-Redact/COMPONENTES Y LICENCIAS.txt"
 cp "TRADEMARKS.md" "dist/ARAEMKA-Redact/MARCAS.txt"
 "$VENV_DIR/bin/python" herramientas/generar_avisos_terceros.py \
@@ -260,7 +260,7 @@ printf '%s\n' \
   "Revisión de código: ${REVISION_CODIGO}" \
   "Estado de construcción: ${ESTADO_CODIGO}" \
   "Código fuente: https://github.com/jralbertoalonso-tech/AnoniPRO" \
-  > "dist/ARAEMKA-Redact/REVISIÓN DE CÓDIGO.txt"
+  > "dist/ARAEMKA-Redact/REVISION DE CODIGO.txt"
 
 # ZIP listo para distribuir (conserva permisos) y suma verificable.
 rm -f "$ZIP" "$ZIP.sha256.txt"
