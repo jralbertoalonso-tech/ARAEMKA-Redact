@@ -6,3 +6,7 @@ documentos_prueba/
 scratchpad/
 .git/
 *.md
+!AVISO-LEGAL.md
+!CODIGO-FUENTE.md
+!THIRD-PARTY-NOTICES.md
+!TRADEMARKS.md
