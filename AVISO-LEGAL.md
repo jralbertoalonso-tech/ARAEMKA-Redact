@@ -80,7 +80,7 @@ las obligaciones sectoriales aplicables a cada tratamiento.
 
 ## 6. Titularidad y componentes de terceros
 
-Copyright © 2026 Dr. José Ramón Alberto Alonso. ARAEMKA Redact se distribuye
+Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA Redact se distribuye
 bajo la GNU Affero General Public License, versión 3 exclusivamente
 (`AGPL-3.0-only`). El texto íntegro se incluye en `LICENSE` y el acceso al
 código fuente correspondiente se explica en `CODIGO-FUENTE.md`.
@@ -133,7 +133,7 @@ professional advice. Commercial or institutional offerings that add support,
 warranties, services or other terms should be adapted to their recipients,
 jurisdiction and delivery method and reviewed by qualified legal counsel.
 
-Copyright © 2026 Dr José Ramón Alberto Alonso. ARAEMKA Redact is distributed
+Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA Redact is distributed
 under the GNU Affero General Public License, version 3 only
 (`AGPL-3.0-only`). The full text is included in `LICENSE`; corresponding source
 access is described in `CODIGO-FUENTE.md`. Third-party components retain their

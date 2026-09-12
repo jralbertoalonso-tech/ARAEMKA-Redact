@@ -400,8 +400,8 @@ class ReconocedorCentro(PatternRecognizer):
             name="centro_regex",
             patterns=[
                 Pattern(
-                    # El lookahead negativo evita tragarse la línea siguiente
-                    # («… de la Candelaria Servicio de Pediatría»).
+                    # El lookahead negativo evita que el nombre del centro se
+                    # trague una cabecera de servicio situada a continuación.
                     "hospital_nombre",
                     r"\b(?:Complejo\s+Hospitalario|Hospital(?:\s+Universitario)?|Centro\s+de\s+Salud|Clínica|Consultorio)"
                     r"(?:\s+(?:de\s+|del\s+|de\s+la\s+|de\s+los\s+)?"

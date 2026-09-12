@@ -177,6 +177,8 @@ def generar_diagrama(destino: Path):
 
 def generar_memoria(destino: Path, diagrama: Path, ficheros_info, incluye_pdf: bool = False):
     doc = Document()
+    doc.core_properties.author = "José Ramón Alberto Alonso"
+    doc.core_properties.last_modified_by = "José Ramón Alberto Alonso"
     est = doc.styles["Normal"]
     est.font.name = "Calibri"
     est.font.size = Pt(11)
@@ -203,7 +205,7 @@ def generar_memoria(destino: Path, diagrama: Path, ficheros_info, incluye_pdf: b
 
     h("1. Datos del autor y solicitante", 1)
     doc.add_paragraph("(Rellenar con sus datos antes de presentar la solicitud.)").italic = True
-    campo("Nombre y apellidos")
+    campo("Nombre y apellidos", "José Ramón Alberto Alonso")
     campo("DNI / NIE")
     campo("Domicilio")
     campo("Correo electrónico y teléfono")

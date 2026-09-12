@@ -77,4 +77,4 @@ completo está en LICENSE.txt. El acceso al código fuente correspondiente se
 explica en CODIGO FUENTE.txt. COMPONENTES Y LICENCIAS.txt y la carpeta
 LICENCIAS-TERCEROS conservan la información de los componentes incluidos.
 
-ARAEMKA Redact · Dr. José Ramón Alberto Alonso
+ARAEMKA Redact · José Ramón Alberto Alonso

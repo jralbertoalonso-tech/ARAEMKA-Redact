@@ -37,9 +37,8 @@ CALLES = ["C/ La Marina 12", "Avda. de Anaga 45, 3ºB", "Calle El Pilar 8",
           "Ctra. General del Norte 102", "Plaza del Adelantado 3", "Camino Largo 21"]
 LOCALIDADES = ["Santa Cruz de Tenerife", "La Laguna", "Las Palmas de Gran Canaria",
                "Arrecife", "Puerto del Rosario", "Los Llanos de Aridane", "Telde", "Adeje"]
-CENTROS = ["Hospital Universitario Nuestra Señora de la Candelaria",
-           "Hospital Universitario de Canarias", "Hospital General de La Palma",
-           "Centro de Salud de Taco", "Hospital Universitario Insular de Gran Canaria"]
+CENTROS = ["Hospital Universitario de Pruebas", "Hospital General de Ejemplo",
+           "Centro de Salud Alfa", "Clínica Beta", "Consultorio Gamma"]
 SERVICIOS = ["Servicio de Pediatría", "Servicio de Medicina Interna", "Unidad de Cardiología",
              "Servicio de Digestivo", "Unidad de Cuidados Intensivos", "Sección de Neurología"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",

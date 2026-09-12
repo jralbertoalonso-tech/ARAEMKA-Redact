@@ -20,7 +20,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 TEXTO = (
-    "INFORME. Hospital Universitario de Canarias.\n"
+    "INFORME. Hospital Universitario de Pruebas.\n"
     "Paciente: Pedro Armas Gonzalez. DNI: 12345678Z. NHC: 555123.\n"
     "Telefono: 628 11 22 33. Ingreso el 12/01/2024.\n"
     "Fdo.: Dra. Luisa Morera Diaz."

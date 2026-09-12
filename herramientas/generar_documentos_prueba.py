@@ -35,9 +35,9 @@ def nuss_valido(provincia: int, secuencial: int) -> str:
 
 INFORME_ALTA = f"""INFORME DE ALTA HOSPITALARIA
 
-Hospital Universitario Nuestra Señora de la Candelaria
+Hospital Universitario de Pruebas
 Servicio de Pediatría — Unidad de Gastroenterología, Hepatología y Nutrición Pediátrica
-Ctra. del Rosario 145, 38010 Santa Cruz de Tenerife. Tel: 922 60 20 00
+Avenida del Ensayo 145, 28080 Ciudad de Prueba. Tel: 900 00 00 00
 
 Paciente: Laura Fernández Betancor
 DNI: {dni_valido(43811223)}   NHC: 482913   Episodio: 2024-118332
@@ -51,7 +51,7 @@ Fecha de alta: 18/04/2024
 
 Motivo de ingreso: dolor abdominal y vómitos de 48 horas de evolución.
 Acude acompañada de su padre, D. Manuel Fernández Ruiz, y es valorada en
-Urgencias del HUNSC.
+Urgencias del Hospital Universitario de Pruebas.
 
 Antecedentes: sin alergias medicamentosas conocidas. Vacunación al día.
 
@@ -63,15 +63,15 @@ Evolución: intervenida por el Servicio de Cirugía Pediátrica
 Juicio clínico: apendicitis aguda flemonosa.
 
 Tratamiento al alta: analgesia habitual. Control en su Centro de Salud de
-Taco en 7 días. Cita de revisión el 3 de mayo de 2024 a las 10:30.
+Pruebas Norte en 7 días. Cita de revisión el 3 de mayo de 2024 a las 10:30.
 
 Fdo.: Dra. Carmen Delgado Hernández — Nº Col.: 38/38/07421
-Pediatría, HUNSC. cdelgadoh@sescs.es
+Pediatría, Hospital Universitario de Pruebas. carmen.delgado@example.org
 """
 
 INTERCONSULTA = f"""HOJA DE INTERCONSULTA
 
-Complejo Hospitalario Universitario de Canarias (HUC)
+Hospital Universitario de Ejemplo
 Servicio solicitante: Medicina Interna. Servicio destino: Cardiología
 
 Paciente: Antonio Medina Cabrera. Varón de 67 años.
@@ -88,18 +88,18 @@ diagnóstico. Ecocardiograma del 18 de marzo de 2024 con FEVI 38%.
 Antecedentes: HTA, DM tipo 2, exfumador.
 
 Firmado: Dr. José Ramón Afonso Pérez (Colegiado 38-38-11203)
-Interconsulta revisada por la Dra. Nieves Toledo García, Cardiología HUC.
+Interconsulta revisada por la Dra. Nieves Toledo García, Cardiología del Hospital Universitario de Ejemplo.
 """
 
 ANALITICA = f"""LABORATORIO DE ANÁLISIS CLÍNICOS
-Gerencia de Servicios Sanitarios del Área de Salud de La Palma
-Hospital General de La Palma — Buenavista de Arriba s/n, 38713 Breña Alta
-Teléfono: 922 18 50 00
+Servicio Regional de Salud de Ejemplo
+Hospital General de Pruebas — Avenida del Laboratorio 10, 28080 Ciudad de Prueba
+Teléfono: 900 00 00 01
 
 Paciente: Rosario Concepción Díaz  (mujer, 54 años)
 NHC: 204981  DNI: {dni_valido(42667211)}
 Fecha de extracción: 02/05/2024 08:15
-Médico peticionario: Dra. Pino Santana Vega — Atención Primaria, CS Los Llanos
+Médico peticionario: Dra. Pino Santana Vega — Atención Primaria, CS Ejemplo
 
 RESULTADOS
 Hemoglobina        13,2 g/dL     (12,0–16,0)

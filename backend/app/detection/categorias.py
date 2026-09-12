@@ -128,7 +128,7 @@ CATEGORIAS: list[Categoria] = [
               "Professional registration no.",
               "Professional body registration numbers, detected from their label."),
     Categoria("centro", "Hospital / centro de salud", "salud", "#218358",
-              "Nombres de hospitales y centros, incluidas siglas (HUNSC, HUC…).",
+              "Nombres de hospitales y centros, incluidas sus siglas.",
               "Hospital / health centre",
               "Names of hospitals and health centres, including their acronyms."),
     Categoria("servicio_unidad", "Servicios y unidades", "salud", "#4cc38a",

@@ -59,7 +59,7 @@ def test_codigo_postal():
 # Motor de detección
 # ══════════════════════════════════════════════════════════════════════════
 
-TEXTO_CLINICO = """INFORME. Hospital Universitario de Canarias. Servicio de Digestivo.
+TEXTO_CLINICO = """INFORME. Hospital Universitario de Pruebas. Servicio de Digestivo.
 Paciente: Pedro Armas González. DNI: 12345678Z. NHC: 555123.
 F. Nac.: 01/06/1980. Tel: 628 11 22 33. Correo: parmas@mail.com
 Domicilio: C/ Herradores 45, 38201 La Laguna.
@@ -88,7 +88,7 @@ def test_detecta_todas_las_categorias(detecciones):
     assert _de(detecciones, "cip") == ["BBBBBBBBAB123456"]
     assert any("Luis Morera Díaz" in t for t in _de(detecciones, "sanitario"))
     assert _de(detecciones, "colegiado") == ["38/38/09876"]
-    assert any("Hospital Universitario de Canarias" in t for t in _de(detecciones, "centro"))
+    assert any("Hospital Universitario de Pruebas" in t for t in _de(detecciones, "centro"))
     assert any("Servicio de Digestivo" in t for t in _de(detecciones, "servicio_unidad"))
     assert "12/01/2024" in _de(detecciones, "fecha")
 
@@ -113,13 +113,13 @@ def test_lista_blanca_recorta_bordes():
     sola detección. La lista blanca debe RECORTAR esa palabra del borde, no exigir
     que coincida con la detección entera."""
     from app.detection.motor import _recortar_ruido
-    texto = "Ramón Alberto Alonso Sertralina"
+    texto = "Gabriel Romero Santana Sertralina"
     ini, fin = _recortar_ruido(texto, 0, len(texto), extra={"sertralina"})
-    assert texto[ini:fin] == "Ramón Alberto Alonso"
+    assert texto[ini:fin] == "Gabriel Romero Santana"
     # y por el borde izquierdo también
-    texto2 = "Sertralina Ramón Alberto Alonso"
+    texto2 = "Sertralina Gabriel Romero Santana"
     ini2, fin2 = _recortar_ruido(texto2, 0, len(texto2), extra={"sertralina"})
-    assert texto2[ini2:fin2] == "Ramón Alberto Alonso"
+    assert texto2[ini2:fin2] == "Gabriel Romero Santana"
 
 
 def test_lista_personalizada():

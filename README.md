@@ -8,7 +8,7 @@
 
 Informes clínicos · Escritos jurídicos · Nóminas y contratos · Facturas · Papeles personales
 
-*Privacidad local — Dr. José Ramón Alberto Alonso*
+*Privacidad local — José Ramón Alberto Alonso*
 
 </div>
 
@@ -220,7 +220,7 @@ profesional jurídico cualificado.
 
 ## Licencia y componentes
 
-Copyright © 2026 Dr. José Ramón Alberto Alonso.
+Copyright © 2026 José Ramón Alberto Alonso.
 
 ARAEMKA Redact es **software libre bajo GNU Affero General Public License,
 versión 3 exclusivamente** (`AGPL-3.0-only`). Puedes usarlo, estudiarlo,

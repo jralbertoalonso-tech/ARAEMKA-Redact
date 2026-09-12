@@ -1,6 +1,6 @@
 """Genera la FICHA TÉCNICA de ARAEMKA Redact: un resumen divulgativo (2 págs) para
-presentar a la unidad de innovación del hospital, a un abogado o a cualquier
-interlocutor no técnico. Salida: registro/FICHA_TECNICA_ARAEMKA_Redact.docx
+presentar a asesores, colaboradores o cualquier interlocutor no técnico.
+Salida: registro/FICHA_TECNICA_ARAEMKA_Redact.docx
 """
 
 from pathlib import Path
@@ -16,6 +16,8 @@ AZUL = RGBColor(0x1D, 0x5D, 0x8F)
 
 def main():
     doc = Document()
+    doc.core_properties.author = "José Ramón Alberto Alonso"
+    doc.core_properties.last_modified_by = "José Ramón Alberto Alonso"
     normal = doc.styles["Normal"]
     normal.font.name = "Calibri"
     normal.font.size = Pt(10.5)
@@ -49,7 +51,7 @@ def main():
     s = doc.add_paragraph("Ficha técnica · Herramienta de anonimización local de documentos clínicos")
     s.alignment = WD_ALIGN_PARAGRAPH.CENTER
     s.runs[0].italic = True
-    a = doc.add_paragraph("Autor: Dr. José Ramón Alberto Alonso")
+    a = doc.add_paragraph("Autor: José Ramón Alberto Alonso")
     a.alignment = WD_ALIGN_PARAGRAPH.CENTER
     a.runs[0].font.size = Pt(9.5)
 
@@ -127,22 +129,21 @@ def main():
     titulo("Propiedad intelectual")
     doc.add_paragraph(
         "El código es original del autor y se ha preparado su inscripción en el Registro de la "
-        "Propiedad Intelectual. Al ser el autor personal sanitario del sistema público, la "
-        "titularidad y cualquier vía de aprovechamiento deben valorarse con asesoría jurídica y "
-        "con la unidad de innovación / transferencia correspondiente.")
+        "Propiedad Intelectual. La titularidad y cualquier vía de aprovechamiento deben valorarse "
+        "según las circunstancias concretas de creación y, cuando proceda, con asesoría jurídica.")
 
     # ── Vías ──────────────────────────────────────────────────────────────
     titulo("Posibles vías de aprovechamiento")
     for t in [
-        "Herramienta interna de apoyo a la investigación y la docencia del centro.",
+        "Herramienta de apoyo a la investigación, la docencia y la preparación de documentos.",
         "Publicación como software abierto para la comunidad sanitaria.",
-        "Licencia o proyecto de transferencia gestionado por la unidad de innovación.",
+        "Servicios, soporte o distribuciones adicionales compatibles con la licencia AGPL.",
     ]:
         punto(t)
 
     # ── Contacto ──────────────────────────────────────────────────────────
     titulo("Contacto")
-    c = doc.add_paragraph("Dr. José Ramón Alberto Alonso — ______________________________")
+    c = doc.add_paragraph("José Ramón Alberto Alonso — ______________________________")
     c.runs[0].font.size = Pt(9.5)
 
     doc.save(str(SALIDA))

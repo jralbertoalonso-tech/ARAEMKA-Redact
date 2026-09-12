@@ -42,7 +42,7 @@ VSVersionInfo(
          StringStruct(u'FileDescription', u'ARAEMKA Redact - anonimización local de documentos'),
          StringStruct(u'FileVersion', u'{version}'),
          StringStruct(u'InternalName', u'ARAEMKA-Redact'),
-         StringStruct(u'LegalCopyright', u'Copyright (c) Dr. José Ramón Alberto Alonso'),
+         StringStruct(u'LegalCopyright', u'Copyright (c) José Ramón Alberto Alonso'),
          StringStruct(u'OriginalFilename', u'ARAEMKA-Redact.exe'),
          StringStruct(u'ProductName', u'ARAEMKA Redact'),
          StringStruct(u'ProductVersion', u'{version}')])

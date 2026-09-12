@@ -8,7 +8,7 @@
 
 Medical reports · Legal filings · Payroll and contracts · Invoices · Personal paperwork
 
-*Local privacy — Dr José Ramón Alberto Alonso*
+*Local privacy — José Ramón Alberto Alonso*
 
 [Versión en español](README.md)
 
@@ -159,7 +159,7 @@ Scanned documents and images first go through optical character recognition
 
 ## Licence and components
 
-Copyright © 2026 Dr José Ramón Alberto Alonso.
+Copyright © 2026 José Ramón Alberto Alonso.
 
 ARAEMKA Redact is **free software under the GNU Affero General Public License,
 version 3 only** (`AGPL-3.0-only`). You may use, study, modify and redistribute

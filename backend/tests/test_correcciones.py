@@ -31,12 +31,14 @@ cliente = TestClient(app)
 def test_solapamiento_conserva_la_cola():
     """Si la detección ganadora queda DENTRO de otra, la cola de la perdedora
     no puede perderse: sería texto sensible sin redactar."""
-    texto = "Hospital Universitario Juan Carlos Rey de Madrid"
+    persona = "Gabriel Alfa"
+    texto = f"Hospital Universitario {persona} Pruebas"
+    inicio_persona = texto.index(persona)
     dets = [
         {"inicio": 0, "fin": len(texto), "texto": texto, "categoria": "centro",
          "capa": 2, "confianza": 0.5},
-        {"inicio": 23, "fin": 34, "texto": "Carlos Rey", "categoria": "persona",
-         "capa": 1, "confianza": 0.9},
+        {"inicio": inicio_persona, "fin": inicio_persona + len(persona),
+         "texto": persona, "categoria": "persona", "capa": 1, "confianza": 0.9},
     ]
     res = resolver_solapamientos(dets, texto)
     cubierto = set()

@@ -241,7 +241,7 @@ LICENCIA Y CÓDIGO FUENTE
   carpeta «LICENCIAS-TERCEROS» conservan los avisos de terceros.
 
 ──────────────────────────────────────────────────────────────────────
-ARAEMKA Redact · Autor: Dr. José Ramón Alberto Alonso
+ARAEMKA Redact · Autor: José Ramón Alberto Alonso
 FIN
 
 cp "AVISO-LEGAL.md" "dist/ARAEMKA-Redact/AVISO LEGAL.txt"

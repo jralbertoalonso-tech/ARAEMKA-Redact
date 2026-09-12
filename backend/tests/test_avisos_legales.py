@@ -1,5 +1,6 @@
 """Evita regresiones en las advertencias de revisión y responsabilidad."""
 
+import re
 from pathlib import Path
 
 
@@ -101,3 +102,48 @@ def test_marca_publica_y_compatibilidad_tecnica():
     # Se conservan las claves para no perder preferencias al actualizar.
     assert 'localStorage.getItem("anonipro_idioma")' in app_js
     assert 'localStorage.getItem("anonipro_perfiles")' in app_js
+
+
+def test_autoria_publica_sin_titulo_profesional_ni_afiliacion():
+    rutas_publicas = (
+        "README.md",
+        "README.en.md",
+        "AVISO-LEGAL.md",
+        "frontend/index.html",
+        "frontend/idiomas.js",
+        "web/index.html",
+        "herramientas/LEEME-WINDOWS.txt",
+        "herramientas/construir_portable_mac.sh",
+        "herramientas/generar_version_windows.py",
+        "herramientas/ficha_tecnica.py",
+    )
+    contenido = "\n".join(_leer(ruta) for ruta in rutas_publicas)
+    autor = "José Ramón Alberto Alonso"
+
+    assert not re.search(rf"\bDr\.?\s+{re.escape(autor)}", contenido)
+    for linea in (linea for linea in contenido.splitlines() if autor in linea):
+        assert "hospital" not in linea.casefold()
+        assert "servicio" not in linea.casefold()
+        assert "sistema público" not in linea.casefold()
+
+
+def test_ejemplos_clinicos_declaran_centros_ficticios():
+    rutas_ejemplos = (
+        "herramientas/generar_documentos_prueba.py",
+        "herramientas/evaluar_deteccion.py",
+        "backend/tests/test_mvp.py",
+        "backend/tests/test_ocr.py",
+        "backend/tests/test_correcciones.py",
+    )
+    contenido = "\n".join(_leer(ruta) for ruta in rutas_ejemplos)
+
+    for marcador_ficticio in (
+        "Hospital Universitario de Pruebas",
+        "Hospital Universitario de Ejemplo",
+        "Hospital General de Ejemplo",
+        "Centro de Salud Alfa",
+        "Clínica Beta",
+        "Consultorio Gamma",
+        "example.org",
+    ):
+        assert marcador_ficticio in contenido
