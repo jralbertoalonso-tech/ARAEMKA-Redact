@@ -1,6 +1,6 @@
 # ARAEMKA — ficha de presentación de marca
 
-Fecha de preparación: 11 de septiembre de 2026.
+Fecha de preparación: 13 de septiembre de 2026.
 
 Este documento organiza la solicitud, pero no sustituye el estudio de
 registrabilidad ni el asesoramiento de un profesional de propiedad industrial.
@@ -48,9 +48,40 @@ ofrece una instancia alojada, una API o un servicio gestionado.
 4. Presentación electrónica y conservación del justificante, fecha y número de
    expediente.
 
+## Búsqueda preliminar realizada
+
+Consulta efectuada el 13 de septiembre de 2026 antes de la publicación:
+
+- Localizador OEPM, marcas nacionales y nombres comerciales, denominación que
+  contenga `ARAEMKA`: **0 resultados**.
+- Localizador OEPM, marcas internacionales con efecto en España, denominación
+  que contenga `ARAEMKA`: **0 resultados**.
+- TMview, todas las oficinas participantes, denominación que contenga
+  `ARAEMKA`: **0 resultados**.
+- TMview, búsqueda ampliada por el fragmento `ARAEM` y filtrada a las clases 9
+  y 42: **11 resultados**. Entre los signos activos visibles figuran
+  `ARAEMPRENEM` (España, clase 9), `Sankaraem` (Francia, clase 9) y variantes
+  `baraem`/`BARAEM` en otros territorios y en clase 9.
+
+La ausencia de coincidencias exactas es favorable, pero esta comprobación
+gratuita no equivale a un informe profesional de semejanza fonética o
+conceptual y no permite garantizar la concesión. Antes de presentar conviene
+revisar esos antecedentes en relación con los productos concretos; si se busca
+el mínimo coste y no se ofrecerá SaaS, la primera solicitud puede limitarse a
+la clase 9.
+
+## Tasas oficiales vigentes
+
+Según las tasas OEPM aplicables desde el 1 de abril de 2026, la presentación y
+el pago electrónicos cuestan **127,88 EUR** por la primera clase y **82,84 EUR**
+por la segunda y cada clase sucesiva. Por tanto, clase 9 sola: **127,88 EUR**;
+clases 9 y 42: **210,72 EUR**, sin contar asesoramiento o búsquedas de pago.
+
 ## Fuentes operativas
 
 - OEPM: https://sede.oepm.gob.es/eSede/es/marcas/marcas-nombres-comerciales-y-transformaciones/solicitud-de-marcas-nombres-comerciales-y-transformaciones/
 - Localizador OEPM: https://consultas2.oepm.es/LocalizadorWeb/busquedaDenominacion
 - TMclass: https://euipo.europa.eu/ec2/
+- Tasas OEPM 2026: https://www.oepm.es/export/sites/portal/comun/documentos_relacionados/PDF/TASAS_MARCAS_Y_NOMBRES_COMERCIALES.pdf
+- TMview: https://www.tmdn.org/tmview/#/tmview
 - Safe Creative (intermediación de marca): https://www.safecreative.org/es/marcas
