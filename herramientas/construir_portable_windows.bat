@@ -165,7 +165,7 @@ if not defined ANONIPRO_VERSION set "ANONIPRO_VERSION=sin-version"
 set "ZIP=ARAEMKA-Redact-portable-windows-x64-v%ANONIPRO_VERSION%.zip"
 if exist "%ZIP%" del /q "%ZIP%"
 if exist "%ZIP%.sha256.txt" del /q "%ZIP%.sha256.txt"
-powershell.exe -NoLogo -NoProfile -Command "Compress-Archive -Path 'dist\ARAEMKA-Redact' -DestinationPath '%ZIP%' -CompressionLevel Optimal -Force; $h=(Get-FileHash -Algorithm SHA256 '%ZIP%').Hash.ToLower(); ($h + '  %ZIP%') | Set-Content -Encoding ascii '%ZIP%.sha256.txt'; Write-Host ('SHA-256: ' + $h)"
+powershell.exe -NoLogo -NoProfile -Command "Compress-Archive -Path 'dist\ARAEMKA-Redact' -DestinationPath '%ZIP%' -CompressionLevel Optimal -Force; $h=(Get-FileHash -Algorithm SHA256 '%ZIP%').Hash.ToLower(); [IO.File]::WriteAllText('%ZIP%.sha256.txt', ($h + '  %ZIP%' + [char]10), [Text.Encoding]::ASCII); Write-Host ('SHA-256: ' + $h)"
 if errorlevel 1 exit /b 1
 
 echo.
