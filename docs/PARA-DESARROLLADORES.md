@@ -205,6 +205,7 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.9 | **Detección en inglés** (Reino Unido y EE. UU.): NHS, NINO, SSN/ITIN, códigos postales y teléfonos; segundo motor spaCy `en_core_web_lg` con carga perezosa; idioma del documento detectado automáticamente |
 | 0.9.2 | Avisos de riesgo y responsabilidad en la interfaz y los portables; resultado presentado como verificación automática, sin afirmar infalibilidad; condiciones de uso bilingües |
 | 0.10.0 | Excel `.xlsx`; resaltado inmediato de términos manuales; fechas en el perfil clínico; saneado reforzado de PDF/Word/Excel y nombres de descarga genéricos |
+| 0.10.1 | Limpieza de la autoría pública y sustitución de identificadores clínicos reales en ejemplos y pruebas; documentación de la comprobación preliminar de marca |
 
 ## Ideas pendientes
 

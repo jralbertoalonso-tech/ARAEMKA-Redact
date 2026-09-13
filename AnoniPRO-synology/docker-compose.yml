@@ -4,7 +4,7 @@
 
 services:
   anonipro:
-    image: anonipro:0.10.0        # la imagen importada desde anonipro-imagen.tar.gz
+    image: anonipro:0.10.1        # la imagen importada desde anonipro-imagen.tar.gz
     container_name: anonipro
     restart: unless-stopped
     ports:

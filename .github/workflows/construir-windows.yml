@@ -105,10 +105,10 @@ jobs:
       - name: Guardar el portable
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ARAEMKA-Redact-portable-windows-x64-v0.10.0
+          name: ARAEMKA-Redact-portable-windows-x64-v0.10.1
           path: |
-            ARAEMKA-Redact-portable-windows-x64-v0.10.0.zip
-            ARAEMKA-Redact-portable-windows-x64-v0.10.0.zip.sha256.txt
+            ARAEMKA-Redact-portable-windows-x64-v0.10.1.zip
+            ARAEMKA-Redact-portable-windows-x64-v0.10.1.zip.sha256.txt
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
