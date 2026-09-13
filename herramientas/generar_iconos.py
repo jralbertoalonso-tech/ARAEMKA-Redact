@@ -1,9 +1,10 @@
-"""Genera los iconos de la aplicación a partir de `frontend/icono.svg`.
+"""Genera los iconos desde el símbolo maestro definitivo de ARAEMKA.
 
 Produce en `frontend/iconos/`:
   - icono.icns   → icono del ejecutable de macOS (PyInstaller --icon)
   - icono.ico    → icono del ejecutable de Windows
   - icono-256.png, icono-32.png … → tamaños sueltos (documentación, web)
+  - frontend/icono.png → maestro transparente usado por la interfaz
 
 Uso:
     .venv/bin/python herramientas/generar_iconos.py
@@ -12,11 +13,11 @@ Uso:
 import tempfile
 from pathlib import Path
 
-import fitz
 from PIL import Image
 
 RAIZ = Path(__file__).resolve().parent.parent
-SVG = RAIZ / "frontend" / "icono.svg"
+ORIGEN = RAIZ / "materiales" / "marca" / "definitivo" / "ARAEMKA-simbolo-definitivo-512.png"
+ICONO_FRONTEND = RAIZ / "frontend" / "icono.png"
 SALIDA = RAIZ / "frontend" / "iconos"
 
 TAMANOS_ICNS = [16, 32, 64, 128, 256, 512, 1024]
@@ -24,12 +25,18 @@ TAMANOS_ICO = [16, 24, 32, 48, 64, 128, 256]
 
 
 def render(tam: int, destino: Path):
-    """Renderiza el SVG a PNG cuadrado de `tam` píxeles."""
-    with fitz.open(str(SVG)) as doc:
-        pagina = doc[0]
-        zoom = tam / pagina.rect.width
-        pix = pagina.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=True)
-        pix.save(str(destino))
+    """Redimensiona el maestro PNG cuadrado a `tam` píxeles."""
+    with Image.open(ORIGEN) as imagen:
+        imagen = imagen.convert("RGBA")
+        # `thumbnail()` nunca amplía: al generar el maestro de 1024 px desde
+        # el símbolo de 512 px lo dejaba centrado a media escala. El maestro es
+        # cuadrado, así que un resize exacto conserva sus proporciones.
+        imagen = imagen.resize((tam, tam), Image.Resampling.LANCZOS)
+        lienzo = Image.new("RGBA", (tam, tam), (255, 255, 255, 0))
+        x = (tam - imagen.width) // 2
+        y = (tam - imagen.height) // 2
+        lienzo.alpha_composite(imagen, (x, y))
+        lienzo.save(destino, format="PNG")
 
 
 def crear_icns(tmp: Path) -> bool:
@@ -55,6 +62,7 @@ def main():
     SALIDA.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
+        render(1024, ICONO_FRONTEND)
         for tam in (32, 128, 256, 512):
             render(tam, SALIDA / f"icono-{tam}.png")
         crear_ico(tmp)

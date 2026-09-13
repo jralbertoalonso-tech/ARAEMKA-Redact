@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARAEMKA · Herramientas locales para documentos</title>
 <meta name="description" content="ARAEMKA PDF y ARAEMKA Redact: herramientas gratuitas y de código abierto para trabajar con documentos y proteger datos sin enviarlos a servicios externos.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='114' fill='%231d5d8f'/%3E%3Crect x='150' y='150' width='212' height='40' rx='14' fill='%2312324c'/%3E%3Crect x='150' y='230' width='150' height='40' rx='14' fill='%23c3d0dc'/%3E%3Cpath d='M256 330 L188 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Cpath d='M256 330 L324 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='330' r='30' fill='%23f2a03d'/%3E%3Ccircle cx='186' cy='392' r='18' fill='%23f2a03d'/%3E%3Ccircle cx='326' cy='392' r='18' fill='%23f2a03d'/%3E%3C/svg%3E">
+<meta property="og:image" content="https://araemka.com/araemka-logo.png">
+<link rel="icon" type="image/png" href="araemka-symbol.png">
+<link rel="apple-touch-icon" href="araemka-symbol.png">
 <style>
 :root{
   --paper:#e9eff4; --surface:#ffffff; --surface-2:#f4f8fb;
@@ -68,7 +70,11 @@ a{color:inherit}
 header.site{position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
 .nav{display:flex; align-items:center; gap:20px; height:64px}
 .brand{display:flex; align-items:center; gap:11px; text-decoration:none; font-weight:700; letter-spacing:-.01em; margin-right:auto}
-.brand .mark{width:32px; height:32px; border-radius:8px; display:block}
+.brand .mark{width:38px; height:38px; object-fit:contain; display:block}
+.brand .brand-logo{width:172px; height:auto; display:block}
+:root[data-theme="dark"] .adaptive-logo{content:url("araemka-logo-negative.png")}
+:root[data-theme="light"] .adaptive-logo{content:url("araemka-logo.png")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adaptive-logo{content:url("araemka-logo-negative.png")}}
 .brand b{font-family:var(--serif); font-size:1.18rem; color:var(--ink)}
 .brand small{display:block; font-family:var(--mono); font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin-top:-2px}
 .nav-links{display:flex; gap:22px}
@@ -83,6 +89,7 @@ header.site{position:sticky; top:0; z-index:50; background:color-mix(in srgb,var
 .hero{padding:76px 0 40px}
 .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:48px; align-items:center}
 @media (max-width:900px){.hero-grid{grid-template-columns:1fr; gap:36px}}
+.hero-brand{width:min(420px,82vw); height:auto; display:block; margin:0 0 22px}
 .hero h1{font-size:clamp(2.1rem,4.6vw,3.35rem); margin:.5rem 0 0}
 .hero .lede{font-size:1.2rem; color:var(--ink-soft); margin:20px 0 0; max-width:34ch}
 .cta-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:30px}
@@ -237,8 +244,7 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
 <header class="site">
   <div class="wrap nav">
     <a class="brand" href="#top" data-goto="home">
-      <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
-      <span><b>ARAEMKA</b><small><span class="lang-es">Documentos privados</span><span class="lang-en">Private documents</span></small></span>
+      <img class="brand-logo adaptive-logo" src="araemka-logo.png" alt="ARAEMKA" width="172" height="43">
     </a>
     <nav class="nav-links">
       <a href="#productos"><span class="lang-es">Productos</span><span class="lang-en">Products</span></a>
@@ -261,6 +267,7 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
+      <img class="hero-brand adaptive-logo" src="araemka-logo.png" alt="ARAEMKA" width="420" height="106">
       <span class="eyebrow"><span class="lang-es">Herramientas 100% locales</span><span class="lang-en">100% local tools</span></span>
       <h1>
         <span class="lang-es">Tus documentos se trabajan en tu equipo. No en el nuestro.</span>
@@ -322,7 +329,7 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
       </article>
       <article class="product redact-product">
         <div class="product-head">
-          <svg class="product-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
+          <img class="product-mark" src="araemka-symbol.png" alt="" width="58" height="58">
           <div><h2>ARAEMKA Redact</h2><div class="purpose"><span class="lang-es">Anonimizar y redactar</span><span class="lang-en">Anonymise and redact</span></div></div>
         </div>
         <p><span class="lang-es">Detecta datos personales en PDF, Word, Excel e imágenes, te permite revisarlos y los elimina de forma destructiva.</span><span class="lang-en">Finds personal data in PDFs, Word files, Excel workbooks and images, lets you review it, and removes it destructively.</span></p>
@@ -632,8 +639,7 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="wrap">
     <div class="fgrid">
       <a class="brand" href="#top" data-goto="home" style="text-decoration:none">
-        <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
-        <span><b>ARAEMKA</b><small><span class="lang-es">Documentos privados</span><span class="lang-en">Private documents</span></small></span>
+        <img class="brand-logo" src="araemka-logo-negative.png" alt="ARAEMKA" width="172" height="43">
       </a>
       <nav>
         <a href="#top" data-goto="avisolegal"><span class="lang-es">Aviso legal</span><span class="lang-en">Legal notice</span></a>

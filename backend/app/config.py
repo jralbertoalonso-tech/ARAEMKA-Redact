@@ -30,4 +30,4 @@ AJUSTES = Ajustes()
 
 # Versión visible en el pie de la interfaz. Limpia y de cara al usuario; el
 # detalle de cada versión vive en los mensajes de commit y en docs/.
-VERSION = "0.10.1"
+VERSION = "0.10.2"

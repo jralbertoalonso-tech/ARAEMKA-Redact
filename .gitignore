@@ -28,3 +28,10 @@ registro/
 
 # Scratchpad
 scratchpad/
+tmp/
+
+# Materiales generados o de archivo que no forman parte de la distribución
+output/
+materiales/marca/archivo-*/
+materiales/marca/registro-oepm/
+materiales/tarjetas-whatsapp/archivo-*/

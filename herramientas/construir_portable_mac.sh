@@ -36,7 +36,7 @@ for MODELO in es_core_news_md en_core_web_md; do
   fi
 done
 
-# Iconos de la aplicación (a partir de frontend/icono.svg)
+# Iconos de la aplicación (a partir del símbolo maestro definitivo)
 "$VENV_DIR/bin/python" herramientas/generar_iconos.py >/dev/null
 
 # Los modelos medianos mantienen NER y evitan incluir cientos de MB de vectores

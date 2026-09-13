@@ -1,0 +1,8 @@
+ARAEMKA - herramientas locales para documentos
+
+ARAEMKA PDF organiza y transforma archivos. ARAEMKA Redact ayuda a localizar y eliminar datos personales. Tus documentos no salen de tu equipo.
+
+Web: https://araemka.com
+ARAEMKA PDF: https://github.com/jralbertoalonso-tech/ARAEMKA-PDF/releases
+ARAEMKA Redact: https://github.com/jralbertoalonso-tech/ARAEMKA-Redact/releases
+Contacto: contacto@araemka.com

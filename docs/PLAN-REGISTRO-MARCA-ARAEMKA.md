@@ -2,6 +2,12 @@
 
 Fecha de preparación: 13 de septiembre de 2026.
 
+Estado: la solicitud denominativa para `ARAEMKA`, clase 9, fue presentada y
+pagada el 13 de septiembre de 2026. Su concesión está pendiente. El nuevo
+logotipo definitivo no estaba incluido en esa solicitud. El conjunto figurativo
+completo fue presentado y pagado el mismo día como solicitud `M4402483`, también
+en clase 9; su concesión está pendiente.
+
 Este documento organiza la solicitud, pero no sustituye el estudio de
 registrabilidad ni el asesoramiento de un profesional de propiedad industrial.
 
@@ -15,6 +21,29 @@ registrabilidad ni el asesoramiento de un profesional de propiedad industrial.
 - Uso visible del producto: `ARAEMKA Redact`.
 - Símbolo durante la tramitación: `™`. No usar `®` hasta la concesión.
 
+## Logotipo definitivo
+
+El signo compuesto por el símbolo de cuatro nodos, la grafía especial y los
+colores de `ARAEMKA` se considera una marca figurativa. La protección específica
+del conjunto visual requirió una solicitud independiente. Antes de presentarla
+en la clase 9 se completaron estas comprobaciones:
+
+1. confirmar por escrito el origen del diseño y la titularidad de todos sus
+   derechos de uso;
+2. hacer una búsqueda de antecedentes por elementos figurativos (clasificación
+   de Viena) y no solo por la palabra `ARAEMKA`;
+3. fijar la versión exacta que se presentará, preferentemente a partir del
+   maestro conservado en `materiales/marca/definitivo/`.
+
+La tasa electrónica oficial de una clase fue de 127,88 EUR. La segunda
+solicitud se presentó y pagó el 13 de septiembre de 2026 con número `M4402483`.
+La búsqueda figurativa preliminar detectó un icono comercial con geometría muy
+próxima al símbolo aislado. El PNG contiene credenciales de generación de
+OpenAI y el titular confirmó que fue creado íntegramente mediante ChatGPT. Por
+ello se presentó únicamente el conjunto completo, aceptando el riesgo residual
+medio descrito en
+`INFORME-BUSQUEDA-FIGURATIVA-ARAEMKA-2026-09-13.md`.
+
 ## Productos y servicios
 
 ### Clase 9 — incluir en la primera solicitud
@@ -26,6 +55,11 @@ reconocimiento óptico de caracteres.
 
 La redacción definitiva debe seleccionarse o validarse con TMclass o con el
 asistente de productos y servicios de la OEPM para evitar objeciones formales.
+
+### Clase 9 — redacción presentada en la solicitud figurativa M4402483
+
+Software descargable; software descargable para gestionar datos; programas
+informáticos para el reconocimiento óptico de caracteres.
 
 ### Clase 42 — incluir solo si se ofrecerá como servicio
 

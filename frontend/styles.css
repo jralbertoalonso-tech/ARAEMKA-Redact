@@ -44,7 +44,7 @@ header {
   border-bottom: 1px solid var(--borde);
 }
 header h1 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 9px; }
-.logo-app { width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0; }
+.logo-app { width: 34px; height: 34px; flex-shrink: 0; object-fit: contain; }
 .tarjeta-login h1 { display: flex; align-items: center; justify-content: center; gap: 9px; }
 .subtitulo { color: var(--texto-suave); font-size: 12.5px; display: block; }
 .acciones-cabecera { display: flex; gap: 8px; align-items: center; }

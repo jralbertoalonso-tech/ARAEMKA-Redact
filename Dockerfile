@@ -3,7 +3,7 @@
 
 FROM python:3.12-slim
 
-ARG ANONIPRO_VERSION=0.10.1
+ARG ANONIPRO_VERSION=0.10.2
 LABEL org.opencontainers.image.title="ARAEMKA Redact" \
       org.opencontainers.image.version="${ANONIPRO_VERSION}" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \

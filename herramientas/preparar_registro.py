@@ -74,6 +74,7 @@ FICHEROS = [
     "frontend/app.js",
     "frontend/idiomas.js",
     "frontend/icono.svg",
+    "frontend/icono.png",
     "herramientas/generar_documentos_prueba.py",
     "herramientas/evaluar_deteccion.py",
     "herramientas/preparar_registro.py",

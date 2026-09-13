@@ -121,7 +121,7 @@ pero no pertenecen a nadie).
 | Portable macOS | `bash herramientas/construir_portable_mac.sh` | Se autocomprueba: verifica que no quedan enlaces simbólicos, que los módulos compilados están dentro y que **el ejecutable arranca de verdad** antes de darlo por bueno |
 | Portable Windows | `herramientas\construir_portable_windows.bat` | **Debe ejecutarse en Windows**: incluye Tesseract OCR (es/en), hace una prueba funcional real y genera ZIP + SHA-256 |
 | Imagen para el NAS | `docker buildx build --platform linux/amd64 -t anonipro:latest --load .`<br>`docker save anonipro:latest \| gzip > AnoniPRO-synology/anonipro-imagen.tar.gz` | El DS923+ es AMD64; hay que forzar la plataforma. Se conserva el identificador técnico `anonipro` para actualizar instalaciones anteriores. |
-| Iconos | `.venv/bin/python herramientas/generar_iconos.py` | Genera `.icns`, `.ico` y PNG desde `frontend/icono.svg`. Los dos empaquetadores ya lo llaman |
+| Iconos | `.venv/bin/python herramientas/generar_iconos.py` | Genera `.icns`, `.ico` y PNG desde `materiales/marca/definitivo/ARAEMKA-simbolo-definitivo-512.png`. Los dos empaquetadores ya lo llaman |
 
 **Lecciones aprendidas empaquetando** (para no repetirlas):
 
@@ -206,6 +206,7 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.9.2 | Avisos de riesgo y responsabilidad en la interfaz y los portables; resultado presentado como verificación automática, sin afirmar infalibilidad; condiciones de uso bilingües |
 | 0.10.0 | Excel `.xlsx`; resaltado inmediato de términos manuales; fechas en el perfil clínico; saneado reforzado de PDF/Word/Excel y nombres de descarga genéricos |
 | 0.10.1 | Limpieza de la autoría pública y sustitución de identificadores clínicos reales en ejemplos y pruebas; documentación de la comprobación preliminar de marca |
+| 0.10.2 | Identidad visual definitiva de ARAEMKA en web, interfaz e iconos de macOS/Windows; constancia de la solicitud figurativa española pendiente |
 
 ## Ideas pendientes
 

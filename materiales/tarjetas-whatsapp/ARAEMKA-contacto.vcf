@@ -1,0 +1,16 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//ARAEMKA//Tarjeta de contacto//ES
+N:Alonso;José Ramón Alberto;;;
+FN:José Ramón Alberto Alonso
+ORG:ARAEMKA
+TITLE:ARAEMKA PDF y ARAEMKA Redact
+EMAIL;TYPE=INTERNET,WORK:contacto@araemka.com
+item1.URL:https://araemka.com
+item1.X-ABLabel:Web ARAEMKA
+item2.URL:https://github.com/jralbertoalonso-tech/ARAEMKA-PDF/releases
+item2.X-ABLabel:ARAEMKA PDF
+item3.URL:https://github.com/jralbertoalonso-tech/ARAEMKA-Redact/releases
+item3.X-ABLabel:ARAEMKA Redact
+NOTE:Herramientas locales para documentos. Tus documentos no salen de tu equipo.
+END:VCARD
