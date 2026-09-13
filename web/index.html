@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ARAEMKA Redact · Anonimización local de documentos</title>
-<meta name="description" content="ARAEMKA Redact ayuda a anonimizar PDF, Word, Excel e imágenes sin enviar los documentos a servicios externos. Procesamiento local, sin telemetría. Español e inglés.">
+<title>ARAEMKA · Herramientas locales para documentos</title>
+<meta name="description" content="ARAEMKA PDF y ARAEMKA Redact: herramientas gratuitas y de código abierto para trabajar con documentos y proteger datos sin enviarlos a servicios externos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='114' fill='%231d5d8f'/%3E%3Crect x='150' y='150' width='212' height='40' rx='14' fill='%2312324c'/%3E%3Crect x='150' y='230' width='150' height='40' rx='14' fill='%23c3d0dc'/%3E%3Cpath d='M256 330 L188 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Cpath d='M256 330 L324 388' stroke='%23f2a03d' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='330' r='30' fill='%23f2a03d'/%3E%3Ccircle cx='186' cy='392' r='18' fill='%23f2a03d'/%3E%3Ccircle cx='326' cy='392' r='18' fill='%23f2a03d'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -132,6 +132,24 @@ section{padding:78px 0}
 .card p{margin:0; color:var(--ink-soft); font-size:.96rem}
 .card .ic{width:30px; height:30px; margin-bottom:14px; color:var(--brand)}
 
+/* product family */
+.products{padding-top:34px}
+.product-grid{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+@media (max-width:820px){.product-grid{grid-template-columns:1fr}}
+.product{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:28px; display:flex; flex-direction:column; min-height:100%}
+.product.redact-product{border-top:4px solid var(--brand)}
+.product.pdf-product{border-top:4px solid #b52e27}
+.product-head{display:flex; align-items:center; gap:16px; margin-bottom:12px}
+.product-icon{width:58px; height:58px; border-radius:13px; object-fit:cover; flex:0 0 auto}
+.product-mark{width:58px; height:58px; border-radius:13px; display:block; flex:0 0 auto}
+.product h2{font-size:1.65rem; margin:0}
+.product .purpose{font-family:var(--mono); font-size:.73rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.11em; margin-top:3px}
+.product p{color:var(--ink-soft); margin:7px 0 0}
+.product ul{padding-left:20px; margin:18px 0 24px; color:var(--ink-soft); font-size:.94rem}
+.product .cta-row{margin-top:auto}
+.product .btn{justify-content:center}
+.badge{display:inline-flex; align-items:center; width:max-content; font-family:var(--mono); font-size:.7rem; padding:4px 8px; border-radius:999px; color:var(--good); background:color-mix(in srgb,var(--good) 10%,transparent); margin-top:10px}
+
 /* privacy — the spine */
 .privacy{background:var(--redact); color:#eaf1f6; position:relative; overflow:hidden}
 .privacy .eyebrow{color:var(--accent-soft)}
@@ -180,6 +198,9 @@ section{padding:78px 0}
 /* support */
 .support .card{border-style:dashed; text-align:center; max-width:640px; margin:0 auto}
 .support .btn{margin-top:8px}
+.contact-card{max-width:760px; margin:0 auto; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:32px}
+.contact-card h2{margin:8px 0 10px}
+.contact-card p{color:var(--ink-soft); max-width:56ch; margin:0 auto 18px}
 
 /* footer */
 footer.site{background:var(--redact); color:#c7d6e0; padding:56px 0 40px; margin-top:20px}
@@ -217,13 +238,13 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="wrap nav">
     <a class="brand" href="#top" data-goto="home">
       <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
-      <span><b>ARAEMKA Redact</b><small><span class="lang-es">Privacidad local</span><span class="lang-en">Local privacy</span></small></span>
+      <span><b>ARAEMKA</b><small><span class="lang-es">Documentos privados</span><span class="lang-en">Private documents</span></small></span>
     </a>
     <nav class="nav-links">
-      <a href="#que-hace"><span class="lang-es">Qué hace</span><span class="lang-en">What it does</span></a>
+      <a href="#productos"><span class="lang-es">Productos</span><span class="lang-en">Products</span></a>
       <a href="#privacidad"><span class="lang-es">Privacidad</span><span class="lang-en">Privacy</span></a>
-      <a href="#deteccion"><span class="lang-es">Qué detecta</span><span class="lang-en">What it detects</span></a>
       <a href="#descargar"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></a>
+      <a href="#contacto"><span class="lang-es">Contacto</span><span class="lang-en">Contact</span></a>
     </nav>
     <div class="nav-tools">
       <button class="tbtn" id="lang" type="button" aria-label="Cambiar idioma">EN</button>
@@ -240,21 +261,21 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow"><span class="lang-es">Anonimización 100% local</span><span class="lang-en">100% local anonymisation</span></span>
+      <span class="eyebrow"><span class="lang-es">Herramientas 100% locales</span><span class="lang-en">100% local tools</span></span>
       <h1>
-        <span class="lang-es">Ayuda a anonimizar PDF, Word, Excel e imágenes sin enviar los documentos a servicios externos.</span>
-        <span class="lang-en">Anonymise PDFs, Word files, Excel workbooks and images without sending the documents to external services.</span>
+        <span class="lang-es">Tus documentos se trabajan en tu equipo. No en el nuestro.</span>
+        <span class="lang-en">Your documents are processed on your device. Not ours.</span>
       </h1>
       <p class="lede">
-        <span class="lang-es">Informes clínicos, escritos jurídicos, nóminas, facturas y papeles personales. Los datos se borran de verdad del archivo — no se tapan.</span>
-        <span class="lang-en">Medical reports, legal filings, payroll, invoices and personal paperwork. The data is genuinely deleted from the file — not just covered.</span>
+        <span class="lang-es">ARAEMKA PDF organiza y transforma archivos. ARAEMKA Redact localiza y elimina datos personales. Dos aplicaciones gratuitas, abiertas y sin telemetría.</span>
+        <span class="lang-en">ARAEMKA PDF organises and transforms files. ARAEMKA Redact finds and removes personal data. Two free, open-source apps with no telemetry.</span>
       </p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="#descargar">
-          <span class="lang-es">Descargar gratis</span><span class="lang-en">Download free</span>
+        <a class="btn btn-primary" href="#productos">
+          <span class="lang-es">Ver los dos programas</span><span class="lang-en">See both apps</span>
         </a>
         <a class="btn btn-ghost" href="#privacidad">
-          <span class="lang-es">Cómo protege tu privacidad</span><span class="lang-en">How it protects you</span>
+          <span class="lang-es">Cómo protegemos tu privacidad</span><span class="lang-en">How we protect your privacy</span>
         </a>
       </div>
       <div class="hero-note">
@@ -277,19 +298,59 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   </div>
 </section>
 
+<!-- PRODUCTOS -->
+<section class="products" id="productos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow"><span class="lang-es">Dos programas, un mismo principio</span><span class="lang-en">Two apps, one principle</span></span>
+      <h2><span class="lang-es">Elige qué necesitas hacer con tus documentos.</span><span class="lang-en">Choose what you need to do with your documents.</span></h2>
+    </div>
+    <div class="product-grid">
+      <article class="product pdf-product">
+        <div class="product-head">
+          <img class="product-icon" src="araemka-pdf.png" alt="" width="58" height="58">
+          <div><h2>ARAEMKA PDF</h2><div class="purpose"><span class="lang-es">Organizar y transformar</span><span class="lang-en">Organise and transform</span></div></div>
+        </div>
+        <p><span class="lang-es">Comprime, une, divide y reordena PDF. Convierte imágenes a PDF y PDF a Word, y limpia metadatos compatibles.</span><span class="lang-en">Compress, merge, split and reorder PDFs. Convert images to PDF and PDF to Word, and clean supported metadata.</span></p>
+        <ul>
+          <li><span class="lang-es">El original nunca se sobrescribe.</span><span class="lang-en">The original is never overwritten.</span></li>
+          <li><span class="lang-es">Windows y macOS, sin instalación complicada.</span><span class="lang-en">Windows and macOS, with no complicated install.</span></li>
+          <li><span class="lang-es">No anonimiza el contenido visible.</span><span class="lang-en">It does not anonymise visible content.</span></li>
+        </ul>
+        <span class="badge"><span class="lang-es">Versión 1.2.0</span><span class="lang-en">Version 1.2.0</span></span>
+        <div class="cta-row"><a class="btn btn-ghost" href="https://github.com/jralbertoalonso-tech/ARAEMKA-PDF/releases"><span class="lang-es">Descargar ARAEMKA PDF</span><span class="lang-en">Download ARAEMKA PDF</span></a></div>
+      </article>
+      <article class="product redact-product">
+        <div class="product-head">
+          <svg class="product-mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
+          <div><h2>ARAEMKA Redact</h2><div class="purpose"><span class="lang-es">Anonimizar y redactar</span><span class="lang-en">Anonymise and redact</span></div></div>
+        </div>
+        <p><span class="lang-es">Detecta datos personales en PDF, Word, Excel e imágenes, te permite revisarlos y los elimina de forma destructiva.</span><span class="lang-en">Finds personal data in PDFs, Word files, Excel workbooks and images, lets you review it, and removes it destructively.</span></p>
+        <ul>
+          <li><span class="lang-es">OCR local para documentos escaneados.</span><span class="lang-en">Local OCR for scanned documents.</span></li>
+          <li><span class="lang-es">Español e inglés, con revisión humana.</span><span class="lang-en">Spanish and English, with human review.</span></li>
+          <li><span class="lang-es">Mac, Windows y NAS.</span><span class="lang-en">Mac, Windows and NAS.</span></li>
+        </ul>
+        <span class="badge"><span class="lang-es">Versión 0.10.1</span><span class="lang-en">Version 0.10.1</span></span>
+        <div class="cta-row"><a class="btn btn-primary" href="#descargar"><span class="lang-es">Descargar ARAEMKA Redact</span><span class="lang-en">Download ARAEMKA Redact</span></a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
 <div class="trust" id="trust"><div class="wrap">
   <span><span class="lang-es">Nada sale de tu equipo</span><span class="lang-en">Nothing leaves your device</span></span>
   <span><span class="lang-es">Funciona sin internet</span><span class="lang-en">Works offline</span></span>
   <span><span class="lang-es">Sin telemetría</span><span class="lang-en">No telemetry</span></span>
-  <span><span class="lang-es">Borrado destructivo</span><span class="lang-en">Destructive redaction</span></span>
+  <span><span class="lang-es">Archivos bajo tu control</span><span class="lang-en">Files under your control</span></span>
   <span>Español · English (UK/US)</span>
 </div></div>
 
-<!-- QUÉ HACE -->
+<!-- ARAEMKA REDACT -->
 <section id="que-hace">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow"><span class="lang-es">Qué hace</span><span class="lang-en">What it does</span></span>
+      <span class="eyebrow">ARAEMKA Redact</span>
       <h2><span class="lang-es">Tú revisas, tú confirmas, tú descargas.</span><span class="lang-en">You review, you confirm, you download.</span></h2>
       <p><span class="lang-es">ARAEMKA Redact te muestra cada dato personal que encuentra sobre el propio documento. Nada se borra sin que tú lo apruebes.</span><span class="lang-en">ARAEMKA Redact shows you every piece of personal data it finds, right on the document. Nothing is deleted without your approval.</span></p>
     </div>
@@ -383,8 +444,8 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
 <section id="descargar" style="background:var(--surface-2); border-top:1px solid var(--line)">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></span>
-      <h2><span class="lang-es">Gratuito. Sin instalación complicada.</span><span class="lang-en">Free. No complicated install.</span></h2>
+      <span class="eyebrow">ARAEMKA Redact 0.10.1</span>
+      <h2><span class="lang-es">Descarga el anonimizador.</span><span class="lang-en">Download the anonymiser.</span></h2>
       <p><span class="lang-es">Elige según dónde lo vayas a usar. No instala nada en el sistema ni pide permisos de administrador.</span><span class="lang-en">Choose where you'll use it. It installs nothing system-wide and needs no administrator rights.</span></p>
     </div>
     <div class="dl-grid">
@@ -442,8 +503,20 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="wrap">
     <div class="card">
       <span class="eyebrow"><span class="lang-es">Proyecto independiente</span><span class="lang-en">Independent project</span></span>
-      <h3 style="margin-top:8px"><span class="lang-es">ARAEMKA Redact es gratuito y de código abierto</span><span class="lang-en">ARAEMKA Redact is free and open source</span></h3>
-      <p style="color:var(--ink-soft); max-width:52ch; margin:8px auto 0"><span class="lang-es">Hecho por un médico para proteger la privacidad de las personas. Se publica bajo AGPL-3.0-only y no incorpora telemetría; su finalidad es ayudar a compartir documentos con más seguridad.</span><span class="lang-en">Made by a physician to protect people's privacy. It is published under AGPL-3.0-only and includes no telemetry; its purpose is to help make document sharing safer.</span></p>
+      <h3 style="margin-top:8px"><span class="lang-es">ARAEMKA es gratuito y de código abierto</span><span class="lang-en">ARAEMKA is free and open source</span></h3>
+      <p style="color:var(--ink-soft); max-width:52ch; margin:8px auto 0"><span class="lang-es">ARAEMKA PDF y ARAEMKA Redact se publican bajo AGPL-3.0-only y no incorporan telemetría. Su finalidad es ayudarte a trabajar con documentos sin entregar su contenido a terceros.</span><span class="lang-en">ARAEMKA PDF and ARAEMKA Redact are published under AGPL-3.0-only and include no telemetry. They help you work with documents without handing their contents to third parties.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto">
+  <div class="wrap">
+    <div class="contact-card">
+      <span class="eyebrow"><span class="lang-es">Contacto</span><span class="lang-en">Contact</span></span>
+      <h2><span class="lang-es">Dudas, errores o propuestas</span><span class="lang-en">Questions, bugs or suggestions</span></h2>
+      <p><span class="lang-es">Puedes escribir sobre cualquiera de los dos programas. No adjuntes documentos con datos personales o confidenciales.</span><span class="lang-en">You can write about either app. Do not attach documents containing personal or confidential data.</span></p>
+      <a class="btn btn-primary" href="mailto:contacto@araemka.com">contacto@araemka.com</a>
     </div>
   </div>
 </section>
@@ -456,14 +529,14 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="lang-es">
     <span class="eyebrow">Aviso legal</span>
     <h1>Aviso legal</h1>
-    <p class="updated">Última actualización: 11 de septiembre de 2026</p>
+    <p class="updated">Última actualización: 13 de septiembre de 2026</p>
     <h2>1. Titular del sitio</h2>
-    <p>Este sitio web es un proyecto informativo para la descarga del software <strong>ARAEMKA Redact</strong>, cuyo autor y responsable es <strong>José Ramón Alberto Alonso</strong>. Contacto: <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>.</p>
+    <p>Este sitio web es un proyecto informativo para la descarga de <strong>ARAEMKA PDF</strong> y <strong>ARAEMKA Redact</strong>, cuyo autor y responsable es <strong>José Ramón Alberto Alonso</strong>. Contacto: <a href="mailto:contacto@araemka.com">contacto@araemka.com</a>.</p>
     <h2>2. Objeto</h2>
-    <p>El sitio tiene una finalidad informativa y de distribución del software ARAEMKA Redact. ARAEMKA Redact es una herramienta de apoyo a la anonimización de documentos que se ejecuta íntegramente en el equipo del usuario.</p>
+    <p>El sitio informa y distribuye herramientas locales para trabajar con documentos. ARAEMKA PDF organiza, transforma y limpia metadatos compatibles; ARAEMKA Redact ayuda a localizar y eliminar datos personales. Ambos se ejecutan íntegramente en el equipo del usuario.</p>
     <h2>3. Propiedad intelectual</h2>
-    <p>Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA Redact es software libre bajo GNU AGPL v3 exclusivamente (<code>AGPL-3.0-only</code>). El <a href="https://github.com/jralbertoalonso-tech/ARAEMKA-Redact">código fuente correspondiente</a> y el texto íntegro de la licencia están disponibles sin coste. Los componentes de terceros conservan sus respectivas licencias, autoría y marcas.</p>
-    <p>ARAEMKA y ARAEMKA Redact y sus logotipos son signos distintivos reivindicados por el autor. La AGPL no concede derechos sobre ellos como marcas, salvo el uso descriptivo necesario para identificar el programa.</p>
+    <p>Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA PDF y ARAEMKA Redact son software libre bajo GNU AGPL v3 exclusivamente (<code>AGPL-3.0-only</code>). El código fuente y el texto íntegro de la licencia están disponibles sin coste en sus respectivos repositorios. Los componentes de terceros conservan sus licencias, autoría y marcas.</p>
+    <p>ARAEMKA, ARAEMKA PDF y ARAEMKA Redact y sus logotipos son signos distintivos reivindicados por el autor. La AGPL no concede derechos sobre ellos como marcas, salvo el uso descriptivo necesario para identificar los programas.</p>
     <h2>4. Condiciones de uso del software</h2>
     <p>El software se proporciona «tal cual», sin garantías de ningún tipo. ARAEMKA Redact es una herramienta de apoyo que no sustituye el criterio profesional del usuario ni garantiza por sí sola el cumplimiento de ninguna obligación legal. La persona usuaria y, cuando proceda, el responsable del tratamiento deben revisar íntegramente el resultado y aplicar las medidas adicionales necesarias antes de compartirlo.</p>
     <h2>5. Limitación de responsabilidad</h2>
@@ -476,14 +549,14 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="lang-en">
     <span class="eyebrow">Legal notice</span>
     <h1>Legal notice</h1>
-    <p class="updated">Last updated: 11 September 2026</p>
+    <p class="updated">Last updated: 13 September 2026</p>
     <h2>1. Site owner</h2>
-    <p>This website is an informational project for distributing the <strong>ARAEMKA Redact</strong> software, whose author and owner is <strong>José Ramón Alberto Alonso</strong>. Contact: <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>.</p>
+    <p>This website is an informational project for distributing <strong>ARAEMKA PDF</strong> and <strong>ARAEMKA Redact</strong>, whose author and owner is <strong>José Ramón Alberto Alonso</strong>. Contact: <a href="mailto:contacto@araemka.com">contacto@araemka.com</a>.</p>
     <h2>2. Purpose</h2>
-    <p>The site provides information about and distributes ARAEMKA Redact. ARAEMKA Redact is a supporting document-anonymisation tool that runs entirely on the user's own device.</p>
+    <p>The site provides information about and distributes local document tools. ARAEMKA PDF organises, transforms and cleans supported metadata; ARAEMKA Redact helps find and remove personal data. Both run entirely on the user's own device.</p>
     <h2>3. Intellectual property</h2>
-    <p>Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA Redact is free software under GNU AGPL v3 only (<code>AGPL-3.0-only</code>). The <a href="https://github.com/jralbertoalonso-tech/ARAEMKA-Redact">corresponding source code</a> and full licence text are available at no charge. Third-party components retain their own licences, authorship and marks.</p>
-    <p>ARAEMKA and ARAEMKA Redact and their logos are marks claimed by the author. The AGPL does not grant trademark rights in them, except for descriptive use needed to identify the software.</p>
+    <p>Copyright © 2026 José Ramón Alberto Alonso. ARAEMKA PDF and ARAEMKA Redact are free software under GNU AGPL v3 only (<code>AGPL-3.0-only</code>). Their corresponding source code and full licence text are available at no charge in their repositories. Third-party components retain their own licences, authorship and marks.</p>
+    <p>ARAEMKA, ARAEMKA PDF and ARAEMKA Redact and their logos are marks claimed by the author. The AGPL does not grant trademark rights in them, except for descriptive use needed to identify the software.</p>
     <h2>4. Software terms of use</h2>
     <p>The software is provided "as is", without warranties of any kind. ARAEMKA Redact is a supporting tool that does not replace professional judgement and does not by itself guarantee compliance with any legal obligation. The user and, where applicable, the data controller must review the complete result and apply any additional safeguards required before sharing it.</p>
     <h2>5. Limitation of liability</h2>
@@ -501,30 +574,30 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   <div class="lang-es">
     <span class="eyebrow">Privacidad</span>
     <h1>Política de privacidad</h1>
-    <p class="updated">Última actualización: 11 de septiembre de 2026</p>
+    <p class="updated">Última actualización: 13 de septiembre de 2026</p>
     <h2>1. Este sitio web no recoge datos personales</h2>
     <p>Este sitio <strong>no integra cookies propias, analítica, formularios ni rastreadores</strong>. El proveedor que aloja o entrega el sitio puede tratar datos técnicos de conexión conforme a su propia política. El autor no recibe esos registros para elaborar perfiles.</p>
     <h2>2. El software se ejecuta en tu equipo</h2>
-    <p>ARAEMKA Redact funciona <strong>100% en local</strong>. Ni el software ni el autor reciben tus documentos ni ningún dato que trates con él. No existe telemetría ni comunicación con servidores externos.</p>
+    <p>ARAEMKA PDF y ARAEMKA Redact funcionan <strong>100% en local</strong>. Ni los programas ni el autor reciben tus documentos ni los datos que trates con ellos. No existe telemetría ni comunicación con servidores externos.</p>
     <h2>3. Descargas</h2>
     <p>Los archivos de descarga se alojan en GitHub. Al descargarlos, se aplica la política de privacidad de dicho proveedor, ajena a este sitio.</p>
     <h2>4. Si nos escribes</h2>
-    <p>Si contactas por correo a <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>, tus datos (tu dirección y el contenido del mensaje) se utilizarán únicamente para responderte y no se cederán a terceros. Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a esa misma dirección; también puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
+    <p>Si contactas por correo a <a href="mailto:contacto@araemka.com">contacto@araemka.com</a>, tus datos (tu dirección y el contenido del mensaje) se utilizarán únicamente para responderte y no se cederán a terceros. Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a esa misma dirección; también puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
     <h2>5. Responsable del tratamiento de tus documentos</h2>
     <p>Respecto a los datos personales contenidos en los documentos que anonimizas, <strong>el responsable del tratamiento eres tú o tu organización</strong>. ARAEMKA Redact es una herramienta que te ayuda a cumplir el RGPD, pero no asume esa responsabilidad en tu lugar.</p>
   </div>
   <div class="lang-en">
     <span class="eyebrow">Privacy</span>
     <h1>Privacy policy</h1>
-    <p class="updated">Last updated: 11 September 2026</p>
+    <p class="updated">Last updated: 13 September 2026</p>
     <h2>1. This website collects no personal data</h2>
     <p>This site integrates <strong>no first-party cookies, analytics, forms or trackers</strong>. The provider hosting or delivering the site may process technical connection data under its own policy. The author does not receive those logs to create profiles.</p>
     <h2>2. The software runs on your device</h2>
-    <p>ARAEMKA Redact runs <strong>100% locally</strong>. Neither the software nor the author receives your documents or any data you process with it. There is no telemetry and no communication with external servers.</p>
+    <p>ARAEMKA PDF and ARAEMKA Redact run <strong>100% locally</strong>. Neither app nor the author receives your documents or any data you process with them. There is no telemetry and no communication with external servers.</p>
     <h2>3. Downloads</h2>
     <p>Download files are hosted on GitHub. When downloading, that provider's privacy policy applies, independently of this site.</p>
     <h2>4. If you contact us</h2>
-    <p>If you e-mail <a href="mailto:nodolocal@proton.me">nodolocal@proton.me</a>, your data (your address and the message) will be used only to reply to you and will not be shared with third parties. You may exercise your rights of access, rectification, erasure, objection, restriction and portability at that same address; you may also lodge a complaint with the Spanish Data Protection Agency (www.aepd.es).</p>
+    <p>If you e-mail <a href="mailto:contacto@araemka.com">contacto@araemka.com</a>, your data (your address and the message) will be used only to reply to you and will not be shared with third parties. You may exercise your rights of access, rectification, erasure, objection, restriction and portability at that same address; you may also lodge a complaint with the Spanish Data Protection Agency (www.aepd.es).</p>
     <h2>5. Controller of your documents' data</h2>
     <p>For the personal data contained in the documents you anonymise, <strong>you or your organisation are the data controller</strong>. ARAEMKA Redact is a tool that helps you comply with the GDPR, but it does not take on that responsibility for you.</p>
   </div>
@@ -560,13 +633,15 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
     <div class="fgrid">
       <a class="brand" href="#top" data-goto="home" style="text-decoration:none">
         <svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="114" fill="#1d5d8f"/><rect x="150" y="150" width="212" height="40" rx="14" fill="#12324c"/><rect x="150" y="230" width="150" height="40" rx="14" fill="#c3d0dc"/><path d="M256 330 L188 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><path d="M256 330 L324 388" stroke="#f2a03d" stroke-width="18" stroke-linecap="round"/><circle cx="256" cy="330" r="30" fill="#f2a03d"/><circle cx="186" cy="392" r="18" fill="#f2a03d"/><circle cx="326" cy="392" r="18" fill="#f2a03d"/></svg>
-        <span><b>ARAEMKA Redact</b><small><span class="lang-es">Privacidad local</span><span class="lang-en">Local privacy</span></small></span>
+        <span><b>ARAEMKA</b><small><span class="lang-es">Documentos privados</span><span class="lang-en">Private documents</span></small></span>
       </a>
       <nav>
         <a href="#top" data-goto="avisolegal"><span class="lang-es">Aviso legal</span><span class="lang-en">Legal notice</span></a>
-        <a href="https://github.com/jralbertoalonso-tech/ARAEMKA-Redact"><span class="lang-es">Código fuente</span><span class="lang-en">Source code</span></a>
+        <a href="https://github.com/jralbertoalonso-tech/ARAEMKA-PDF"><span class="lang-es">Código ARAEMKA PDF</span><span class="lang-en">ARAEMKA PDF source</span></a>
+        <a href="https://github.com/jralbertoalonso-tech/ARAEMKA-Redact"><span class="lang-es">Código ARAEMKA Redact</span><span class="lang-en">ARAEMKA Redact source</span></a>
         <a href="#top" data-goto="privacidad"><span class="lang-es">Política de privacidad</span><span class="lang-en">Privacy policy</span></a>
         <a href="#top" data-goto="cookies"><span class="lang-es">Política de cookies</span><span class="lang-en">Cookie policy</span></a>
+        <a href="mailto:contacto@araemka.com"><span class="lang-es">Contacto</span><span class="lang-en">Contact</span></a>
       </nav>
     </div>
     <div class="fnote">
@@ -581,13 +656,13 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
   var root=document.documentElement;
 
   // ----- theme -----
-  try{var st=localStorage.getItem("nl_theme"); if(st) root.setAttribute("data-theme",st);}catch(e){}
+  try{var st=localStorage.getItem("araemka_theme"); if(st) root.setAttribute("data-theme",st);}catch(e){}
   document.getElementById("theme").addEventListener("click",function(){
     var cur=root.getAttribute("data-theme");
     if(!cur){cur=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";}
     var next=cur==="dark"?"light":"dark";
     root.setAttribute("data-theme",next);
-    try{localStorage.setItem("nl_theme",next);}catch(e){}
+    try{localStorage.setItem("araemka_theme",next);}catch(e){}
   });
 
   // ----- language -----
@@ -595,10 +670,10 @@ footer .fnote .nocookie{font-family:var(--mono); letter-spacing:.03em}
     root.setAttribute("data-site-lang",l);
     root.setAttribute("lang",l);
     document.getElementById("lang").textContent = l==="es"?"EN":"ES";
-    try{localStorage.setItem("nl_lang",l);}catch(e){}
+    try{localStorage.setItem("araemka_lang",l);}catch(e){}
   }
   var initial="es";
-  try{var sl=localStorage.getItem("nl_lang"); if(sl==="es"||sl==="en") initial=sl;
+  try{var sl=localStorage.getItem("araemka_lang"); if(sl==="es"||sl==="en") initial=sl;
       else if((navigator.language||"es").toLowerCase().indexOf("en")===0) initial="en";}catch(e){}
   setLang(initial);
   document.getElementById("lang").addEventListener("click",function(){
