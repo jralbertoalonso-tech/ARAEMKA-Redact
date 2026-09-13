@@ -69,7 +69,12 @@ def test_flujo_completo_con_auditoria():
     assert aud["verificacion_segunda_pasada"]["textos_aprobados_restantes"] == 0
     assert len(aud["sha256_resultado"]) == 64
     # …pero NUNCA los datos originales
-    volcado = json.dumps(aud)
+    # Un hash SHA-256 es una cadena hexadecimal aleatoria y puede contener por
+    # casualidad fragmentos numéricos cortos del documento (por ejemplo "628").
+    # No es una filtración ni permite recuperar el contenido; se excluye de la
+    # comprobación textual para que la prueba no falle de forma probabilística.
+    aud_sin_hash = {k: v for k, v in aud.items() if not k.startswith("sha256_")}
+    volcado = json.dumps(aud_sin_hash)
     for secreto in ["Pedro", "Armas", "12345678Z", "555123", "628", "Morera"]:
         assert secreto not in volcado, f"la auditoría contiene el dato {secreto!r}"
 
