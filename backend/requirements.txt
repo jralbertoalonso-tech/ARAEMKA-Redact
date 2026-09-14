@@ -1,7 +1,7 @@
 # ARAEMKA Redact — dependencias del backend
 # Todo se ejecuta 100% en local; ninguna librería realiza llamadas externas en tiempo de ejecución.
 fastapi>=0.115
-uvicorn[standard]>=0.30
+uvicorn[standard]>=0.52.4
 python-multipart>=0.0.9          # subida de archivos
 presidio-analyzer>=2.2.355       # orquestador de detección de PII (capas 1-2)
 spacy>=3.7                       # NER en español (capa 2)
