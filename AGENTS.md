@@ -1,4 +1,4 @@
 # Instrucciones del proyecto
 
-La decisión vigente sobre el uso de autorrelleno de Apple/iCloud para servicios
-personales se registra en [docs/ACCESO-CODEX.md](docs/ACCESO-CODEX.md).
+Las decisiones sobre acceso o autorrelleno son privadas y se registran solo en
+el archivo local no versionado `docs/ACCESO-CODEX.md`. Nunca deben publicarse.

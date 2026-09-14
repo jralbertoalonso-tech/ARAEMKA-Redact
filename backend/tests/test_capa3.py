@@ -10,6 +10,7 @@ Ejecutar desde `backend/`:
 
 from app.detection import capa3_llm as capa3
 from app.detection import diagnostico_hardware as dh
+from app.red_privada import url_en_red_privada
 
 
 # ── diagnóstico de hardware ────────────────────────────────────────────────
@@ -119,3 +120,42 @@ def test_capa3_respeta_categorias_activas(monkeypatch):
     dets = capa3.revisar_texto(texto, {"email"})
     capa3.CONFIG.actualizar(activa=False)
     assert {d["categoria"] for d in dets} == {"email"}
+
+
+def test_solo_permite_destinos_locales_explicitos(monkeypatch):
+    assert url_en_red_privada("http://127.0.0.1:11434", solo_base=True)
+    assert url_en_red_privada("http://192.168.1.20:11434/v1", solo_base=True)
+    assert not url_en_red_privada("https://example.com", solo_base=True)
+    assert not url_en_red_privada("http://127.0.0.1:11434/ruta-oculta", solo_base=True)
+    assert not url_en_red_privada("http://usuario:clave@127.0.0.1:11434", solo_base=True)
+
+    def resolucion_mixta(*args, **kwargs):
+        return [
+            (2, 1, 6, "", ("192.168.1.20", 11434)),
+            (2, 1, 6, "", ("203.0.113.10", 11434)),
+        ]
+
+    monkeypatch.setattr("app.red_privada.socket.getaddrinfo", resolucion_mixta)
+    assert not url_en_red_privada("http://modelo.local:11434", solo_base=True)
+
+
+def test_cliente_local_bloquea_redirecciones_y_respuestas_enormes():
+    assert any(
+        isinstance(handler, capa3._SinRedirecciones)
+        for handler in capa3._ABRIDOR_LOCAL.handlers
+    )
+
+    class RespuestaGrande:
+        def read(self, limite):
+            return b"x" * limite
+
+    import pytest
+    with pytest.raises(ValueError, match="supera el límite"):
+        capa3._leer_json_limitado(RespuestaGrande())
+
+
+def test_timeout_capa3_queda_acotado():
+    capa3.CONFIG.actualizar(timeout=9999)
+    assert capa3.CONFIG.timeout == 300
+    capa3.CONFIG.actualizar(timeout=-4)
+    assert capa3.CONFIG.timeout == 1

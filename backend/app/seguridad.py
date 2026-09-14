@@ -51,8 +51,13 @@ def registrar_intento_login(ip: str, exito: bool) -> int:
 def crear_cookie_sesion(response: Response):
     valor = _firmador.sign(b"ok").decode()
     response.set_cookie(
-        NOMBRE_COOKIE, valor,
-        max_age=DURACION_SESION_S, httponly=True, samesite="lax",
+        NOMBRE_COOKIE,
+        valor,
+        max_age=DURACION_SESION_S,
+        httponly=True,
+        samesite="strict",
+        secure=AJUSTES.cookie_secure,
+        path="/",
     )
 
 

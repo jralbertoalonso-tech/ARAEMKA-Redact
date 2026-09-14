@@ -173,6 +173,7 @@ required by the AGPL.
 - Source access: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
 - Third-party components: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
 - Name and logo use: **[TRADEMARKS.md](TRADEMARKS.md)**.
+- Private vulnerability reporting: **[SECURITY.md](SECURITY.md)**.
 
 It uses third-party open-source components, owned by their respective authors:
 FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0), python-docx, openpyxl, Tesseract

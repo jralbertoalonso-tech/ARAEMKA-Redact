@@ -23,6 +23,8 @@ services:
       ANONIPRO_TTL_MINUTOS: "30"
       # Tamaño máximo de archivo aceptado (MB).
       ANONIPRO_MAX_MB: "50"
+      # Ponlo a true solo cuando el acceso del usuario sea HTTPS.
+      ANONIPRO_COOKIE_SECURE: "${ANONIPRO_COOKIE_SECURE:-false}"
       HOME: "/tmp"           # caché de librerías en RAM, no en disco
     # Los documentos se procesan SOLO en memoria; no se monta ningún volumen
     # de datos porque no se escribe nada en disco. El sistema de archivos del
@@ -30,3 +32,10 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 8g

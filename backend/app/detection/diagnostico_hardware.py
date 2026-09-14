@@ -65,10 +65,11 @@ def _ram_disponible_gb() -> float | None:
 
 def _tiene_gpu_nvidia() -> bool:
     """True si hay una GPU NVIDIA (nvidia-smi disponible y responde)."""
-    if not shutil.which("nvidia-smi"):
+    ejecutable = shutil.which("nvidia-smi")
+    if not ejecutable:
         return False
     try:
-        subprocess.run(["nvidia-smi"], capture_output=True, timeout=3, check=True)
+        subprocess.run([ejecutable], capture_output=True, timeout=3, check=True)
         return True
     except Exception:
         return False
