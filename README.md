@@ -234,6 +234,7 @@ código fuente correspondiente en los términos de la AGPL.
 - Acceso al código: **[CODIGO-FUENTE.md](CODIGO-FUENTE.md)**.
 - Componentes de terceros: **[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)**.
 - Uso del nombre y logotipo: **[TRADEMARKS.md](TRADEMARKS.md)**.
+- Política para comunicar vulnerabilidades: **[SECURITY.md](SECURITY.md)**.
 
 Utiliza componentes libres de terceros, cuya autoría corresponde a sus
 respectivos titulares: FastAPI, Microsoft Presidio, spaCy, PyMuPDF (AGPL-3.0),

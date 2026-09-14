@@ -10,11 +10,9 @@ Flujo normal desde el navegador:
 
 import hashlib
 import io
-import ipaddress
 import json
 import re
 import time
-import urllib.parse
 from datetime import datetime
 
 import fitz
@@ -33,6 +31,7 @@ from .documentos import fechas, ocr
 from .documentos.docx_doc import CARACTER_REDACCION, DocumentoDocx
 from .documentos.pdf_doc import DocumentoPdf, pdf_desde_imagen
 from .documentos.xlsx_doc import DocumentoXlsx
+from .red_privada import url_en_red_privada
 from .seguridad import comprobar_password, crear_cookie_sesion, registrar_intento_login
 from .textos import idioma_de, t
 
@@ -49,20 +48,7 @@ def _endpoint_en_red_privada(url: str) -> bool:
     que impedir que se apunte a un servidor de internet (exfiltración) o que se
     use el sondeo (`extra`) para escanear la red externa (SSRF).
     """
-    try:
-        host = urllib.parse.urlparse(url if "://" in url else "http://" + url).hostname
-    except Exception:
-        return False
-    if not host:
-        return False
-    host = host.lower()
-    if host == "localhost" or host.endswith(".local"):
-        return True
-    try:
-        ip = ipaddress.ip_address(host)
-    except ValueError:
-        return False  # nombres que no son IP ni *.local: se rechazan
-    return ip.is_private or ip.is_loopback or ip.is_link_local
+    return url_en_red_privada(url, solo_base=True)
 
 
 def _asegurar_ocr_disponible(idioma: str = "es"):
@@ -140,9 +126,9 @@ def capa3_estado(extra: str = ""):
 
 class ConfigCapa3Body(BaseModel):
     activa: bool | None = None
-    endpoint: str | None = None
-    modelo: str | None = None
-    timeout: int | None = None
+    endpoint: str | None = Field(default=None, max_length=2048)
+    modelo: str | None = Field(default=None, max_length=200)
+    timeout: int | None = Field(default=None, ge=1, le=300)
 
 
 @router.post("/capa3/configurar")
@@ -158,8 +144,8 @@ def capa3_configurar(body: ConfigCapa3Body, request: Request):
 
 
 class ProbarCapa3Body(BaseModel):
-    endpoint: str
-    modelo: str
+    endpoint: str = Field(max_length=2048)
+    modelo: str = Field(max_length=200)
 
 
 @router.post("/capa3/probar")
@@ -295,8 +281,8 @@ def subir_documento(
     if extension == "pdf":
         try:
             doc = DocumentoPdf(contenido)
-        except Exception as e:
-            raise HTTPException(422, t("pdf_ilegible", idioma, error=e))
+        except Exception:
+            raise HTTPException(422, t("pdf_ilegible", idioma))
         # PDF escaneado (sin capa de texto): aplicar OCR local en vez de rechazar
         if not doc.tiene_texto:
             paginas_ocr = doc.paginas_sin_texto()
@@ -314,22 +300,22 @@ def subir_documento(
         _asegurar_ocr_disponible(idioma)
         try:
             doc = DocumentoPdf(pdf_desde_imagen(contenido))
-        except Exception as e:
-            raise HTTPException(422, t("imagen_ilegible", idioma, error=e))
+        except Exception:
+            raise HTTPException(422, t("imagen_ilegible", idioma))
         doc.aplicar_ocr()
         aviso_ocr = t("ocr_imagen", idioma)
         sesion = SesionDocumento(nombre, "pdf", doc)
     elif extension == "docx":
         try:
             doc = DocumentoDocx(contenido)
-        except Exception as e:
-            raise HTTPException(422, t("word_ilegible", idioma, error=e))
+        except Exception:
+            raise HTTPException(422, t("word_ilegible", idioma))
         sesion = SesionDocumento(nombre, "docx", doc)
     elif extension == "xlsx":
         try:
             doc = DocumentoXlsx(contenido)
-        except Exception as e:
-            raise HTTPException(422, t("excel_ilegible", idioma, error=e))
+        except Exception:
+            raise HTTPException(422, t("excel_ilegible", idioma))
         sesion = SesionDocumento(nombre, "xlsx", doc)
     elif extension == "doc":
         raise HTTPException(422, t("doc_antiguo", idioma))
@@ -490,8 +476,8 @@ def _delta_de_sesion(sesion: SesionDocumento) -> int:
     """Desplazamiento de días del documento: aleatorio, distinto de cero y
     CONSISTENTE (si se re-aplica la redacción, se usa el mismo)."""
     if getattr(sesion, "delta_dias", None) is None:
-        import random
-        sesion.delta_dias = random.choice([-1, 1]) * random.randint(30, 180)
+        import secrets
+        sesion.delta_dias = secrets.choice([-1, 1]) * (30 + secrets.randbelow(151))
     return sesion.delta_dias
 
 

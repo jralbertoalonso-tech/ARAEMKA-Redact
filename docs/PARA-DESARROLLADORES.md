@@ -207,6 +207,7 @@ recorta la parte solapada y se conserva el resto — perder texto sería una fug
 | 0.10.0 | Excel `.xlsx`; resaltado inmediato de términos manuales; fechas en el perfil clínico; saneado reforzado de PDF/Word/Excel y nombres de descarga genéricos |
 | 0.10.1 | Limpieza de la autoría pública y sustitución de identificadores clínicos reales en ejemplos y pruebas; documentación de la comprobación preliminar de marca |
 | 0.10.2 | Identidad visual definitiva de ARAEMKA en web, interfaz e iconos de macOS/Windows; constancia de la solicitud figurativa española pendiente |
+| 0.10.3 | Endurecimiento de privacidad: IA local sin proxies ni redirecciones, validación de destinos privados, límites de respuesta/tiempo, cabeceras web, cookie estricta y contenedor sin privilegios |
 
 ## Ideas pendientes
 

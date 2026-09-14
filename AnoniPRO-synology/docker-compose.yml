@@ -4,7 +4,7 @@
 
 services:
   anonipro:
-    image: anonipro:0.10.2        # la imagen importada desde anonipro-imagen.tar.gz
+    image: anonipro:0.10.3        # la imagen importada desde anonipro-imagen.tar.gz
     container_name: anonipro
     restart: unless-stopped
     ports:
@@ -18,6 +18,8 @@ services:
       ANONIPRO_TTL_MINUTOS: "30"
       # Tamaño máximo de archivo aceptado (MB).
       ANONIPRO_MAX_MB: "50"
+      # Activa true cuando DSM publique el servicio mediante HTTPS.
+      ANONIPRO_COOKIE_SECURE: "${ANONIPRO_COOKIE_SECURE:-false}"
       HOME: "/tmp"
     # Máxima privacidad: sistema de archivos de solo lectura; lo único
     # escribible es /tmp, que vive en RAM. No se monta ningún volumen:
@@ -28,6 +30,12 @@ services:
       # documentos se procesan aquí (en RAM). Sin límite, un lote grande podría
       # llenar la memoria del NAS.
       - /tmp:size=1g
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
     # Límite de memoria del contenedor (el modelo de idioma usa ~1,5 GB).
     mem_limit: 3g
     # Si el proceso se cuelga, el NAS lo reinicia solo en vez de mostrarlo «sano».

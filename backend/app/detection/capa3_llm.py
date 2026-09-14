@@ -23,6 +23,8 @@ import time
 import urllib.error
 import urllib.request
 
+from ..red_privada import exigir_peticion_privada
+
 log = logging.getLogger("anonipro.capa3")
 
 # Endpoints locales habituales que se sondean automáticamente.
@@ -51,6 +53,7 @@ TIPO_A_CATEGORIA = {
 }
 
 CONFIANZA_CAPA3 = 0.5  # el LLM es una sugerencia; las capas 1-2 tienen prioridad
+MAX_RESPUESTA_BYTES = 5 * 1024 * 1024
 
 _PROMPT_SISTEMA = (
     "Eres un revisor de privacidad de documentos clínicos en español. "
@@ -84,9 +87,9 @@ class ConfigCapa3:
             if endpoint is not None:
                 self.endpoint = _normalizar_base(endpoint)
             if modelo is not None:
-                self.modelo = modelo
+                self.modelo = str(modelo).strip()[:200]
             if timeout is not None:
-                self.timeout = int(timeout)
+                self.timeout = max(1, min(int(timeout), 300))
 
     def como_dict(self):
         return {
@@ -108,24 +111,54 @@ CONFIG = ConfigCapa3()
 def _normalizar_base(url: str) -> str:
     """Deja la URL base sin barra final ni sufijo /v1."""
     url = (url or "").strip().rstrip("/")
+    if url and "://" not in url:
+        url = "http://" + url
     if url.endswith("/v1"):
         url = url[:-3]
     return url
 
 
+class _SinRedirecciones(urllib.request.HTTPRedirectHandler):
+    """Impide que un endpoint local redirija el texto hacia internet."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_ABRIDOR_LOCAL = urllib.request.build_opener(
+    urllib.request.ProxyHandler({}),
+    _SinRedirecciones(),
+)
+
+
+def _leer_json_limitado(respuesta):
+    datos = respuesta.read(MAX_RESPUESTA_BYTES + 1)
+    if len(datos) > MAX_RESPUESTA_BYTES:
+        raise ValueError("La respuesta del servidor local supera el límite permitido.")
+    return json.loads(datos.decode("utf-8"))
+
+
 def _get_json(url: str, timeout: float):
-    req = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
+    exigir_peticion_privada(url)
+    req = urllib.request.Request(
+        url,
+        headers={"Accept": "application/json", "User-Agent": "ARAEMKA-Redact"},
+    )
+    with _ABRIDOR_LOCAL.open(req, timeout=max(1, min(float(timeout), 300))) as r:
+        return _leer_json_limitado(r)
 
 
 def _post_json(url: str, cuerpo: dict, timeout: float):
+    exigir_peticion_privada(url)
     datos = json.dumps(cuerpo).encode("utf-8")
     req = urllib.request.Request(
-        url, data=datos, headers={"Content-Type": "application/json"}, method="POST"
+        url,
+        data=datos,
+        headers={"Content-Type": "application/json", "User-Agent": "ARAEMKA-Redact"},
+        method="POST",
     )
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
+    with _ABRIDOR_LOCAL.open(req, timeout=max(1, min(float(timeout), 300))) as r:
+        return _leer_json_limitado(r)
 
 
 # ── descubrimiento de endpoints y modelos ──────────────────────────────────

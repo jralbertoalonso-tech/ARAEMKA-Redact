@@ -2,8 +2,8 @@
 
 Arranca el servidor web local que sirve la API y la interfaz. Ejecutar con:
     python -m app.main
-o bien:
-    uvicorn app.main:app --host 0.0.0.0 --port 8080
+o bien, para uso solo en este equipo:
+    uvicorn app.main:app --host 127.0.0.1 --port 8080
 """
 
 import logging
@@ -35,7 +35,7 @@ app.middleware("http")(middleware_password)
 
 
 @app.middleware("http")
-async def sin_cache_en_la_interfaz(request, call_next):
+async def cabeceras_de_privacidad(request, call_next):
     """Evita que el navegador se quede con una versión antigua de la interfaz.
 
     Los archivos son pequeños y locales, así que no cachearlos no cuesta nada;
@@ -43,8 +43,20 @@ async def sin_cache_en_la_interfaz(request, call_next):
     siempre la interfaz nueva sin tener que vaciar la caché a mano.
     """
     respuesta = await call_next(request)
-    if not request.url.path.startswith("/api"):
+    if request.url.path.startswith("/api"):
+        respuesta.headers["Cache-Control"] = "no-store"
+        respuesta.headers["Pragma"] = "no-cache"
+    else:
         respuesta.headers["Cache-Control"] = "no-cache, must-revalidate"
+    respuesta.headers["X-Content-Type-Options"] = "nosniff"
+    respuesta.headers["Referrer-Policy"] = "no-referrer"
+    respuesta.headers["X-Frame-Options"] = "DENY"
+    respuesta.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    respuesta.headers["Content-Security-Policy"] = (
+        "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; "
+        "object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:"
+    )
     return respuesta
 
 
@@ -68,4 +80,4 @@ def precargar_modelo():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=AJUSTES.puerto)
+    uvicorn.run(app, host=AJUSTES.host, port=AJUSTES.puerto)

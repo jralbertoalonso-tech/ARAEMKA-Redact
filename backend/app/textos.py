@@ -45,20 +45,20 @@ MENSAJES: dict[str, dict[str, str]] = {
         "en": "The settings sent have an invalid format.",
     },
     "pdf_ilegible": {
-        "es": "No se pudo leer el PDF: {error}",
-        "en": "The PDF could not be read: {error}",
+        "es": "No se pudo leer el PDF. Comprueba que el archivo no esté dañado o protegido.",
+        "en": "The PDF could not be read. Check that the file is not damaged or protected.",
     },
     "imagen_ilegible": {
-        "es": "No se pudo leer la imagen: {error}",
-        "en": "The image could not be read: {error}",
+        "es": "No se pudo leer la imagen. Comprueba que el archivo sea válido.",
+        "en": "The image could not be read. Check that the file is valid.",
     },
     "word_ilegible": {
-        "es": "No se pudo leer el documento Word: {error}",
-        "en": "The Word document could not be read: {error}",
+        "es": "No se pudo leer el documento Word. Comprueba que sea un .docx válido.",
+        "en": "The Word document could not be read. Check that it is a valid .docx file.",
     },
     "excel_ilegible": {
-        "es": "No se pudo leer el libro Excel: {error}",
-        "en": "The Excel workbook could not be read: {error}",
+        "es": "No se pudo leer el libro Excel. Comprueba que sea un .xlsx válido.",
+        "en": "The Excel workbook could not be read. Check that it is a valid .xlsx file.",
     },
     "doc_antiguo": {
         "es": "Los .doc antiguos (Word 97-2003) no son compatibles. Ábrelo en Word y "

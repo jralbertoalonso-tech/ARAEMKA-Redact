@@ -1,5 +1,7 @@
 # Configuración local del entorno de desarrollo
 .claude/
+# Decisiones privadas de acceso/autorrelleno. Se conserva solo en cada equipo.
+/docs/ACCESO-CODEX.md
 
 # Entornos y cachés
 .venv/

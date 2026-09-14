@@ -3,7 +3,7 @@
 
 FROM python:3.12-slim
 
-ARG ANONIPRO_VERSION=0.10.2
+ARG ANONIPRO_VERSION=0.10.3
 LABEL org.opencontainers.image.title="ARAEMKA Redact" \
       org.opencontainers.image.version="${ANONIPRO_VERSION}" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
@@ -39,7 +39,14 @@ COPY backend /app/backend
 COPY frontend /app/frontend
 COPY LICENSE CODIGO-FUENTE.md THIRD-PARTY-NOTICES.md TRADEMARKS.md AVISO-LEGAL.md /app/
 
+# La aplicación no necesita privilegios ni escribir fuera de /tmp.
+RUN useradd --system --uid 10001 --home-dir /tmp --shell /usr/sbin/nologin araemka
+USER 10001:10001
+
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/estado', timeout=3).read()"
 
 # Un solo worker: el modelo NER se comparte en memoria y el estado (documentos
 # en RAM) vive dentro del proceso. Para más concurrencia, ampliar en Fase 4.

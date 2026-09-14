@@ -1152,7 +1152,12 @@ function poblarModelosDeSeleccion(modeloPreferido) {
   const endpoint = $("input-endpoint").value.trim();
   const enc = endpointsDetectados.find((e) => e.endpoint === endpoint);
   const modelos = enc ? enc.modelos : [];
-  lista.innerHTML = modelos.map((m) => `<option value="${m}">`).join("");
+  lista.replaceChildren();
+  for (const modelo of modelos) {
+    const opcion = document.createElement("option");
+    opcion.value = String(modelo);
+    lista.appendChild(opcion);
+  }
   if (modeloPreferido && modelos.includes(modeloPreferido)) $("input-modelo").value = modeloPreferido;
   else if (!$("input-modelo").value && modelos.length) $("input-modelo").value = modelos[0];
 }
