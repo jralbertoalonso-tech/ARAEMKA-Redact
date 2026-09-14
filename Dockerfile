@@ -1,7 +1,7 @@
 # ARAEMKA Redact — imagen Docker para Synology (Container Manager) y cualquier host con Docker.
 # Todo el procesamiento es local; la imagen NO necesita internet una vez construida.
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 ARG ANONIPRO_VERSION=0.10.3
 LABEL org.opencontainers.image.title="ARAEMKA Redact" \
