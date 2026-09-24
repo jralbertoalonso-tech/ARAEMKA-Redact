@@ -12,7 +12,7 @@ pytesseract>=0.3.10              # OCR de escaneados/imágenes (Fase 2) — requ
 Pillow>=10.0                     # manejo de imágenes (JPG/PNG/TIFF) para el OCR
 psutil>=5.9                      # diagnóstico de hardware (RAM/CPU) para recomendar la capa 3
 # La capa 3 (LLM) usa la API OpenAI de Ollama/LM Studio vía urllib estándar: sin dependencias extra.
-itsdangerous>=2.1                # firma de la cookie de sesión (contraseña opcional)
+itsdangerous>=2.2.0                # firma de la cookie de sesión (contraseña opcional)
 # El modelo NER se instala aparte (ver README):
 #   python -m spacy download es_core_news_md
 #   python -m spacy download en_core_web_md
